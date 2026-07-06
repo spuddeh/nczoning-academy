@@ -30,7 +30,11 @@
   "contentAudit": {
     "projectCommit": "1bd41f5db402a402b8675d130ddd34e16066c15e",
     "auditedAt": "2026-07-06",
-    "auditNote": "Batches A-B (modules 01-06) authored + audited against origin/main worker/* at this commit. Project claims cite file+line pinned to this SHA; general concepts cite official docs (MDN, developers.cloudflare.com, docs.github.com) verified via WebFetch on 2026-07-06; healthy lab responses captured live from api.nczoning.net the same day; failure-state responses (stale meta, 503, 429) reconstructed from code/config and labelled as such. Module 05 (rate limit + Bot Fight Mode) is Cloudflare EDGE CONFIG, dashboard-confirmed 2026-07-06, NOT in the repo, and cited that way. All 9 modules (01-09, including the capstone) authored; module 08's website-consumer claims cite assets/js/services.js at this SHA."
+    "repos": [
+      { "repo": "spuddeh/nc-zoning-board", "commit": "1bd41f5db402a402b8675d130ddd34e16066c15e" },
+      { "repo": "spuddeh/nc-zoning-core", "commit": "3d370c2d42a3941e95a3913bd0a17566c7e4866a" }
+    ],
+    "auditNote": "All 9 modules (01-09, incl. capstone) authored + audited. Project claims cite file+line pinned to the repos above (nc-zoning-board worker/site; nc-zoning-core in-game consumer). General concepts cite official docs (MDN, developers.cloudflare.com, docs.github.com, learn.openapis.org) verified via WebFetch on 2026-07-06. Healthy lab responses captured live from api.nczoning.net 2026-07-06; failure-state responses (stale meta, 503, 429) reconstructed from code/config and labelled as such. Module 05 (rate limit + Bot Fight Mode) is Cloudflare EDGE CONFIG, dashboard-confirmed 2026-07-06, NOT in any repo, and cited that way. Run `npm run freshness` to check the pinned commits against current default branches."
   },
   "glossary": [
     { "term": "envelope", "tier": "project", "def": "The fixed wrapper every API response uses: { schema, generated_at, dataset_version, data }. The payload always lives under data, so consumers parse one stable shape regardless of endpoint.", "sources": [ { "kind": "project", "label": "worker/src/index.js L33-41", "url": "https://github.com/spuddeh/nc-zoning-board/blob/1bd41f5db402a402b8675d130ddd34e16066c15e/worker/src/index.js#L33-L41" } ] },
@@ -72,7 +76,9 @@
     { "term": "Scalar", "tier": "general", "def": "An API-documentation renderer. The API root page (GET /) uses it to turn openapi.json into browsable, interactive docs.", "sources": [ { "kind": "project", "label": "worker/src/docs.js L1-30", "url": "https://github.com/spuddeh/nc-zoning-board/blob/1bd41f5db402a402b8675d130ddd34e16066c15e/worker/src/docs.js#L1-L30" } ] },
     { "term": "consumer", "tier": "general", "def": "Any program that calls the API. Here there are two: the in-game mod (reads the slim list) and the website (reads the full list via the Data API).", "sources": [ { "kind": "project", "label": "assets/js/services.js L278-290", "url": "https://github.com/spuddeh/nc-zoning-board/blob/1bd41f5db402a402b8675d130ddd34e16066c15e/assets/js/services.js#L278-L290" } ] },
     { "term": "fallback", "tier": "project", "def": "The website's safety net: if the Data API call fails in any way, it falls back to the legacy client-side path rather than show an empty map.", "sources": [ { "kind": "project", "label": "assets/js/services.js L287-329", "url": "https://github.com/spuddeh/nc-zoning-board/blob/1bd41f5db402a402b8675d130ddd34e16066c15e/assets/js/services.js#L287-L329" } ] },
-    { "term": "composite UID", "tier": "project", "def": "The packed identifier Nexus needs for images: (gameId << 32) + modId as a single number, NOT 'gameId:modId'. A wrong format makes Nexus silently return no images.", "sources": [ { "kind": "project", "label": "worker/src/nexus.js L86-94", "url": "https://github.com/spuddeh/nc-zoning-board/blob/1bd41f5db402a402b8675d130ddd34e16066c15e/worker/src/nexus.js#L86-L94" } ] }
+    { "term": "composite UID", "tier": "project", "def": "The packed identifier Nexus needs for images: (gameId << 32) + modId as a single number, NOT 'gameId:modId'. A wrong format makes Nexus silently return no images.", "sources": [ { "kind": "project", "label": "worker/src/nexus.js L86-94", "url": "https://github.com/spuddeh/nc-zoning-board/blob/1bd41f5db402a402b8675d130ddd34e16066c15e/worker/src/nexus.js#L86-L94" } ] },
+    { "term": "ApiVersion handshake", "tier": "project", "def": "The in-game mod's compatibility contract: ApiVersion() returns an integer that only increments on a breaking change, so a dependent mod can gate on it at runtime (if ApiVersion() < 1 return). redscript cannot otherwise check a dependency's version.", "sources": [ { "kind": "project", "label": "nc-zoning-core Api.reds L17-22", "url": "https://github.com/spuddeh/nc-zoning-core/blob/3d370c2d42a3941e95a3913bd0a17566c7e4866a/r6/scripts/NCZoningCore/Api.reds#L17-L22" } ] },
+    { "term": "threading invariant", "tier": "project", "def": "NCZoningCore parses network responses off the game thread and marshals results back onto the game thread before firing any signal, so every callback and read a consumer sees runs on the game thread.", "sources": [ { "kind": "project", "label": "nc-zoning-core docs/consumer-guide.md L212-216", "url": "https://github.com/spuddeh/nc-zoning-core/blob/3d370c2d42a3941e95a3913bd0a17566c7e4866a/docs/consumer-guide.md#L212-L216" } ] }
   ],
   "resources": [
     { "id": "mdn-api", "label": "MDN: API (glossary)", "url": "https://developer.mozilla.org/en-US/docs/Glossary/API", "modules": ["m01"] },
@@ -94,7 +100,8 @@
     { "id": "cf-bot-fight-mode", "label": "Cloudflare: Bot Fight Mode", "url": "https://developers.cloudflare.com/bots/get-started/bot-fight-mode/", "modules": ["m05"] },
     { "id": "gh-actions-secrets", "label": "GitHub Docs: Using secrets in GitHub Actions", "url": "https://docs.github.com/en/actions/security-for-github-actions/security-guides/using-secrets-in-github-actions", "modules": ["m06"] },
     { "id": "cf-api-token", "label": "Cloudflare: Create an API token", "url": "https://developers.cloudflare.com/fundamentals/api/get-started/create-token/", "modules": ["m06"] },
-    { "id": "learn-openapis", "label": "OpenAPI Initiative: Learn OpenAPI", "url": "https://learn.openapis.org/", "modules": ["m07"] }
+    { "id": "learn-openapis", "label": "OpenAPI Initiative: Learn OpenAPI", "url": "https://learn.openapis.org/", "modules": ["m07"] },
+    { "id": "nczoning-core-guide", "label": "NCZoningCore consumer guide (in-game mod)", "url": "https://github.com/spuddeh/nc-zoning-core/blob/main/docs/consumer-guide.md", "modules": ["m08"] }
   ],
   "modules": [
     {
@@ -1408,7 +1415,7 @@
         ]
       },
       "objectives": [
-        "Name the API's two real consumers and what each reads",
+        "Name the API's two consumers, and how the in-game one stays version-safe and thread-safe",
         "Explain the API-primary-with-fallback pattern",
         "Recognize the composite-UID pitfall that silently drops images"
       ],
@@ -1417,10 +1424,21 @@
           "id": "m08-c1",
           "type": "text",
           "heading": "Who actually calls this API",
-          "body": "A **consumer** is any program that calls the API. This one has two. The **in-game mod** reads the slim list: it is the lean workhorse built for the game's RedData parser (module 01). The **website** reads the full list (`/v1/locations?full=1`). Since the B7 change, the website no longer does its own Nexus merge in the browser; the server already merged everything, so the site just reads the finished result. (The in-game mod's internals live in the mod, not this repository, so we study the website consumer, which we can read in full.)",
+          "body": "A **consumer** is any program that calls the API. This one has two, and both are open source. The **website** reads the full list (`/v1/locations?full=1`) in the browser; since the B7 change it no longer does its own Nexus merge, because the server already merged everything. The **in-game mod** (NCZoningCore) fetches that same `/v1/locations?full=1` once per game launch and hands the data to other Cyberpunk mods through a small redscript contract. Different languages, same endpoint, same envelope.",
           "sources": [
-            { "kind": "project", "label": "worker/src/index.js L104-106 (slim = in-game RedData workhorse)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/1bd41f5db402a402b8675d130ddd34e16066c15e/worker/src/index.js#L104-L106" },
-            { "kind": "project", "label": "assets/js/services.js L278-290 (website reads the Data API)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/1bd41f5db402a402b8675d130ddd34e16066c15e/assets/js/services.js#L278-L290" }
+            { "kind": "project", "label": "assets/js/services.js L278-290 (website reads the Data API)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/1bd41f5db402a402b8675d130ddd34e16066c15e/assets/js/services.js#L278-L290" },
+            { "kind": "project", "label": "nc-zoning-core NCZoningFetcher.reds L1-9 (in-game mod fetches /v1/locations?full=1 once per launch)", "url": "https://github.com/spuddeh/nc-zoning-core/blob/3d370c2d42a3941e95a3913bd0a17566c7e4866a/r6/scripts/NCZoningCore/NCZoningFetcher.reds#L1-L9" }
+          ]
+        },
+        {
+          "id": "m08-c1b",
+          "type": "text",
+          "heading": "The in-game consumer: safe by design",
+          "body": "The in-game mod does two hard things so the mods that depend on it do not have to. **Threading**: it parses the network response off the game thread, then marshals the result back onto the game thread before it updates anything or fires an event, so every value a dependent mod sees is already safe to touch. **The ApiVersion handshake**: redscript cannot check a dependency's version at all, so the mod exposes `ApiVersion()`, an integer that only ever increments on a breaking change. A dependent mod gates on it (`if ApiVersion() < 1 { return; }`) and then listens for three events: `DataReady`, `DataRefreshed`, and `DataError`. It is the same idea as the API's own `/v1` path versioning, one link further down the chain.",
+          "sources": [
+            { "kind": "project", "label": "nc-zoning-core Api.reds L17-22 (ApiVersion handshake)", "url": "https://github.com/spuddeh/nc-zoning-core/blob/3d370c2d42a3941e95a3913bd0a17566c7e4866a/r6/scripts/NCZoningCore/Api.reds#L17-L22" },
+            { "kind": "project", "label": "nc-zoning-core docs/consumer-guide.md L212-216 (threading invariant)", "url": "https://github.com/spuddeh/nc-zoning-core/blob/3d370c2d42a3941e95a3913bd0a17566c7e4866a/docs/consumer-guide.md#L212-L216" },
+            { "kind": "project", "label": "nc-zoning-core docs/consumer-guide.md L59-88 (handshake + events)", "url": "https://github.com/spuddeh/nc-zoning-core/blob/3d370c2d42a3941e95a3913bd0a17566c7e4866a/docs/consumer-guide.md#L59-L88" }
           ]
         },
         {
@@ -1560,8 +1578,8 @@
         "It caches with ETag + If-None-Match (304 from the client side); and a wrong composite-UID format makes Nexus silently drop images."
       ],
       "fieldNotes": {
-        "glossaryTerms": ["consumer", "fallback", "composite UID", "ETag", "slim list"],
-        "resources": ["mdn-etag"],
+        "glossaryTerms": ["consumer", "fallback", "composite UID", "ApiVersion handshake", "threading invariant", "ETag"],
+        "resources": ["mdn-etag", "nczoning-core-guide"],
         "renderCitations": true
       }
     },

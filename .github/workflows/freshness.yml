@@ -1,0 +1,29 @@
+name: Content freshness
+
+# Weekly (and on demand) check that the course's pinned source commits still
+# match the code it teaches. Fails the run if a CITED source file changed since
+# the audited commit, so the failure email is the "content may be stale" alarm.
+# See docs/authoring-guide.md (Re-audit procedure).
+
+on:
+  schedule:
+    - cron: "0 6 * * 1" # Mondays 06:00 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  freshness:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+      - run: npm ci
+      - name: Check content freshness
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: npm run freshness

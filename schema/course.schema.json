@@ -55,7 +55,20 @@
       "properties": {
         "projectCommit": { "type": "string", "minLength": 1 },
         "auditedAt": { "type": "string", "minLength": 1 },
-        "auditNote": { "type": "string", "minLength": 1 }
+        "auditNote": { "type": "string", "minLength": 1 },
+        "repos": {
+          "type": "array",
+          "description": "Pinned source repos the freshness checker compares the current default branch against.",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["repo", "commit"],
+            "properties": {
+              "repo": { "type": "string", "pattern": "^[^/]+/[^/]+$" },
+              "commit": { "type": "string", "minLength": 7 }
+            }
+          }
+        }
       }
     },
     "glossary": {

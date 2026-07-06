@@ -150,3 +150,31 @@ contract, and taught no rule.)
 3. The scenario passes the war-story test.
 4. Every claim resolves: project links to the SHA, official links load.
 5. en-US, no em dashes.
+
+## 12. Staying current (re-audit procedure)
+
+Code changes; the course must not silently rot. Two guards keep it honest:
+
+- **Pinned commits.** `contentAudit.repos` lists every source repo and the exact
+  commit its project claims were verified against. Every `kind: project`
+  citation URL uses that commit SHA, never a moving branch. The course currently
+  pins two repos: `spuddeh/nc-zoning-board` (worker + site) and
+  `spuddeh/nc-zoning-core` (in-game consumer).
+- **The freshness check.** `npm run freshness` (and the weekly
+  `.github/workflows/freshness.yml`) asks GitHub which files changed on each
+  pinned repo's default branch since its pinned commit, and flags any file the
+  course actually cites, naming the modules that cite it. A cited file changing
+  fails the run; that failure email is the "content may be stale" alarm. Files
+  that changed but are not cited are ignored.
+
+When it reports STALE:
+1. Read the diff of each flagged file (`gh api repos/<repo>/compare/<pinned>...<HEAD>`).
+2. For each affected module, decide whether the change alters a claim, a line
+   number, a canned response, or nothing teachable.
+3. Update the affected content and re-capture any changed lab responses.
+4. Re-pin: set the relevant `contentAudit.repos[].commit` (and `projectCommit`)
+   to the new HEAD, and bump `auditedAt`.
+5. `npm run validate` green, then commit.
+
+If a repo only moved but no cited file changed, re-pin at your convenience.
+
