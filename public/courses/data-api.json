@@ -1,0 +1,62 @@
+{
+  "schemaVersion": "academy-course/v1",
+  "id": "data-api",
+  "title": "TRANSMISSION PROTOCOLS",
+  "subtitle": "The NC Zoning Data API",
+  "estMinutes": 120,
+  "api": {
+    "baseUrl": "https://api.nczoning.net",
+    "rateLimit": "100 req / 10s / IP"
+  },
+  "ranks": [
+    { "clearance": 1, "title": "PROBATIONARY OPERATOR" },
+    { "clearance": 2, "title": "OPERATOR" },
+    { "clearance": 9, "title": "CERTIFIED FIELD OPERATOR" }
+  ],
+  "contentAudit": {
+    "projectCommit": "PENDING-P2",
+    "auditedAt": "PENDING-P2",
+    "auditNote": "P1 scaffold placeholder. P2 replaces every module with content authored from origin/main worker/src/* and stamps the real commit SHA here."
+  },
+  "glossary": [],
+  "resources": [],
+  "modules": [
+    {
+      "id": "m01",
+      "order": 1,
+      "title": "TRANSMISSION PROTOCOL",
+      "subtitle": "Placeholder — authored in P2",
+      "clearance": 1,
+      "estMinutes": 12,
+      "lore": "",
+      "hook": {
+        "type": "terminal-log",
+        "lines": [
+          "> NC-ACAD-01 scaffold online",
+          "> course registry loaded: data-api",
+          "> awaiting content authoring (phase P2)"
+        ]
+      },
+      "objectives": [
+        "Placeholder objective — replaced in P2"
+      ],
+      "chunks": [
+        {
+          "id": "m01-c1",
+          "type": "text",
+          "heading": "Scaffold placeholder",
+          "body": "This module is a P1 scaffold stub so the schema and validator have real content to check. P2 authors the full 9 modules plus capstone from verified origin/main sources.",
+          "sources": []
+        }
+      ],
+      "recap": [
+        "This is placeholder content."
+      ],
+      "fieldNotes": {
+        "glossaryTerms": [],
+        "resources": [],
+        "renderCitations": true
+      }
+    }
+  ]
+}

@@ -1,0 +1,285 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://nczoning.net/schema/academy-course/v1.json",
+  "title": "academy-course/v1",
+  "description": "NC Zoning Academy course document. One file per course under public/courses/. Built from docs/plan.md skeleton.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "id", "title", "estMinutes", "contentAudit", "modules"],
+  "properties": {
+    "schemaVersion": { "const": "academy-course/v1" },
+    "id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+    "title": { "type": "string", "minLength": 1 },
+    "subtitle": { "type": "string" },
+    "estMinutes": { "type": "integer", "minimum": 1 },
+    "api": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["baseUrl"],
+      "properties": {
+        "baseUrl": { "type": "string", "format": "uri" },
+        "rateLimit": { "type": "string" }
+      }
+    },
+    "ranks": {
+      "type": "array",
+      "description": "Clearance ladder 1-9 with rank titles per tier.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["clearance", "title"],
+        "properties": {
+          "clearance": { "type": "integer", "minimum": 1, "maximum": 9 },
+          "title": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "contentAudit": {
+      "type": "object",
+      "description": "Pins the origin/main SHA all project claims were verified against.",
+      "additionalProperties": false,
+      "required": ["projectCommit", "auditedAt", "auditNote"],
+      "properties": {
+        "projectCommit": { "type": "string", "minLength": 1 },
+        "auditedAt": { "type": "string", "minLength": 1 },
+        "auditNote": { "type": "string", "minLength": 1 }
+      }
+    },
+    "glossary": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/glossaryTerm" }
+    },
+    "resources": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/resource" }
+    },
+    "modules": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/module" }
+    }
+  },
+  "$defs": {
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "label", "url"],
+      "properties": {
+        "kind": { "enum": ["project", "official"] },
+        "label": { "type": "string", "minLength": 1 },
+        "url": { "type": "string", "format": "uri" }
+      }
+    },
+    "sources": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/source" }
+    },
+    "option": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["text"],
+      "properties": {
+        "text": { "type": "string", "minLength": 1 },
+        "correct": { "type": "boolean" },
+        "feedback": { "type": "string" }
+      }
+    },
+    "glossaryTerm": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["term", "tier", "def"],
+      "properties": {
+        "term": { "type": "string", "minLength": 1 },
+        "tier": { "enum": ["project", "general"] },
+        "def": { "type": "string", "minLength": 1 },
+        "sources": { "$ref": "#/$defs/sources" }
+      }
+    },
+    "resource": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "label", "url"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "label": { "type": "string", "minLength": 1 },
+        "url": { "type": "string", "format": "uri" },
+        "modules": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "hook": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "lines"],
+      "properties": {
+        "type": { "enum": ["terminal-log"] },
+        "lines": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "chunk": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "type", "sources"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "type": { "enum": ["text", "code", "table", "callout", "terminal-log"] },
+        "heading": { "type": "string" },
+        "body": { "type": "string" },
+        "variant": { "enum": ["info", "warning", "policy"] },
+        "lang": { "type": "string" },
+        "columns": { "type": "array", "items": { "type": "string" } },
+        "rows": {
+          "type": "array",
+          "items": { "type": "array", "items": { "type": "string" } }
+        },
+        "lines": { "type": "array", "items": { "type": "string" } },
+        "sources": { "$ref": "#/$defs/sources" }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "type": { "const": "text" } } },
+          "then": { "required": ["body"] }
+        },
+        {
+          "if": { "properties": { "type": { "const": "code" } } },
+          "then": { "required": ["body", "lang"] }
+        },
+        {
+          "if": { "properties": { "type": { "const": "callout" } } },
+          "then": { "required": ["body", "variant"] }
+        },
+        {
+          "if": { "properties": { "type": { "const": "table" } } },
+          "then": { "required": ["columns", "rows"] }
+        },
+        {
+          "if": { "properties": { "type": { "const": "terminal-log" } } },
+          "then": { "required": ["lines"] }
+        }
+      ]
+    },
+    "lab": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "title", "request", "expected", "canned", "sources"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "title": { "type": "string", "minLength": 1 },
+        "briefing": { "type": "string" },
+        "steps": { "type": "array", "items": { "type": "string" } },
+        "request": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["method", "path"],
+          "properties": {
+            "method": { "enum": ["GET", "POST", "HEAD", "PUT", "PATCH", "DELETE", "OPTIONS"] },
+            "path": { "type": "string", "minLength": 1 },
+            "query": { "type": "object" },
+            "headers": { "type": "object" },
+            "editable": { "type": "array", "items": { "type": "string" } }
+          }
+        },
+        "expected": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "status": { "type": "array", "items": { "type": "integer" } },
+            "headersOfInterest": { "type": "array", "items": { "type": "string" } },
+            "shapeHints": { "type": "array", "items": { "type": "string" } }
+          }
+        },
+        "canned": {
+          "type": "array",
+          "minItems": 1,
+          "description": "Canned responses captured from REAL API calls in P2. SIMULATION MODE serves these in preview.",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["when", "status"],
+            "properties": {
+              "when": { "type": "string", "minLength": 1 },
+              "status": { "type": "integer" },
+              "headers": { "type": "object" },
+              "body": {}
+            }
+          }
+        },
+        "debrief": { "type": "string" },
+        "sources": { "$ref": "#/$defs/sources" }
+      }
+    },
+    "question": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "type", "prompt", "sources"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "type": { "enum": ["mcq", "multi", "order", "spot-wrong"] },
+        "prompt": { "type": "string", "minLength": 1 },
+        "options": { "type": "array", "items": { "$ref": "#/$defs/option" } },
+        "steps": { "type": "array", "items": { "type": "string" } },
+        "sources": { "$ref": "#/$defs/sources" }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "type": { "const": "order" } } },
+          "then": { "required": ["steps"] },
+          "else": { "required": ["options"] }
+        }
+      ]
+    },
+    "scenario": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "title", "situation", "question", "sources"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "title": { "type": "string", "minLength": 1 },
+        "situation": { "type": "array", "items": { "type": "string" } },
+        "question": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["type", "prompt"],
+          "properties": {
+            "type": { "enum": ["mcq", "multi", "order", "spot-wrong"] },
+            "prompt": { "type": "string", "minLength": 1 },
+            "options": { "type": "array", "items": { "$ref": "#/$defs/option" } },
+            "steps": { "type": "array", "items": { "type": "string" } }
+          }
+        },
+        "debrief": { "type": "string" },
+        "sources": { "$ref": "#/$defs/sources" }
+      }
+    },
+    "fieldNotes": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "glossaryTerms": { "type": "array", "items": { "type": "string" } },
+        "resources": { "type": "array", "items": { "type": "string" } },
+        "renderCitations": { "type": "boolean" }
+      }
+    },
+    "module": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "order", "title", "clearance", "chunks"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+        "order": { "type": "integer", "minimum": 1 },
+        "title": { "type": "string", "minLength": 1 },
+        "subtitle": { "type": "string" },
+        "clearance": { "type": "integer", "minimum": 1, "maximum": 9 },
+        "estMinutes": { "type": "integer", "minimum": 1 },
+        "lore": { "type": "string" },
+        "hook": { "$ref": "#/$defs/hook" },
+        "objectives": { "type": "array", "items": { "type": "string" } },
+        "chunks": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/chunk" } },
+        "lab": { "$ref": "#/$defs/lab" },
+        "quiz": { "type": "array", "items": { "$ref": "#/$defs/question" } },
+        "scenario": { "$ref": "#/$defs/scenario" },
+        "recap": { "type": "array", "items": { "type": "string" } },
+        "fieldNotes": { "$ref": "#/$defs/fieldNotes" }
+      }
+    }
+  }
+}

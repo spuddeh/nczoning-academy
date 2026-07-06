@@ -1,0 +1,12 @@
+{
+  "schemaVersion": "academy-index/v1",
+  "courses": [
+    {
+      "id": "data-api",
+      "title": "TRANSMISSION PROTOCOLS",
+      "subtitle": "The NC Zoning Data API",
+      "file": "data-api.json",
+      "status": "draft"
+    }
+  ]
+}
