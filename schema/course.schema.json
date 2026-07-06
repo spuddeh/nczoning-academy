@@ -284,6 +284,7 @@
         "clearance": { "type": "integer", "minimum": 1, "maximum": 9 },
         "estMinutes": { "type": "integer", "minimum": 1 },
         "reward": { "type": "integer", "minimum": 0 },
+        "capstone": { "type": "boolean" },
         "hook": { "$ref": "#/$defs/hook" },
         "objectives": { "type": "array", "items": { "type": "string" } },
         "chunks": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/chunk" } },
