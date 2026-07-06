@@ -19,6 +19,13 @@
     { "clearance": 8, "title": "ZONING SPECIALIST" },
     { "clearance": 9, "title": "CERTIFIED FIELD OPERATOR" }
   ],
+  "economy": {
+    "currency": "eddies",
+    "symbol": "€$",
+    "startingBalance": 500,
+    "moduleReward": 1000,
+    "wrongPenalty": 250
+  },
   "contentAudit": {
     "projectCommit": "1bd41f5db402a402b8675d130ddd34e16066c15e",
     "auditedAt": "2026-07-06",
@@ -30,7 +37,12 @@
     { "term": "slim list", "tier": "project", "def": "The default /v1/locations payload: lean entries (no description, credits or images) sized for the in-game RedData workhorse list.", "sources": [ { "kind": "project", "label": "worker/src/index.js L104-121", "url": "https://github.com/spuddeh/nc-zoning-board/blob/1bd41f5db402a402b8675d130ddd34e16066c15e/worker/src/index.js#L104-L121" } ] },
     { "term": "full representation", "tier": "project", "def": "The ?full=1 variant of /v1/locations: every entry with description, credits and Nexus image URLs, returned in one request. Carries its own ETag suffixed -full.", "sources": [ { "kind": "project", "label": "worker/src/index.js L104-121", "url": "https://github.com/spuddeh/nc-zoning-board/blob/1bd41f5db402a402b8675d130ddd34e16066c15e/worker/src/index.js#L104-L121" } ] },
     { "term": "stable id", "tier": "project", "def": "A location's permanent identifier: a UUID for manual entries, or nexus-<nexus_id> for auto-discovered ones. Frozen by contract so consumers can key on it.", "sources": [ { "kind": "project", "label": "worker/src/merge.js L72-89", "url": "https://github.com/spuddeh/nc-zoning-board/blob/1bd41f5db402a402b8675d130ddd34e16066c15e/worker/src/merge.js#L72-L89" } ] },
-    { "term": "RedData DTO", "tier": "project", "def": "The in-game Cyberpunk data-transfer-object parser the API must stay mappable for: no arrays-of-arrays, case-sensitive property names. This constraint shapes the whole contract.", "sources": [ { "kind": "project", "label": "worker/src/index.js L5-10", "url": "https://github.com/spuddeh/nc-zoning-board/blob/1bd41f5db402a402b8675d130ddd34e16066c15e/worker/src/index.js#L5-L10" } ] },
+    { "term": "RedData DTO", "tier": "project", "def": "The in-game Cyberpunk JSON reader the API must stay mappable to. It turns a response into a DTO (Data Transfer Object, a plain data record with named fields), and it is strict: no arrays-of-arrays, and property names are case-sensitive. This constraint shapes the whole contract.", "sources": [ { "kind": "project", "label": "worker/src/index.js L5-10", "url": "https://github.com/spuddeh/nc-zoning-board/blob/1bd41f5db402a402b8675d130ddd34e16066c15e/worker/src/index.js#L5-L10" } ] },
+    { "term": "API", "tier": "general", "def": "Application Programming Interface: how one program asks another for data through software, instead of a person using a screen.", "sources": [ { "kind": "official", "label": "MDN - API", "url": "https://developer.mozilla.org/en-US/docs/Glossary/API" } ] },
+    { "term": "endpoint", "tier": "general", "def": "A specific address on an API you can call, such as /v1/locations. Each endpoint returns one kind of data.", "sources": [ { "kind": "official", "label": "MDN - An overview of HTTP", "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/Overview" } ] },
+    { "term": "JSON", "tier": "general", "def": "JavaScript Object Notation: a plain-text data format of names and values (objects and arrays) that most languages, browsers, and the game can read.", "sources": [ { "kind": "official", "label": "MDN - JSON", "url": "https://developer.mozilla.org/en-US/docs/Glossary/JSON" } ] },
+    { "term": "HTTP", "tier": "general", "def": "HyperText Transfer Protocol: the request-and-response language a client and server use to exchange data on the web.", "sources": [ { "kind": "official", "label": "MDN - An overview of HTTP", "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/Overview" } ] },
+    { "term": "status code", "tier": "general", "def": "A number in an HTTP response saying how it went: 200 OK, 304 Not Modified, 404 Not Found, 503 not ready.", "sources": [ { "kind": "official", "label": "MDN - An overview of HTTP", "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/Overview" } ] },
     { "term": "ETag", "tier": "general", "def": "An HTTP response header that is an identifier for a specific version of a resource. Sent back by the client as If-None-Match to ask 'has this changed?'.", "sources": [ { "kind": "official", "label": "MDN - ETag", "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/ETag" } ] },
     { "term": "conditional request", "tier": "general", "def": "A request carrying a validator (like If-None-Match) so the server can reply 304 Not Modified instead of resending an unchanged body.", "sources": [ { "kind": "official", "label": "MDN - Conditional requests", "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/Conditional_requests" } ] },
     { "term": "304 Not Modified", "tier": "general", "def": "A status code telling the client there is no need to retransmit the resource; its cached copy is still valid. The response carries no body.", "sources": [ { "kind": "official", "label": "MDN - 304 Not Modified", "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/304" } ] },
@@ -41,6 +53,9 @@
     { "term": "cron trigger", "tier": "general", "def": "A Cloudflare feature that maps a cron expression to a Worker's scheduled() handler so it runs on a schedule.", "sources": [ { "kind": "official", "label": "Cloudflare - Cron Triggers", "url": "https://developers.cloudflare.com/workers/configuration/cron-triggers/" } ] }
   ],
   "resources": [
+    { "id": "mdn-api", "label": "MDN: API (glossary)", "url": "https://developer.mozilla.org/en-US/docs/Glossary/API", "modules": ["m01"] },
+    { "id": "mdn-http-overview", "label": "MDN: An overview of HTTP", "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/Overview", "modules": ["m01", "m03"] },
+    { "id": "mdn-json", "label": "MDN: JSON (glossary)", "url": "https://developer.mozilla.org/en-US/docs/Glossary/JSON", "modules": ["m01"] },
     { "id": "mdn-conditional-requests", "label": "MDN: HTTP conditional requests", "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/Conditional_requests", "modules": ["m02"] },
     { "id": "mdn-etag", "label": "MDN: ETag header", "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/ETag", "modules": ["m01", "m02"] },
     { "id": "mdn-cache-control", "label": "MDN: Cache-Control header", "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Cache-Control", "modules": ["m02"] },
@@ -58,9 +73,7 @@
       "title": "TRANSMISSION PROTOCOL",
       "subtitle": "The API contract: envelope, stable ids, slim vs full",
       "clearance": 1,
-      "estMinutes": 13,
-      "lore": "FRAGMENT 01 // Every transmission out of the Division carries the same seal. Learn to read the seal before you read the message.",
-      "hook": {
+      "estMinutes": 13,      "hook": {
         "type": "terminal-log",
         "lines": [
           "> NC-ACAD-01 // clearance check: LEVEL 1 granted",
@@ -78,10 +91,21 @@
       ],
       "chunks": [
         {
+          "id": "m01-c0",
+          "type": "text",
+          "heading": "Field manual: how to read a data API",
+          "body": "Before the contract, the vocabulary. An **API** (Application Programming Interface) is how one program asks another for data, instead of a person clicking a screen. This project's API lives at `https://api.nczoning.net`. A program sends it an HTTP **request** for a particular address (an **endpoint**, like `/v1/locations`) and gets back a **response**. **HTTP** (HyperText Transfer Protocol) is simply the language of that request-and-response conversation. Each request names a **method** (here always `GET`, meaning 'fetch this'), and each response has three parts: a **status code** (`200` means OK, `404` means not found), some **headers** (labels that describe the response), and a **body** (the data itself). That body is **JSON** (JavaScript Object Notation), a plain-text format of names and values that a web browser and the game can both read. Every bold term here returns throughout the course, so keep this page handy.",
+          "sources": [
+            { "kind": "official", "label": "MDN - API", "url": "https://developer.mozilla.org/en-US/docs/Glossary/API" },
+            { "kind": "official", "label": "MDN - An overview of HTTP", "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/Overview" },
+            { "kind": "official", "label": "MDN - JSON", "url": "https://developer.mozilla.org/en-US/docs/Glossary/JSON" }
+          ]
+        },
+        {
           "id": "m01-c1",
           "type": "text",
           "heading": "One envelope, every response",
-          "body": "Every route wraps its payload in the **same four-field envelope**: `schema`, `generated_at`, `dataset_version`, and `data`. The route-specific content always sits under `data`, so a consumer parses one predictable shape whether it asked for a location, a district, or an error. This is deliberate: the JSON has to stay mappable to the in-game **RedData DTO** parser, which forbids arrays-of-arrays and treats property names as case-sensitive.",
+          "body": "Every response is a JSON object wrapped in the **same four-field envelope**: `schema`, `generated_at`, `dataset_version`, and `data`. The part you asked for (the **payload**) always sits under `data`, so a program reads one predictable shape whether it requested a location, a district, or even an error. Why fix the shape? Because the Cyberpunk game itself is a consumer, and its built-in JSON reader (called **RedData**) maps each response onto a **DTO** (Data Transfer Object, a plain data record with named fields). That reader is strict: no arrays inside arrays, and field names are case-sensitive (so `nexus_id` is not the same as `Nexus_Id`). The envelope keeps every response friendly to that reader.",
           "sources": [
             { "kind": "project", "label": "worker/src/index.js L33-41 (envelope())", "url": "https://github.com/spuddeh/nc-zoning-board/blob/1bd41f5db402a402b8675d130ddd34e16066c15e/worker/src/index.js#L33-L41" },
             { "kind": "project", "label": "worker/src/index.js L5-10 (contract rules)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/1bd41f5db402a402b8675d130ddd34e16066c15e/worker/src/index.js#L5-L10" }
@@ -110,7 +134,7 @@
             ["description, credits", "no", "yes"],
             ["thumbnail_url, picture_url, updated_at", "no", "yes"]
           ],
-          "body": "`/v1/locations` returns the **slim** list by default: lean entries for the in-game list. Add `?full=1` for the **full** entries (description, credits, image URLs) in one request, for the website. Ask for the least you need.",
+          "body": "A **representation** is just the shape of the data you get back. `/v1/locations` returns the **slim** representation by default: lean entries sized for the in-game list. Add `?full=1` to the address for the **full** representation, which adds description, credits, and image links in one request (the website uses this). Rule of thumb: ask for the least you need.",
           "sources": [
             { "kind": "project", "label": "worker/src/index.js L104-121 (slim vs full routing)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/1bd41f5db402a402b8675d130ddd34e16066c15e/worker/src/index.js#L104-L121" },
             { "kind": "project", "label": "worker/openapi.json (Location / LocationFull)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/1bd41f5db402a402b8675d130ddd34e16066c15e/worker/openapi.json#L163-L192" }
@@ -121,7 +145,7 @@
           "type": "callout",
           "variant": "policy",
           "heading": "Frozen: ids and the /v1 prefix",
-          "body": "Two things never change under you. **Stable ids**: manual entries keep their UUID, auto-discovered ones are `nexus-<nexus_id>` - safe to key on. **Path versioning**: everything lives under `/v1/`, and only *additive* changes ship inside it. A breaking change would be a new `/v2/`, never a silent mutation of `/v1/`.",
+          "body": "Two things never change under you. **Stable ids**: manual entries keep their **UUID** (Universally Unique Identifier, a long one-off random string), and auto-discovered ones use `nexus-<nexus_id>`. Either way, the id is safe to store and look up by. **Path versioning**: every endpoint lives under `/v1/`, and only *additive* changes (new fields, never removed or renamed ones) ship inside it. A breaking change would appear as a new `/v2/`, never as a silent change to `/v1/`.",
           "sources": [
             { "kind": "project", "label": "worker/src/index.js L5-10 (path-based versioning, additive only)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/1bd41f5db402a402b8675d130ddd34e16066c15e/worker/src/index.js#L5-L10" },
             { "kind": "project", "label": "worker/src/merge.js L72-89 (nexus-<id> stable id)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/1bd41f5db402a402b8675d130ddd34e16066c15e/worker/src/merge.js#L72-L89" }
@@ -267,25 +291,27 @@
       ],
       "scenario": {
         "id": "m01-s1",
-        "title": "INCIDENT LOG // NEXUS V3 FALSE ALARM",
+        "title": "FIELD REPORT // THE HARDCODED PIN",
         "situation": [
-          "> 2026-07-05 // bulletin: Nexus Mods ships an official REST API v3",
-          "> initial read: 'do we have to migrate auto-discovery off the old V2 GraphQL?'",
-          "> risk if true: the whole SUPPLY LINE (auto-discovered pins) would need a rewrite",
-          "> action: review v3 against what auto-discovery actually needs (mods-by-tag, images)"
+          "> support ticket from a mod author consuming the API",
+          "> 'my in-game marker used to point at the Afterlife bar. now it points at some apartment.'",
+          "> their code: fetch /v1/locations, then take data[3] as 'the Afterlife entry'",
+          "> overnight, three new mods were auto-discovered; the list re-sorted by name",
+          "> data[3] is now a completely different location"
         ],
         "question": {
           "type": "mcq",
-          "prompt": "The review is in. What is the correct call on migrating to Nexus REST v3?",
+          "prompt": "What should the author have keyed on instead of the array position data[3]?",
           "options": [
-            { "text": "Do not migrate - v3 is a publishing/management API with no mods-by-tag, search, or image fields, so it cannot replace the V2 GraphQL auto-discovery.", "correct": true, "feedback": "Correct, and this is what actually happened. v3 solves a different problem; V2 GraphQL stays required with no migration path." },
-            { "text": "Migrate immediately - a newer API version is always the supported path.", "correct": false, "feedback": "A version number is not a capability audit. v3 lacks the exact queries auto-discovery depends on." },
-            { "text": "Migrate the reads but keep V2 for images only.", "correct": false, "feedback": "v3 has neither the tag search nor the image fields, so there is nothing to move over cleanly." }
+            { "text": "The entry's stable id (its UUID or nexus-<id>), which never changes.", "correct": true, "feedback": "Correct. The list is sorted by name and grows as mods are added, so position is not stable. The id is frozen by contract: find the entry by id and it is always the Afterlife." },
+            { "text": "The array position, but re-checked on every app launch.", "correct": false, "feedback": "Positions shift whenever a mod is added, removed, or renamed. Re-reading a fragile anchor does not make it stable." },
+            { "text": "The entry's name string, matched exactly.", "correct": false, "feedback": "Better than position, but authors can edit names and they are not guaranteed unique. The id is the contract's anchor." }
           ]
         },
-        "debrief": "What actually happened: the v3 review found it is a publishing/management API (no mods-by-tag / search, no image fields), so it does NOT replace the V2 GraphQL auto-discovery. V2 stays required, no v3 migration. The lesson for a contract: audit capabilities, not version numbers.",
+        "debrief": "What the contract guarantees: every entry has a stable id (a UUID for manual mods, nexus-<nexus_id> for auto-discovered ones), and the list is sorted by name, so it changes as mods come and go. data[3] is a moving target; the id is not. The rule: key on the id, never on array position. (This is a constructed scenario, but the sort-by-name and the id guarantee it hinges on are both real, in the code below.)",
         "sources": [
-          { "kind": "project", "label": "commit 205130f / e97f296 - Nexus v3 review (project history)", "url": "https://github.com/spuddeh/nc-zoning-board/commit/e97f29698eab661e3938e65abdbeb50f32c42808" }
+          { "kind": "project", "label": "worker/src/merge.js L92-95 (list sorted by name)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/1bd41f5db402a402b8675d130ddd34e16066c15e/worker/src/merge.js#L92-L95" },
+          { "kind": "project", "label": "worker/src/merge.js L72-89 (stable nexus-<id>)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/1bd41f5db402a402b8675d130ddd34e16066c15e/worker/src/merge.js#L72-L89" }
         ]
       },
       "recap": [
@@ -294,8 +320,8 @@
         "Ids are frozen (UUID or nexus-<id>) and /v1 only changes additively - key on ids, not positions."
       ],
       "fieldNotes": {
-        "glossaryTerms": ["envelope", "dataset_version", "slim list", "full representation", "stable id", "RedData DTO"],
-        "resources": ["mdn-etag"],
+        "glossaryTerms": ["API", "endpoint", "JSON", "envelope", "dataset_version", "slim list", "full representation", "stable id", "RedData DTO"],
+        "resources": ["mdn-api", "mdn-http-overview", "mdn-json", "mdn-etag"],
         "renderCitations": true
       }
     },
@@ -305,9 +331,7 @@
       "title": "FRESHNESS DIRECTIVE",
       "subtitle": "HTTP caching, ETags, 304s and stale-while-revalidate",
       "clearance": 2,
-      "estMinutes": 14,
-      "lore": "FRAGMENT 02 // The Division does not resend what has not changed. Bandwidth is a resource; so is patience.",
-      "hook": {
+      "estMinutes": 14,      "hook": {
         "type": "terminal-log",
         "lines": [
           "> NC-ACAD-01 // clearance check: LEVEL 2 granted",
@@ -519,9 +543,7 @@
       "title": "THE ENGINE ROOM",
       "subtitle": "How the API runs: Cloudflare Workers plus KV",
       "clearance": 3,
-      "estMinutes": 12,
-      "lore": "FRAGMENT 03 // No server hums in a basement. The Division's terminal runs at the edge of the network, everywhere at once.",
-      "hook": {
+      "estMinutes": 12,      "hook": {
         "type": "terminal-log",
         "lines": [
           "> NC-ACAD-01 // clearance check: LEVEL 3 granted",
