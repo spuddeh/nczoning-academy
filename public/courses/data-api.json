@@ -31,14 +31,14 @@
     { "term": "full representation", "tier": "project", "def": "The ?full=1 variant of /v1/locations: every entry with description, credits and Nexus image URLs, returned in one request. Carries its own ETag suffixed -full.", "sources": [ { "kind": "project", "label": "worker/src/index.js L104-121", "url": "https://github.com/spuddeh/nc-zoning-board/blob/1bd41f5db402a402b8675d130ddd34e16066c15e/worker/src/index.js#L104-L121" } ] },
     { "term": "stable id", "tier": "project", "def": "A location's permanent identifier: a UUID for manual entries, or nexus-<nexus_id> for auto-discovered ones. Frozen by contract so consumers can key on it.", "sources": [ { "kind": "project", "label": "worker/src/merge.js L72-89", "url": "https://github.com/spuddeh/nc-zoning-board/blob/1bd41f5db402a402b8675d130ddd34e16066c15e/worker/src/merge.js#L72-L89" } ] },
     { "term": "RedData DTO", "tier": "project", "def": "The in-game Cyberpunk data-transfer-object parser the API must stay mappable for: no arrays-of-arrays, case-sensitive property names. This constraint shapes the whole contract.", "sources": [ { "kind": "project", "label": "worker/src/index.js L5-10", "url": "https://github.com/spuddeh/nc-zoning-board/blob/1bd41f5db402a402b8675d130ddd34e16066c15e/worker/src/index.js#L5-L10" } ] },
-    { "term": "ETag", "tier": "general", "def": "An HTTP response header that is an identifier for a specific version of a resource. Sent back by the client as If-None-Match to ask 'has this changed?'.", "sources": [ { "kind": "official", "label": "MDN — ETag", "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/ETag" } ] },
-    { "term": "conditional request", "tier": "general", "def": "A request carrying a validator (like If-None-Match) so the server can reply 304 Not Modified instead of resending an unchanged body.", "sources": [ { "kind": "official", "label": "MDN — Conditional requests", "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/Conditional_requests" } ] },
-    { "term": "304 Not Modified", "tier": "general", "def": "A status code telling the client there is no need to retransmit the resource; its cached copy is still valid. The response carries no body.", "sources": [ { "kind": "official", "label": "MDN — 304 Not Modified", "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/304" } ] },
-    { "term": "stale-while-revalidate", "tier": "general", "def": "A Cache-Control directive: the cache may reuse a stale response while it revalidates in the background, so clients never block on a refresh.", "sources": [ { "kind": "official", "label": "MDN — Cache-Control (stale-while-revalidate)", "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Cache-Control" } ] },
-    { "term": "CORS", "tier": "general", "def": "Cross-Origin Resource Sharing: an HTTP-header mechanism that lets a server declare which other origins a browser may load its resources from.", "sources": [ { "kind": "official", "label": "MDN — CORS", "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/CORS" } ] },
-    { "term": "Cloudflare Worker", "tier": "general", "def": "A serverless function running on Cloudflare's global edge network, with no infrastructure to manage. Handles each request in its fetch() handler.", "sources": [ { "kind": "official", "label": "Cloudflare — Workers", "url": "https://developers.cloudflare.com/workers/" } ] },
-    { "term": "Workers KV", "tier": "general", "def": "A global, low-latency key-value data store optimised for high reads and infrequent writes. The API serves the whole dataset from KV.", "sources": [ { "kind": "official", "label": "Cloudflare — Workers KV", "url": "https://developers.cloudflare.com/kv/" } ] },
-    { "term": "cron trigger", "tier": "general", "def": "A Cloudflare feature that maps a cron expression to a Worker's scheduled() handler so it runs on a schedule.", "sources": [ { "kind": "official", "label": "Cloudflare — Cron Triggers", "url": "https://developers.cloudflare.com/workers/configuration/cron-triggers/" } ] }
+    { "term": "ETag", "tier": "general", "def": "An HTTP response header that is an identifier for a specific version of a resource. Sent back by the client as If-None-Match to ask 'has this changed?'.", "sources": [ { "kind": "official", "label": "MDN - ETag", "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/ETag" } ] },
+    { "term": "conditional request", "tier": "general", "def": "A request carrying a validator (like If-None-Match) so the server can reply 304 Not Modified instead of resending an unchanged body.", "sources": [ { "kind": "official", "label": "MDN - Conditional requests", "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/Conditional_requests" } ] },
+    { "term": "304 Not Modified", "tier": "general", "def": "A status code telling the client there is no need to retransmit the resource; its cached copy is still valid. The response carries no body.", "sources": [ { "kind": "official", "label": "MDN - 304 Not Modified", "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/304" } ] },
+    { "term": "stale-while-revalidate", "tier": "general", "def": "A Cache-Control directive: the cache may reuse a stale response while it revalidates in the background, so clients never block on a refresh.", "sources": [ { "kind": "official", "label": "MDN - Cache-Control (stale-while-revalidate)", "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Cache-Control" } ] },
+    { "term": "CORS", "tier": "general", "def": "Cross-Origin Resource Sharing: an HTTP-header mechanism that lets a server declare which other origins a browser may load its resources from.", "sources": [ { "kind": "official", "label": "MDN - CORS", "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/CORS" } ] },
+    { "term": "Cloudflare Worker", "tier": "general", "def": "A serverless function running on Cloudflare's global edge network, with no infrastructure to manage. Handles each request in its fetch() handler.", "sources": [ { "kind": "official", "label": "Cloudflare - Workers", "url": "https://developers.cloudflare.com/workers/" } ] },
+    { "term": "Workers KV", "tier": "general", "def": "A global, low-latency key-value data store optimized for high reads and infrequent writes. The API serves the whole dataset from KV.", "sources": [ { "kind": "official", "label": "Cloudflare - Workers KV", "url": "https://developers.cloudflare.com/kv/" } ] },
+    { "term": "cron trigger", "tier": "general", "def": "A Cloudflare feature that maps a cron expression to a Worker's scheduled() handler so it runs on a schedule.", "sources": [ { "kind": "official", "label": "Cloudflare - Cron Triggers", "url": "https://developers.cloudflare.com/workers/configuration/cron-triggers/" } ] }
   ],
   "resources": [
     { "id": "mdn-conditional-requests", "label": "MDN: HTTP conditional requests", "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/Conditional_requests", "modules": ["m02"] },
@@ -121,7 +121,7 @@
           "type": "callout",
           "variant": "policy",
           "heading": "Frozen: ids and the /v1 prefix",
-          "body": "Two things never change under you. **Stable ids**: manual entries keep their UUID, auto-discovered ones are `nexus-<nexus_id>` — safe to key on. **Path versioning**: everything lives under `/v1/`, and only *additive* changes ship inside it. A breaking change would be a new `/v2/`, never a silent mutation of `/v1/`.",
+          "body": "Two things never change under you. **Stable ids**: manual entries keep their UUID, auto-discovered ones are `nexus-<nexus_id>` - safe to key on. **Path versioning**: everything lives under `/v1/`, and only *additive* changes ship inside it. A breaking change would be a new `/v2/`, never a silent mutation of `/v1/`.",
           "sources": [
             { "kind": "project", "label": "worker/src/index.js L5-10 (path-based versioning, additive only)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/1bd41f5db402a402b8675d130ddd34e16066c15e/worker/src/index.js#L5-L10" },
             { "kind": "project", "label": "worker/src/merge.js L72-89 (nexus-<id> stable id)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/1bd41f5db402a402b8675d130ddd34e16066c15e/worker/src/merge.js#L72-L89" }
@@ -131,7 +131,7 @@
       "lab": {
         "id": "m01-lab",
         "title": "MANIFEST INSPECTION",
-        "briefing": "Pull the location manifest two ways and compare what each carries. Flip the full flag and watch the entry grow — and the ETag change.",
+        "briefing": "Pull the location manifest two ways and compare what each carries. Flip the full flag and watch the entry grow - and the ETag change.",
         "steps": [
           "TRANSMIT the default request and read the first entry under data[]",
           "Set the full flag to 1 and TRANSMIT again",
@@ -215,7 +215,7 @@
             }
           }
         ],
-        "debrief": "Both variants share the envelope and the same dataset_version, but the full variant appends description, credits and three image fields — and its ETag gains a -full suffix so a client caching one can never be handed the other by mistake. Real captures truncated here to the first of 291 entries.",
+        "debrief": "Both variants share the envelope and the same dataset_version, but the full variant appends description, credits and three image fields - and its ETag gains a -full suffix so a client caching one can never be handed the other by mistake. Real captures truncated here to the first of 291 entries.",
         "sources": [
           { "kind": "project", "label": "worker/src/index.js L104-121", "url": "https://github.com/spuddeh/nc-zoning-board/blob/1bd41f5db402a402b8675d130ddd34e16066c15e/worker/src/index.js#L104-L121" }
         ]
@@ -227,7 +227,7 @@
           "prompt": "A consumer wants to detect when the dataset has changed. Which envelope field should it watch?",
           "options": [
             { "text": "dataset_version", "correct": true, "feedback": "Correct. It is the content hash and doubles as the ETag; a new value means the data changed." },
-            { "text": "generated_at", "correct": false, "feedback": "Close, but generated_at is a timestamp of the build — it can move without the data meaningfully changing. dataset_version is the content hash." },
+            { "text": "generated_at", "correct": false, "feedback": "Close, but generated_at is a timestamp of the build - it can move without the data meaningfully changing. dataset_version is the content hash." },
             { "text": "schema", "correct": false, "feedback": "No. schema is the envelope format version (currently 1); it changes almost never." },
             { "text": "data", "correct": false, "feedback": "That is the payload itself; diffing it every time is exactly what dataset_version lets you avoid." }
           ],
@@ -240,11 +240,11 @@
           "type": "multi",
           "prompt": "Which fields appear ONLY in the ?full=1 representation (not in the slim list)? Select all that apply.",
           "options": [
-            { "text": "description", "correct": true, "feedback": "Yes — full only." },
-            { "text": "credits", "correct": true, "feedback": "Yes — full only." },
-            { "text": "picture_url", "correct": true, "feedback": "Yes — image URLs are full only." },
-            { "text": "coordinates", "correct": false, "feedback": "No — coordinates are in the slim list too; the in-game consumer needs them." },
-            { "text": "district", "correct": false, "feedback": "No — district is always present (and never null; it defaults to Badlands)." }
+            { "text": "description", "correct": true, "feedback": "Yes - full only." },
+            { "text": "credits", "correct": true, "feedback": "Yes - full only." },
+            { "text": "picture_url", "correct": true, "feedback": "Yes - image URLs are full only." },
+            { "text": "coordinates", "correct": false, "feedback": "No - coordinates are in the slim list too; the in-game consumer needs them." },
+            { "text": "district", "correct": false, "feedback": "No - district is always present (and never null; it defaults to Badlands)." }
           ],
           "sources": [
             { "kind": "project", "label": "worker/openapi.json (Location vs LocationFull)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/1bd41f5db402a402b8675d130ddd34e16066c15e/worker/openapi.json#L163-L192" }
@@ -278,20 +278,20 @@
           "type": "mcq",
           "prompt": "The review is in. What is the correct call on migrating to Nexus REST v3?",
           "options": [
-            { "text": "Do not migrate — v3 is a publishing/management API with no mods-by-tag, search, or image fields, so it cannot replace the V2 GraphQL auto-discovery.", "correct": true, "feedback": "Correct, and this is what actually happened. v3 solves a different problem; V2 GraphQL stays required with no migration path." },
-            { "text": "Migrate immediately — a newer API version is always the supported path.", "correct": false, "feedback": "A version number is not a capability audit. v3 lacks the exact queries auto-discovery depends on." },
+            { "text": "Do not migrate - v3 is a publishing/management API with no mods-by-tag, search, or image fields, so it cannot replace the V2 GraphQL auto-discovery.", "correct": true, "feedback": "Correct, and this is what actually happened. v3 solves a different problem; V2 GraphQL stays required with no migration path." },
+            { "text": "Migrate immediately - a newer API version is always the supported path.", "correct": false, "feedback": "A version number is not a capability audit. v3 lacks the exact queries auto-discovery depends on." },
             { "text": "Migrate the reads but keep V2 for images only.", "correct": false, "feedback": "v3 has neither the tag search nor the image fields, so there is nothing to move over cleanly." }
           ]
         },
         "debrief": "What actually happened: the v3 review found it is a publishing/management API (no mods-by-tag / search, no image fields), so it does NOT replace the V2 GraphQL auto-discovery. V2 stays required, no v3 migration. The lesson for a contract: audit capabilities, not version numbers.",
         "sources": [
-          { "kind": "project", "label": "commit 205130f / e97f296 — Nexus v3 review (project history)", "url": "https://github.com/spuddeh/nc-zoning-board/commit/e97f29698eab661e3938e65abdbeb50f32c42808" }
+          { "kind": "project", "label": "commit 205130f / e97f296 - Nexus v3 review (project history)", "url": "https://github.com/spuddeh/nc-zoning-board/commit/e97f29698eab661e3938e65abdbeb50f32c42808" }
         ]
       },
       "recap": [
         "Every response uses the same envelope; the payload is always under data.",
         "Slim /v1/locations is the default; ?full=1 adds description, credits and images (and a -full ETag).",
-        "Ids are frozen (UUID or nexus-<id>) and /v1 only changes additively — key on ids, not positions."
+        "Ids are frozen (UUID or nexus-<id>) and /v1 only changes additively - key on ids, not positions."
       ],
       "fieldNotes": {
         "glossaryTerms": ["envelope", "dataset_version", "slim list", "full representation", "stable id", "RedData DTO"],
@@ -313,7 +313,7 @@
           "> NC-ACAD-01 // clearance check: LEVEL 2 granted",
           "> anomaly report: 'client keeps re-downloading 300 KB of unchanged data'",
           "> anomaly report: 'another client shows district data that looks stale'",
-          "> directive: learn the freshness handshake — ETag, If-None-Match, 304",
+          "> directive: learn the freshness handshake - ETag, If-None-Match, 304",
           "> begin conditional-retrieval drill."
         ]
       },
@@ -331,7 +331,7 @@
           "sources": [
             { "kind": "project", "label": "worker/src/index.js L72-93 (ETag compare / 304)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/1bd41f5db402a402b8675d130ddd34e16066c15e/worker/src/index.js#L72-L93" },
             { "kind": "project", "label": "worker/src/store.js L22-27 (contentHash)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/1bd41f5db402a402b8675d130ddd34e16066c15e/worker/src/store.js#L22-L27" },
-            { "kind": "official", "label": "MDN — ETag (definition)", "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/ETag" }
+            { "kind": "official", "label": "MDN - ETag (definition)", "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/ETag" }
           ]
         },
         {
@@ -342,8 +342,8 @@
           "body": "# First fetch: you get the ETag\nGET /v1/meta HTTP/1.1\n\nHTTP/1.1 200 OK\nETag: \"62eb221e...b25e0ae3\"\n\n# Next fetch: hand the ETag back\nGET /v1/meta HTTP/1.1\nIf-None-Match: \"62eb221e...b25e0ae3\"\n\nHTTP/1.1 304 Not Modified\nETag: \"62eb221e...b25e0ae3\"\nCache-Control: public, max-age=300, stale-while-revalidate=3600\n(no body)",
           "sources": [
             { "kind": "project", "label": "captured live: 304 to conditional GET /v1/meta (2026-07-06)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/1bd41f5db402a402b8675d130ddd34e16066c15e/worker/src/index.js#L80-L85" },
-            { "kind": "official", "label": "MDN — Conditional requests (Cache update)", "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/Conditional_requests" },
-            { "kind": "official", "label": "MDN — 304 Not Modified (no body)", "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/304" }
+            { "kind": "official", "label": "MDN - Conditional requests (Cache update)", "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/Conditional_requests" },
+            { "kind": "official", "label": "MDN - 304 Not Modified (no body)", "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/304" }
           ]
         },
         {
@@ -351,7 +351,7 @@
           "type": "callout",
           "variant": "warning",
           "heading": "Two bodies must not share one ETag",
-          "body": "The slim list and the `?full=1` list are built from the *same* dataset, so they share the same hash. If they shared an ETag, a client that cached the slim list and then asked for the full list could be told '304, use your cached copy' — and get the wrong body. The Worker prevents this by suffixing the full variant's ETag with `-full`. Same data, different representation, different validator.",
+          "body": "The slim list and the `?full=1` list are built from the *same* dataset, so they share the same hash. If they shared an ETag, a client that cached the slim list and then asked for the full list could be told '304, use your cached copy' - and get the wrong body. The Worker prevents this by suffixing the full variant's ETag with `-full`. Same data, different representation, different validator.",
           "sources": [
             { "kind": "project", "label": "worker/src/index.js L76-79, L117 (-full ETag suffix)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/1bd41f5db402a402b8675d130ddd34e16066c15e/worker/src/index.js#L76-L79" }
           ]
@@ -369,7 +369,7 @@
           "body": "So a client never blocks on a refresh: within the hour after expiry it gets an instant (stale) answer while the cache quietly checks for a new version.",
           "sources": [
             { "kind": "project", "label": "worker/src/index.js L29-31 (DATA_CACHE)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/1bd41f5db402a402b8675d130ddd34e16066c15e/worker/src/index.js#L29-L31" },
-            { "kind": "official", "label": "MDN — Cache-Control (Response Directives)", "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Cache-Control" }
+            { "kind": "official", "label": "MDN - Cache-Control (Response Directives)", "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Cache-Control" }
           ]
         }
       ],
@@ -378,9 +378,9 @@
         "title": "CONDITIONAL RETRIEVAL",
         "briefing": "TRANSMIT once to capture the ETag, then TRANSMIT again with If-None-Match set to it. A matching ETag returns a bodyless 304.",
         "steps": [
-          "TRANSMIT with no If-None-Match header — note the ETag in the response",
+          "TRANSMIT with no If-None-Match header - note the ETag in the response",
           "Copy that ETag into the If-None-Match header",
-          "TRANSMIT again — read the status line and the (missing) body"
+          "TRANSMIT again - read the status line and the (missing) body"
         ],
         "request": {
           "method": "GET",
@@ -427,10 +427,10 @@
             "body": null
           }
         ],
-        "debrief": "The 304 carries the ETag and Cache-Control but no body — exactly what MDN says a 304 must do. The client keeps its cached copy; you moved a few hundred header bytes instead of the whole dataset. This 304 was captured live on 2026-07-06.",
+        "debrief": "The 304 carries the ETag and Cache-Control but no body - exactly what MDN says a 304 must do. The client keeps its cached copy; you moved a few hundred header bytes instead of the whole dataset. This 304 was captured live on 2026-07-06.",
         "sources": [
           { "kind": "project", "label": "worker/src/index.js L80-85 (304 branch)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/1bd41f5db402a402b8675d130ddd34e16066c15e/worker/src/index.js#L80-L85" },
-          { "kind": "official", "label": "MDN — 304 Not Modified", "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/304" }
+          { "kind": "official", "label": "MDN - 304 Not Modified", "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/304" }
         ]
       },
       "quiz": [
@@ -446,7 +446,7 @@
             "If unchanged, server returns 304 with no body; the client reuses its cache"
           ],
           "sources": [
-            { "kind": "official", "label": "MDN — Conditional requests", "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/Conditional_requests" },
+            { "kind": "official", "label": "MDN - Conditional requests", "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/Conditional_requests" },
             { "kind": "project", "label": "worker/src/index.js L72-93", "url": "https://github.com/spuddeh/nc-zoning-board/blob/1bd41f5db402a402b8675d130ddd34e16066c15e/worker/src/index.js#L72-L93" }
           ]
         },
@@ -456,11 +456,11 @@
           "prompt": "The response says stale-while-revalidate=3600. A cache holds a copy that went stale 10 minutes ago. What happens on the next request?",
           "options": [
             { "text": "The cache serves the stale copy immediately and revalidates in the background.", "correct": true, "feedback": "Correct. 10 min is within the 3600 s SWR window, so the client is not blocked while the cache checks for a new version." },
-            { "text": "The cache blocks the client until it has fetched a fresh copy.", "correct": false, "feedback": "That is plain expiry behaviour. stale-while-revalidate exists precisely to avoid blocking within its window." },
+            { "text": "The cache blocks the client until it has fetched a fresh copy.", "correct": false, "feedback": "That is plain expiry behavior. stale-while-revalidate exists precisely to avoid blocking within its window." },
             { "text": "The cache discards the copy and returns a 304.", "correct": false, "feedback": "A cache does not mint 304s, and it would not discard a copy still usable under SWR." }
           ],
           "sources": [
-            { "kind": "official", "label": "MDN — Cache-Control (stale-while-revalidate)", "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Cache-Control" }
+            { "kind": "official", "label": "MDN - Cache-Control (stale-while-revalidate)", "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Cache-Control" }
           ]
         },
         {
@@ -469,12 +469,12 @@
           "prompt": "Which statement about the 304 response is WRONG?",
           "options": [
             { "text": "\"A 304 includes the full resource body so the client can refresh its copy.\"", "correct": true, "feedback": "This is the wrong one. A 304 must NOT contain a body; the client reuses the body it already cached." },
-            { "text": "\"A 304 echoes the ETag of the current resource.\"", "correct": false, "feedback": "True — the captured 304 carries the ETag." },
-            { "text": "\"A 304 is triggered by If-None-Match matching the current ETag.\"", "correct": false, "feedback": "True — a matching validator is exactly what produces the 304." },
-            { "text": "\"A 304 still carries Cache-Control.\"", "correct": false, "feedback": "True — it sends the headers an equivalent 200 would." }
+            { "text": "\"A 304 echoes the ETag of the current resource.\"", "correct": false, "feedback": "True - the captured 304 carries the ETag." },
+            { "text": "\"A 304 is triggered by If-None-Match matching the current ETag.\"", "correct": false, "feedback": "True - a matching validator is exactly what produces the 304." },
+            { "text": "\"A 304 still carries Cache-Control.\"", "correct": false, "feedback": "True - it sends the headers an equivalent 200 would." }
           ],
           "sources": [
-            { "kind": "official", "label": "MDN — 304 Not Modified", "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/304" }
+            { "kind": "official", "label": "MDN - 304 Not Modified", "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/304" }
           ]
         }
       ],
@@ -482,7 +482,7 @@
         "id": "m02-s1",
         "title": "SIMULATED INCIDENT // CACHE-TTL OVERRIDE",
         "situation": [
-          "> [ TRAINING SCENARIO — constructed exercise, grounded in the real cache config ]",
+          "> [ TRAINING SCENARIO - constructed exercise, grounded in the real cache config ]",
           "> ticket: 'a mod I just submitted still isn't on the map after 3 minutes'",
           "> observed: /v1/meta ETag unchanged; Cache-Control: max-age=300, stale-while-revalidate=3600",
           "> known: prod dataset cron runs every 5 minutes"
@@ -491,12 +491,12 @@
           "type": "mcq",
           "prompt": "Is this an outage, or the system working as designed?",
           "options": [
-            { "text": "Working as designed — a new submission can take up to one cron cycle (5 min) to enter the dataset, and a cached copy can be served for up to max-age (5 min) plus the SWR window on top.", "correct": true, "feedback": "Correct. Propagation delay = cron cadence + edge cache freshness, all cited config. 3 minutes is simply inside that window." },
-            { "text": "Outage — the ETag should change the instant a mod is submitted.", "correct": false, "feedback": "The ETag only changes when the cron rebuilds and the content hash differs; it is not event-driven per submission." },
-            { "text": "Bug — max-age should be 0 so data is always fresh.", "correct": false, "feedback": "max-age=0 would throw away the whole point of the cache and hammer KV. The 5-min windows are a deliberate propagation/cost trade." }
+            { "text": "Working as designed - a new submission can take up to one cron cycle (5 min) to enter the dataset, and a cached copy can be served for up to max-age (5 min) plus the SWR window on top.", "correct": true, "feedback": "Correct. Propagation delay = cron cadence + edge cache freshness, all cited config. 3 minutes is simply inside that window." },
+            { "text": "Outage - the ETag should change the instant a mod is submitted.", "correct": false, "feedback": "The ETag only changes when the cron rebuilds and the content hash differs; it is not event-driven per submission." },
+            { "text": "Bug - max-age should be 0 so data is always fresh.", "correct": false, "feedback": "max-age=0 would throw away the whole point of the cache and hammer KV. The 5-min windows are a deliberate propagation/cost trade." }
           ]
         },
-        "debrief": "What the config actually dictates: propagation is bounded by the 5-minute prod cron plus a 300 s max-age (with a 3600 s SWR tail a shared cache may use). A 3-minute wait is expected, not an incident. NOTE: this is a constructed training scenario built from the cited cron + cache values, not a recorded incident — if there is a real cache-TTL episode you want represented here, point me to it and I will swap in the true debrief.",
+        "debrief": "What the config actually dictates: propagation is bounded by the 5-minute prod cron plus a 300 s max-age (with a 3600 s SWR tail a shared cache may use). A 3-minute wait is expected, not an incident. NOTE: this is a constructed training scenario built from the cited cron + cache values, not a recorded incident - if there is a real cache-TTL episode you want represented here, point me to it and I will swap in the true debrief.",
         "sources": [
           { "kind": "project", "label": "worker/src/index.js L29-31 (cache window)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/1bd41f5db402a402b8675d130ddd34e16066c15e/worker/src/index.js#L29-L31" },
           { "kind": "project", "label": "worker/wrangler.jsonc L46-52 (prod cron */5)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/1bd41f5db402a402b8675d130ddd34e16066c15e/worker/wrangler.jsonc#L46-L52" }
@@ -504,7 +504,7 @@
       },
       "recap": [
         "The ETag is the dataset content hash; If-None-Match lets the server answer 304 without resending the body.",
-        "A 304 carries headers (ETag, Cache-Control) but no body — cheaper than the full payload.",
+        "A 304 carries headers (ETag, Cache-Control) but no body - cheaper than the full payload.",
         "max-age=300 sets freshness; stale-while-revalidate=3600 serves stale instantly while revalidating; the -full variant gets its own ETag."
       ],
       "fieldNotes": {
@@ -525,7 +525,7 @@
         "type": "terminal-log",
         "lines": [
           "> NC-ACAD-01 // clearance check: LEVEL 3 granted",
-          "> mission type: FIELD RECON (no incident) — trace the machine, do not fix it",
+          "> mission type: FIELD RECON (no incident) - trace the machine, do not fix it",
           "> question: when a request hits api.nczoning.net, what actually answers it?",
           "> follow the request from the edge, through the router, into the store."
         ]
@@ -540,20 +540,20 @@
           "id": "m03-c1",
           "type": "text",
           "heading": "A function at the edge",
-          "body": "There is no VM to manage. The API is a **Cloudflare Worker** — 'a serverless platform for building, deploying, and scaling apps across Cloudflare's global network... no infrastructure to manage' (Cloudflare). Each request enters the Worker's `fetch()` handler, which handles OPTIONS (CORS preflight) and method checks, then looks the path up in a small route table (`GET /v1/health`, `GET /v1/locations`, and so on). An unmatched path falls through to a 404.",
+          "body": "There is no VM to manage. The API is a **Cloudflare Worker** - 'a serverless platform for building, deploying, and scaling apps across Cloudflare's global network... no infrastructure to manage' (Cloudflare). Each request enters the Worker's `fetch()` handler, which handles OPTIONS (CORS preflight) and method checks, then looks the path up in a small route table (`GET /v1/health`, `GET /v1/locations`, and so on). An unmatched path falls through to a 404.",
           "sources": [
             { "kind": "project", "label": "worker/src/index.js L145-171 (fetch handler + routing)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/1bd41f5db402a402b8675d130ddd34e16066c15e/worker/src/index.js#L145-L171" },
-            { "kind": "official", "label": "Cloudflare — Workers", "url": "https://developers.cloudflare.com/workers/" }
+            { "kind": "official", "label": "Cloudflare - Workers", "url": "https://developers.cloudflare.com/workers/" }
           ]
         },
         {
           "id": "m03-c2",
           "type": "text",
           "heading": "The store is KV",
-          "body": "The Worker holds no data itself. It reads everything from **Workers KV** — 'a global, low-latency, key-value data store' optimised for heavy reads and rare writes. The dataset lives under keys like `dataset:v1` (slim), `dataset:v1:full`, `dataset:v1:districts`, `dataset:v1:tags` and `dataset:v1:meta`. A read route just fetches its key and wraps it in the envelope. That read/write asymmetry is the whole design: the cron writes occasionally, the world reads constantly.",
+          "body": "The Worker holds no data itself. It reads everything from **Workers KV** - 'a global, low-latency, key-value data store' optimized for heavy reads and rare writes. The dataset lives under keys like `dataset:v1` (slim), `dataset:v1:full`, `dataset:v1:districts`, `dataset:v1:tags` and `dataset:v1:meta`. A read route just fetches its key and wraps it in the envelope. That read/write asymmetry is the whole design: the cron writes occasionally, the world reads constantly.",
           "sources": [
             { "kind": "project", "label": "worker/src/store.js L1-20 (KV keys)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/1bd41f5db402a402b8675d130ddd34e16066c15e/worker/src/store.js#L1-L20" },
-            { "kind": "official", "label": "Cloudflare — Workers KV", "url": "https://developers.cloudflare.com/kv/" }
+            { "kind": "official", "label": "Cloudflare - Workers KV", "url": "https://developers.cloudflare.com/kv/" }
           ]
         },
         {
@@ -561,11 +561,11 @@
           "type": "callout",
           "variant": "info",
           "heading": "One writer, many readers",
-          "body": "The same Worker exposes two entry points. `fetch()` answers requests (reads from KV). `scheduled()` runs on a **cron trigger** — Cloudflare maps a cron expression to the Worker's scheduled() handler — and rebuilds the dataset into KV every 5 minutes in production. Reads and the rebuild never block each other.",
+          "body": "The same Worker exposes two entry points. `fetch()` answers requests (reads from KV). `scheduled()` runs on a **cron trigger** - Cloudflare maps a cron expression to the Worker's scheduled() handler - and rebuilds the dataset into KV every 5 minutes in production. Reads and the rebuild never block each other.",
           "sources": [
             { "kind": "project", "label": "worker/src/index.js L146-149 (scheduled handler)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/1bd41f5db402a402b8675d130ddd34e16066c15e/worker/src/index.js#L146-L149" },
             { "kind": "project", "label": "worker/wrangler.jsonc L46-52 (crons */5 prod)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/1bd41f5db402a402b8675d130ddd34e16066c15e/worker/wrangler.jsonc#L46-L52" },
-            { "kind": "official", "label": "Cloudflare — Cron Triggers", "url": "https://developers.cloudflare.com/workers/configuration/cron-triggers/" }
+            { "kind": "official", "label": "Cloudflare - Cron Triggers", "url": "https://developers.cloudflare.com/workers/configuration/cron-triggers/" }
           ]
         },
         {
@@ -586,7 +586,7 @@
         "briefing": "Ping the liveness probe. Read the deployed version, and notice what is NOT in the response headers.",
         "steps": [
           "TRANSMIT the health request",
-          "Read data.version — that is the deployed API_VERSION",
+          "Read data.version - that is the deployed API_VERSION",
           "Scan the response headers: is there an ETag or Cache-Control? Why not?"
         ],
         "request": {
@@ -599,7 +599,7 @@
         "expected": {
           "status": [200],
           "headersOfInterest": ["Content-Type"],
-          "shapeHints": ["data.status is 'ok'", "data.version is the deployed API_VERSION", "no ETag / Cache-Control — health is uncached and does not touch the dataset"]
+          "shapeHints": ["data.status is 'ok'", "data.version is the deployed API_VERSION", "no ETag / Cache-Control - health is uncached and does not touch the dataset"]
         },
         "canned": [
           {
@@ -614,7 +614,7 @@
             }
           }
         ],
-        "debrief": "Health returns the envelope with null generated_at / dataset_version because it never reads the dataset — it is a pure liveness + version probe. That is also why it has no ETag or Cache-Control: there is nothing to cache or revalidate. data.version is API_VERSION, bumped by hand on releases, which makes /v1/health a handy deploy marker (module 06).",
+        "debrief": "Health returns the envelope with null generated_at / dataset_version because it never reads the dataset - it is a pure liveness + version probe. That is also why it has no ETag or Cache-Control: there is nothing to cache or revalidate. data.version is API_VERSION, bumped by hand on releases, which makes /v1/health a handy deploy marker (module 06).",
         "sources": [
           { "kind": "project", "label": "worker/src/index.js L101-102", "url": "https://github.com/spuddeh/nc-zoning-board/blob/1bd41f5db402a402b8675d130ddd34e16066c15e/worker/src/index.js#L101-L102" },
           { "kind": "project", "label": "worker/openapi.json L14-30 (health: 'Uncached')", "url": "https://github.com/spuddeh/nc-zoning-board/blob/1bd41f5db402a402b8675d130ddd34e16066c15e/worker/openapi.json#L14-L30" }
@@ -627,7 +627,7 @@
           "prompt": "A request for /v1/districts arrives. Where does the Worker get the payload?",
           "options": [
             { "text": "It reads the dataset:v1:districts key from Workers KV.", "correct": true, "feedback": "Correct. Every read route fetches its KV key and wraps it in the envelope." },
-            { "text": "It recomputes the district polygons on the spot from source files.", "correct": false, "feedback": "No — that work happens in the cron (scheduled) rebuild, not per request. Reads are cheap KV lookups." },
+            { "text": "It recomputes the district polygons on the spot from source files.", "correct": false, "feedback": "No - that work happens in the cron (scheduled) rebuild, not per request. Reads are cheap KV lookups." },
             { "text": "It queries a SQL database.", "correct": false, "feedback": "There is no database; the store is Workers KV." }
           ],
           "sources": [
@@ -639,9 +639,9 @@
           "type": "mcq",
           "prompt": "Why does /v1/health return no ETag or Cache-Control, while /v1/meta returns both?",
           "options": [
-            { "text": "Health does not touch the dataset — there is nothing to hash, cache, or revalidate.", "correct": true, "feedback": "Correct. Health is a pure liveness/version probe; only dataset routes carry the ETag/Cache-Control." },
+            { "text": "Health does not touch the dataset - there is nothing to hash, cache, or revalidate.", "correct": true, "feedback": "Correct. Health is a pure liveness/version probe; only dataset routes carry the ETag/Cache-Control." },
             { "text": "Health is slower, so caching it would be dangerous.", "correct": false, "feedback": "Speed is not the reason; health simply has no dataset content to validate." },
-            { "text": "It is an oversight that should be fixed.", "correct": false, "feedback": "No — it is intentional. The spec itself marks health 'Uncached'." }
+            { "text": "It is an oversight that should be fixed.", "correct": false, "feedback": "No - it is intentional. The spec itself marks health 'Uncached'." }
           ],
           "sources": [
             { "kind": "project", "label": "worker/openapi.json L14-30 (Uncached)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/1bd41f5db402a402b8675d130ddd34e16066c15e/worker/openapi.json#L14-L30" }
@@ -652,10 +652,10 @@
           "type": "multi",
           "prompt": "Which statements about the fetch() vs scheduled() split are true? Select all that apply.",
           "options": [
-            { "text": "fetch() handles incoming requests and reads from KV.", "correct": true, "feedback": "Yes — that is the read path." },
-            { "text": "scheduled() runs on a cron trigger and writes the dataset to KV.", "correct": true, "feedback": "Yes — that is the write path, every 5 min in prod." },
-            { "text": "The two share a cron expression so reads only work every 5 minutes.", "correct": false, "feedback": "No — reads are served continuously; only the rebuild is on the cron." },
-            { "text": "scheduled() answers user requests when fetch() is busy.", "correct": false, "feedback": "No — scheduled() is not a request handler; it is invoked by the cron, not by users." }
+            { "text": "fetch() handles incoming requests and reads from KV.", "correct": true, "feedback": "Yes - that is the read path." },
+            { "text": "scheduled() runs on a cron trigger and writes the dataset to KV.", "correct": true, "feedback": "Yes - that is the write path, every 5 min in prod." },
+            { "text": "The two share a cron expression so reads only work every 5 minutes.", "correct": false, "feedback": "No - reads are served continuously; only the rebuild is on the cron." },
+            { "text": "scheduled() answers user requests when fetch() is busy.", "correct": false, "feedback": "No - scheduled() is not a request handler; it is invoked by the cron, not by users." }
           ],
           "sources": [
             { "kind": "project", "label": "worker/src/index.js L145-171 (fetch + scheduled)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/1bd41f5db402a402b8675d130ddd34e16066c15e/worker/src/index.js#L145-L171" }
@@ -675,7 +675,7 @@
           "type": "mcq",
           "prompt": "Which KV key does the /v1/tags handler read?",
           "options": [
-            { "text": "dataset:v1:tags", "correct": true, "feedback": "Correct — KEYS.tags. The handler reads it and returns it inside the envelope with the shared ETag." },
+            { "text": "dataset:v1:tags", "correct": true, "feedback": "Correct - KEYS.tags. The handler reads it and returns it inside the envelope with the shared ETag." },
             { "text": "dataset:v1", "correct": false, "feedback": "That is the slim locations key (KEYS.slim), not tags." },
             { "text": "dataset:v1:meta", "correct": false, "feedback": "That is the meta record; tags live under their own key." }
           ]
@@ -687,7 +687,7 @@
       },
       "recap": [
         "The API is a Cloudflare Worker; fetch() routes each request and falls through to 404.",
-        "All data is served from Workers KV under dataset:v1* keys — cheap reads, rare writes.",
+        "All data is served from Workers KV under dataset:v1* keys - cheap reads, rare writes.",
         "scheduled() rebuilds the dataset on a 5-minute cron; /v1/health is an uncached liveness + version probe."
       ],
       "fieldNotes": {
