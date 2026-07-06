@@ -30,7 +30,7 @@
   "contentAudit": {
     "projectCommit": "1bd41f5db402a402b8675d130ddd34e16066c15e",
     "auditedAt": "2026-07-06",
-    "auditNote": "Batch A (modules 01-03) authored + audited against origin/main worker/* at this commit. Project claims cite file+line pinned to this SHA; general concepts cite official docs (MDN, developers.cloudflare.com) verified via WebFetch on 2026-07-06; canned lab responses captured live from api.nczoning.net the same day. Modules 04-09 pending (Batches B and C)."
+    "auditNote": "Batches A-B (modules 01-06) authored + audited against origin/main worker/* at this commit. Project claims cite file+line pinned to this SHA; general concepts cite official docs (MDN, developers.cloudflare.com, docs.github.com) verified via WebFetch on 2026-07-06; healthy lab responses captured live from api.nczoning.net the same day; failure-state responses (stale meta, 503, 429) reconstructed from code/config and labelled as such. Module 05 (rate limit + Bot Fight Mode) is Cloudflare EDGE CONFIG, dashboard-confirmed 2026-07-06, NOT in the repo, and cited that way. Modules 07-09 pending (Batch C)."
   },
   "glossary": [
     { "term": "envelope", "tier": "project", "def": "The fixed wrapper every API response uses: { schema, generated_at, dataset_version, data }. The payload always lives under data, so consumers parse one stable shape regardless of endpoint.", "sources": [ { "kind": "project", "label": "worker/src/index.js L33-41", "url": "https://github.com/spuddeh/nc-zoning-board/blob/1bd41f5db402a402b8675d130ddd34e16066c15e/worker/src/index.js#L33-L41" } ] },
@@ -51,7 +51,22 @@
     { "term": "CORS", "tier": "general", "def": "Cross-Origin Resource Sharing: an HTTP-header mechanism that lets a server declare which other origins a browser may load its resources from.", "sources": [ { "kind": "official", "label": "MDN - CORS", "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/CORS" } ] },
     { "term": "Cloudflare Worker", "tier": "general", "def": "A serverless function running on Cloudflare's global edge network, with no infrastructure to manage. Handles each request in its fetch() handler.", "sources": [ { "kind": "official", "label": "Cloudflare - Workers", "url": "https://developers.cloudflare.com/workers/" } ] },
     { "term": "Workers KV", "tier": "general", "def": "A global, low-latency key-value data store optimized for high reads and infrequent writes. The API serves the whole dataset from KV.", "sources": [ { "kind": "official", "label": "Cloudflare - Workers KV", "url": "https://developers.cloudflare.com/kv/" } ] },
-    { "term": "cron trigger", "tier": "general", "def": "A Cloudflare feature that maps a cron expression to a Worker's scheduled() handler so it runs on a schedule.", "sources": [ { "kind": "official", "label": "Cloudflare - Cron Triggers", "url": "https://developers.cloudflare.com/workers/configuration/cron-triggers/" } ] }
+    { "term": "cron trigger", "tier": "general", "def": "A Cloudflare feature that maps a cron expression to a Worker's scheduled() handler so it runs on a schedule.", "sources": [ { "kind": "official", "label": "Cloudflare - Cron Triggers", "url": "https://developers.cloudflare.com/workers/configuration/cron-triggers/" } ] },
+    { "term": "discovery_stale", "tier": "project", "def": "A flag on /v1/meta. true means the last refresh failed and you are being served the last-known-good data; false means the data is fresh.", "sources": [ { "kind": "project", "label": "worker/src/refresh.js L149-167", "url": "https://github.com/spuddeh/nc-zoning-board/blob/1bd41f5db402a402b8675d130ddd34e16066c15e/worker/src/refresh.js#L149-L167" } ] },
+    { "term": "last-known-good", "tier": "project", "def": "The safety rule: if a refresh fails, keep serving the last dataset that built cleanly rather than an empty or partial one.", "sources": [ { "kind": "project", "label": "worker/src/refresh.js L149-167", "url": "https://github.com/spuddeh/nc-zoning-board/blob/1bd41f5db402a402b8675d130ddd34e16066c15e/worker/src/refresh.js#L149-L167" } ] },
+    { "term": "hash-gate", "tier": "project", "def": "The rule that the refresh saves new data only when its content fingerprint (hash) has changed, so unchanged data keeps a stable dataset_version and ETag.", "sources": [ { "kind": "project", "label": "worker/src/refresh.js L120-127", "url": "https://github.com/spuddeh/nc-zoning-board/blob/1bd41f5db402a402b8675d130ddd34e16066c15e/worker/src/refresh.js#L120-L127" } ] },
+    { "term": "account_id", "tier": "project", "def": "The Cloudflare account identifier, set in wrangler.jsonc. Not secret; setting it lets the deploy's scoped token skip an account-lookup step.", "sources": [ { "kind": "project", "label": "worker/wrangler.jsonc L18-21", "url": "https://github.com/spuddeh/nc-zoning-board/blob/1bd41f5db402a402b8675d130ddd34e16066c15e/worker/wrangler.jsonc#L18-L21" } ] },
+    { "term": "API_VERSION", "tier": "project", "def": "A version label set by hand in wrangler.jsonc and bumped on release; reported at /v1/health as the deploy marker.", "sources": [ { "kind": "project", "label": "worker/wrangler.jsonc L30-34", "url": "https://github.com/spuddeh/nc-zoning-board/blob/1bd41f5db402a402b8675d130ddd34e16066c15e/worker/wrangler.jsonc#L30-L34" } ] },
+    { "term": "503 Service Unavailable", "tier": "general", "def": "A status code meaning the server is not ready to handle the request (a temporary condition). Here it is the not_ready response before the first dataset build, and it carries Retry-After.", "sources": [ { "kind": "official", "label": "MDN - 503 Service Unavailable", "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/503" } ] },
+    { "term": "Retry-After", "tier": "general", "def": "A response header saying how long to wait before retrying, given as seconds or a date. Used with 503 and 429.", "sources": [ { "kind": "official", "label": "MDN - Retry-After", "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Retry-After" } ] },
+    { "term": "rate limiting", "tier": "general", "def": "Capping how many requests a client may send in a time window; here 100 per 10 seconds per IP, enforced at Cloudflare's edge.", "sources": [ { "kind": "official", "label": "Cloudflare - Rate limiting rules", "url": "https://developers.cloudflare.com/waf/rate-limiting-rules/" } ] },
+    { "term": "429 Too Many Requests", "tier": "general", "def": "A status code meaning you sent too many requests in a given time: slow down and retry. From the edge it carries no JSON envelope.", "sources": [ { "kind": "official", "label": "MDN - 429 Too Many Requests", "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/429" } ] },
+    { "term": "WAF", "tier": "general", "def": "Web Application Firewall: Cloudflare's edge security layer, where the API's rate-limiting rule lives.", "sources": [ { "kind": "official", "label": "Cloudflare - Rate limiting rules", "url": "https://developers.cloudflare.com/waf/rate-limiting-rules/" } ] },
+    { "term": "Bot Fight Mode", "tier": "general", "def": "A free Cloudflare feature that challenges suspected automated traffic. Disabled for this zone because it challenged the project's own CI health monitor.", "sources": [ { "kind": "official", "label": "Cloudflare - Bot Fight Mode", "url": "https://developers.cloudflare.com/bots/get-started/bot-fight-mode/" } ] },
+    { "term": "edge", "tier": "general", "def": "Cloudflare's servers around the world that sit in front of the Worker; caching and security rules act here, before your code runs.", "sources": [ { "kind": "official", "label": "Cloudflare - Workers", "url": "https://developers.cloudflare.com/workers/" } ] },
+    { "term": "CI/CD", "tier": "general", "def": "Continuous Integration / Continuous Deployment: automation that builds, tests, and ships the project on each push, with no manual deploy steps.", "sources": [ { "kind": "official", "label": "GitHub Docs - Using secrets in GitHub Actions", "url": "https://docs.github.com/en/actions/security-for-github-actions/security-guides/using-secrets-in-github-actions" } ] },
+    { "term": "GitHub Actions secret", "tier": "general", "def": "An encrypted value stored on GitHub (e.g. CLOUDFLARE_API_TOKEN) that a workflow can use without exposing it in the code or the logs.", "sources": [ { "kind": "official", "label": "GitHub Docs - Using secrets in GitHub Actions", "url": "https://docs.github.com/en/actions/security-for-github-actions/security-guides/using-secrets-in-github-actions" } ] },
+    { "term": "Cloudflare API token", "tier": "general", "def": "A credential scoped to only the permissions it needs (least privilege), used by the deploy to prove it may act on Cloudflare.", "sources": [ { "kind": "official", "label": "Cloudflare - Create an API token", "url": "https://developers.cloudflare.com/fundamentals/api/get-started/create-token/" } ] }
   ],
   "resources": [
     { "id": "mdn-api", "label": "MDN: API (glossary)", "url": "https://developer.mozilla.org/en-US/docs/Glossary/API", "modules": ["m01"] },
@@ -65,7 +80,14 @@
     { "id": "mdn-cors", "label": "MDN: CORS", "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/CORS", "modules": ["m01", "m03"] },
     { "id": "cf-workers", "label": "Cloudflare: Workers", "url": "https://developers.cloudflare.com/workers/", "modules": ["m03"] },
     { "id": "cf-kv", "label": "Cloudflare: Workers KV", "url": "https://developers.cloudflare.com/kv/", "modules": ["m03"] },
-    { "id": "cf-cron", "label": "Cloudflare: Cron Triggers", "url": "https://developers.cloudflare.com/workers/configuration/cron-triggers/", "modules": ["m03"] }
+    { "id": "cf-cron", "label": "Cloudflare: Cron Triggers", "url": "https://developers.cloudflare.com/workers/configuration/cron-triggers/", "modules": ["m03"] },
+    { "id": "mdn-503", "label": "MDN: 503 Service Unavailable", "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/503", "modules": ["m04"] },
+    { "id": "mdn-retry-after", "label": "MDN: Retry-After header", "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Retry-After", "modules": ["m04"] },
+    { "id": "mdn-429", "label": "MDN: 429 Too Many Requests", "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/429", "modules": ["m05"] },
+    { "id": "cf-rate-limiting", "label": "Cloudflare: Rate limiting rules", "url": "https://developers.cloudflare.com/waf/rate-limiting-rules/", "modules": ["m05"] },
+    { "id": "cf-bot-fight-mode", "label": "Cloudflare: Bot Fight Mode", "url": "https://developers.cloudflare.com/bots/get-started/bot-fight-mode/", "modules": ["m05"] },
+    { "id": "gh-actions-secrets", "label": "GitHub Docs: Using secrets in GitHub Actions", "url": "https://docs.github.com/en/actions/security-for-github-actions/security-guides/using-secrets-in-github-actions", "modules": ["m06"] },
+    { "id": "cf-api-token", "label": "Cloudflare: Create an API token", "url": "https://developers.cloudflare.com/fundamentals/api/get-started/create-token/", "modules": ["m06"] }
   ],
   "modules": [
     {
@@ -716,6 +738,488 @@
       "fieldNotes": {
         "glossaryTerms": ["Cloudflare Worker", "Workers KV", "cron trigger", "CORS", "envelope"],
         "resources": ["cf-workers", "cf-kv", "cf-cron", "mdn-cors"],
+        "renderCitations": true
+      }
+    },
+    {
+      "id": "m04",
+      "order": 4,
+      "title": "SUPPLY LINE",
+      "subtitle": "How fresh data gets in: the refresh job, hash-gate and last-known-good",
+      "clearance": 4,
+      "estMinutes": 15,
+      "hook": {
+        "type": "terminal-log",
+        "lines": [
+          "> NC-ACAD-01 // clearance check: LEVEL 4 granted",
+          "> subject: where the data comes from, and how it stays trustworthy",
+          "> [cron] rebuild start",
+          "> [cron] sources: mods.json, tags.json, subdistricts.json, Nexus auto-discovery",
+          "> [cron] content unchanged -> no write. next tick in 5 min.",
+          "> begin."
+        ]
+      },
+      "objectives": [
+        "Describe how new data enters the dataset (the scheduled refresh job)",
+        "Explain the two safety rules: the hash-gate and last-known-good",
+        "Read the meta health flags: discovery_stale and generated_at"
+      ],
+      "chunks": [
+        {
+          "id": "m04-c1",
+          "type": "text",
+          "heading": "The refresh job",
+          "body": "The data you read is not edited live. Every 5 minutes a background job (the **cron**, from module 03) rebuilds the whole dataset: it fetches the source files (`mods.json`, `tags.json`, `subdistricts.json`) and the auto-discovered Nexus mods, merges them, and saves the result to storage (KV). The read routes you have been using just serve whatever that last rebuild produced.",
+          "sources": [
+            { "kind": "project", "label": "worker/src/refresh.js L90-148 (runRefresh)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/1bd41f5db402a402b8675d130ddd34e16066c15e/worker/src/refresh.js#L90-L148" },
+            { "kind": "project", "label": "worker/wrangler.jsonc L46-52 (crons */5 prod)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/1bd41f5db402a402b8675d130ddd34e16066c15e/worker/wrangler.jsonc#L46-L52" }
+          ]
+        },
+        {
+          "id": "m04-c2",
+          "type": "callout",
+          "variant": "policy",
+          "heading": "Two rules that keep bad data out",
+          "body": "**Hash-gate**: the job computes a fingerprint (hash) of the new data and only saves it if that fingerprint changed. No change means no write, so the `dataset_version` (and your ETag) stays stable when nothing really moved. **Last-known-good**: if any source fails (Nexus is down, a file will not load), the job keeps the last good dataset, flags it, and alerts. It NEVER serves an empty or half-built dataset.",
+          "sources": [
+            { "kind": "project", "label": "worker/src/refresh.js L120-127 (hash-gate: write only if changed)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/1bd41f5db402a402b8675d130ddd34e16066c15e/worker/src/refresh.js#L120-L127" },
+            { "kind": "project", "label": "worker/src/refresh.js L149-167 (last-known-good on failure)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/1bd41f5db402a402b8675d130ddd34e16066c15e/worker/src/refresh.js#L149-L167" }
+          ]
+        },
+        {
+          "id": "m04-c3",
+          "type": "text",
+          "heading": "The freshness flag: discovery_stale",
+          "body": "When a refresh fails, the job sets `discovery_stale` to `true` on the meta record, keeps serving the last good data, and posts an alert. When a later refresh succeeds, it clears the flag and posts an all-clear. So `discovery_stale` in `/v1/meta` is your honest signal: `false` means the data is fresh, `true` means you are looking at the last-known-good copy while something upstream is being fixed.",
+          "sources": [
+            { "kind": "project", "label": "worker/src/refresh.js L149-159 (mark discovery_stale + alert)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/1bd41f5db402a402b8675d130ddd34e16066c15e/worker/src/refresh.js#L149-L159" },
+            { "kind": "project", "label": "worker/src/refresh.js L58-82, L129-147 (recovery all-clear)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/1bd41f5db402a402b8675d130ddd34e16066c15e/worker/src/refresh.js#L58-L82" }
+          ]
+        },
+        {
+          "id": "m04-c4",
+          "type": "callout",
+          "variant": "warning",
+          "heading": "Why a half-page is worse than no page",
+          "body": "Auto-discovery reads the Nexus results one page at a time. If a page fails partway through, the code **throws an error** instead of using what it managed to get. Why so strict? Because a truncated list looks exactly like a complete one: 40 mods when there are really 55 would silently drop 15 pins from the map, with no error anywhere. Throwing turns a silent data loss into a visible failure, which then triggers last-known-good. A partial answer you cannot tell apart from a full one is worse than a clean failure.",
+          "sources": [
+            { "kind": "project", "label": "worker/src/nexus.js L36-84 (throw on any page failure)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/1bd41f5db402a402b8675d130ddd34e16066c15e/worker/src/nexus.js#L36-L84" }
+          ]
+        }
+      ],
+      "lab": {
+        "id": "m04-lab",
+        "title": "STATUS BOARD",
+        "briefing": "Read the dataset's own health record. /v1/meta reports the counts, when it was last built (generated_at), and whether it is fresh or serving last-known-good (discovery_stale).",
+        "steps": [
+          "TRANSMIT and read data.discovery_stale and generated_at (how old is the build?)",
+          "Switch to the 'stale' case and watch the flag flip to true",
+          "Switch to the 'not ready' case: a 503 returned before the first build exists"
+        ],
+        "request": { "method": "GET", "path": "/v1/meta", "query": {}, "headers": {}, "editable": [] },
+        "expected": { "status": [200, 503], "headersOfInterest": ["ETag", "Retry-After"], "shapeHints": ["discovery_stale is a boolean", "a 503 not_ready has no dataset yet and carries Retry-After"] },
+        "canned": [
+          {
+            "when": "default",
+            "status": 200,
+            "headers": { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "public, max-age=300, stale-while-revalidate=3600", "ETag": "\"62eb221ec48154cd1115b0d41992cefbf299735fa1b833183800000ab25e0ae3\"" },
+            "body": { "schema": 1, "generated_at": "2026-07-06T08:15:26.396Z", "dataset_version": "62eb221ec48154cd1115b0d41992cefbf299735fa1b833183800000ab25e0ae3", "data": { "counts": { "manual": 282, "auto": 9, "total": 291 }, "discovery_stale": false, "skipped": [] } }
+          },
+          {
+            "when": "stale",
+            "status": 200,
+            "headers": { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "public, max-age=300, stale-while-revalidate=3600", "ETag": "\"62eb221ec48154cd1115b0d41992cefbf299735fa1b833183800000ab25e0ae3\"" },
+            "body": { "schema": 1, "generated_at": "2026-07-06T07:40:12.101Z", "dataset_version": "62eb221ec48154cd1115b0d41992cefbf299735fa1b833183800000ab25e0ae3", "data": { "counts": { "manual": 282, "auto": 9, "total": 291 }, "discovery_stale": true, "skipped": [] } }
+          },
+          {
+            "when": "not-ready",
+            "status": 503,
+            "headers": { "Content-Type": "application/json; charset=utf-8", "Retry-After": "60" },
+            "body": { "schema": 1, "generated_at": null, "dataset_version": null, "data": { "error": "not_ready" } }
+          }
+        ],
+        "debrief": "The healthy case is a real capture. The stale case (discovery_stale=true, an older generated_at) and the 503 not_ready case are reconstructed exactly from the code, because they cannot be captured safely while the API is healthy. Note the 503 carries Retry-After: 60 and no dataset yet; it means 'built nothing so far, try again shortly', which is different from the 429 you will meet in module 05.",
+        "sources": [
+          { "kind": "project", "label": "worker/src/index.js L59-65 (notReady 503 + Retry-After)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/1bd41f5db402a402b8675d130ddd34e16066c15e/worker/src/index.js#L59-L65" },
+          { "kind": "official", "label": "MDN - 503 Service Unavailable", "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/503" }
+        ]
+      },
+      "quiz": [
+        {
+          "id": "m04-q1",
+          "type": "mcq",
+          "prompt": "You fetch /v1/meta and see discovery_stale: true. What does it mean?",
+          "options": [
+            { "text": "The last refresh failed, so you are being served the last-known-good data while the problem is fixed.", "correct": true, "feedback": "Correct. The data is still valid, just not freshly rebuilt; a later successful refresh clears the flag." },
+            { "text": "The API is down and returning errors.", "correct": false, "feedback": "No. The API is up and serving data; the flag only says the most recent rebuild did not succeed." },
+            { "text": "Your cached copy is stale and you must send If-None-Match.", "correct": false, "feedback": "That is a caching concern (module 02). discovery_stale is about the server-side rebuild, not your cache." }
+          ],
+          "sources": [
+            { "kind": "project", "label": "worker/src/refresh.js L149-167", "url": "https://github.com/spuddeh/nc-zoning-board/blob/1bd41f5db402a402b8675d130ddd34e16066c15e/worker/src/refresh.js#L149-L167" }
+          ]
+        },
+        {
+          "id": "m04-q2",
+          "type": "order",
+          "prompt": "Put one refresh cycle in order.",
+          "steps": [
+            "Fetch the source files and the Nexus auto-discovery data",
+            "Build the merged dataset in memory",
+            "Compute the content fingerprint (hash) of the new dataset",
+            "Compare it to the stored dataset_version",
+            "Write to KV only if the fingerprint changed; on any source failure, keep last-known-good and flag discovery_stale"
+          ],
+          "sources": [
+            { "kind": "project", "label": "worker/src/refresh.js L90-167", "url": "https://github.com/spuddeh/nc-zoning-board/blob/1bd41f5db402a402b8675d130ddd34e16066c15e/worker/src/refresh.js#L90-L167" }
+          ]
+        }
+      ],
+      "scenario": {
+        "id": "m04-s1",
+        "title": "INCIDENT LOG // THE TRUNCATED TAG",
+        "situation": [
+          "> [cron] auto-discovery paging Nexus: page 1 ok (50), page 2 ...",
+          "> [nexus] page 2 request returned HTTP 500 partway through",
+          "> decision point: the job already has 50 of ~60 mods in hand",
+          "> option A: keep the 50 and rebuild. option B: throw and abort."
+        ],
+        "question": {
+          "type": "mcq",
+          "prompt": "The second Nexus page failed. What should the refresh do with the 50 mods it already has?",
+          "options": [
+            { "text": "Throw and abort the rebuild; keep serving the last-known-good dataset and flag discovery_stale.", "correct": true, "feedback": "Correct. A partial list is indistinguishable from a complete one, so using it would silently drop ~10 mods from the map. Throwing preserves the last good data and surfaces the failure." },
+            { "text": "Rebuild with the 50 it has; a mostly-complete map is better than a stale one.", "correct": false, "feedback": "This is the trap. Nobody can tell 50-of-60 from a real 50, so the missing mods vanish with no error. Freshness is not worth silent data loss." },
+            { "text": "Retry forever until the page succeeds.", "correct": false, "feedback": "Blocking the whole cycle on one flaky page risks never finishing. Fail fast, keep last-known-good, and let the next 5-minute tick try again." }
+          ]
+        },
+        "debrief": "What the code does: the Nexus fetch throws on any page failure, so a truncated tag population can never be mistaken for the full set. That error triggers last-known-good and discovery_stale, and the next cron tick retries. The rule: treat a partial fetch as a failure, never as a smaller success.",
+        "sources": [
+          { "kind": "project", "label": "worker/src/nexus.js L36-84 (throw on partial page)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/1bd41f5db402a402b8675d130ddd34e16066c15e/worker/src/nexus.js#L36-L84" },
+          { "kind": "project", "label": "worker/src/refresh.js L1-14 (failure posture)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/1bd41f5db402a402b8675d130ddd34e16066c15e/worker/src/refresh.js#L1-L14" }
+        ]
+      },
+      "recap": [
+        "A background job rebuilds the dataset every 5 minutes and saves it to KV.",
+        "Hash-gate: write only when the content fingerprint changes. Last-known-good: on any source failure, keep the last good data and flag discovery_stale, never serve empty.",
+        "A partial Nexus page is treated as a failure, not a smaller success, so mods are never silently dropped."
+      ],
+      "fieldNotes": {
+        "glossaryTerms": ["discovery_stale", "last-known-good", "hash-gate", "503 Service Unavailable", "Retry-After"],
+        "resources": ["mdn-503", "mdn-retry-after", "cf-cron"],
+        "renderCitations": true
+      }
+    },
+    {
+      "id": "m05",
+      "order": 5,
+      "title": "PERIMETER DEFENSE",
+      "subtitle": "Rate limiting and bot protection at the edge",
+      "clearance": 5,
+      "estMinutes": 13,
+      "hook": {
+        "type": "terminal-log",
+        "lines": [
+          "> NC-ACAD-01 // clearance check: LEVEL 5 granted",
+          "> subject: the wall in front of the API",
+          "> [edge] GET /v1/locations 200",
+          "> [edge] ...101 requests from one address inside 10 seconds...",
+          "> [edge] GET /v1/locations 429 BLOCKED (10s)",
+          "> begin."
+        ]
+      },
+      "objectives": [
+        "Explain what the rate limit does and where it runs (the edge, before the Worker)",
+        "Read a 429 as 'slow down', not 'the API is broken'",
+        "Recognize why an automated or datacenter client can trip edge defenses"
+      ],
+      "chunks": [
+        {
+          "id": "m05-c1",
+          "type": "text",
+          "heading": "The wall at the edge",
+          "body": "Before a request ever reaches the Worker, it passes through Cloudflare's **WAF** (Web Application Firewall, the security layer at the edge). One rule there is a **rate limit**: for any path starting with `/v1/`, if a single IP address sends more than **100 requests in 10 seconds**, further requests are **blocked** for 10 seconds. This shields the API from a runaway client or a flood, and it costs the Worker nothing because the edge handles it before any code runs.",
+          "sources": [
+            { "kind": "official", "label": "Cloudflare - Rate limiting rules", "url": "https://developers.cloudflare.com/waf/rate-limiting-rules/" },
+            { "kind": "official", "label": "Cloudflare dashboard (edge config, NOT in the repo): rule 'API rate limit', path starts_with /v1/, 100 req / 10s per IP, action Block, 10s timeout, Free plan - confirmed 2026-07-06", "url": "https://developers.cloudflare.com/waf/rate-limiting-rules/" }
+          ]
+        },
+        {
+          "id": "m05-c2",
+          "type": "callout",
+          "variant": "warning",
+          "heading": "429 is not an outage",
+          "body": "A blocked client gets **HTTP 429 Too Many Requests** straight from Cloudflare's edge. Two things matter. First, 429 means 'you sent too many requests, slow down and retry later', not 'the API is broken'. Second, because the block happens at the edge, **the Worker never runs**, so a 429 does NOT arrive in our JSON envelope: it is Cloudflare's own default response (on the Free plan you cannot customize it). A bare 429 with no envelope is the edge talking, not the API.",
+          "sources": [
+            { "kind": "official", "label": "MDN - 429 Too Many Requests", "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/429" },
+            { "kind": "official", "label": "Cloudflare - Rate limiting rules (Block returns 429, error 1015)", "url": "https://developers.cloudflare.com/waf/rate-limiting-rules/" }
+          ]
+        },
+        {
+          "id": "m05-c3",
+          "type": "text",
+          "heading": "Bot Fight Mode, and why it bit us",
+          "body": "Cloudflare also offers **Bot Fight Mode** (BFM), a free feature that, in Cloudflare's words, 'helps detect and mitigate bot traffic' by throwing computationally expensive challenges at requests it judges to be automated. That sounds harmless, but this project's own health monitor runs from GitHub Actions, a datacenter that BFM treats as suspicious. BFM challenged it and returned failures that looked like an outage. The fix was to turn Bot Fight Mode OFF for the whole zone: the targeted `/v1/` rate limit is the right control for a public, read-only API that is meant to be called by machines.",
+          "sources": [
+            { "kind": "official", "label": "Cloudflare - Bot Fight Mode", "url": "https://developers.cloudflare.com/bots/get-started/bot-fight-mode/" },
+            { "kind": "official", "label": "Cloudflare dashboard (edge config, NOT in the repo): Bot Fight Mode = Off, Free plan - confirmed 2026-07-06", "url": "https://developers.cloudflare.com/bots/get-started/bot-fight-mode/" }
+          ]
+        },
+        {
+          "id": "m05-c4",
+          "type": "callout",
+          "variant": "policy",
+          "heading": "Reading an edge block",
+          "body": "A diagnosis rule from that incident: if BOTH production and staging fail at once, with an edge-level status code (a 403 from a challenge, a 429 from the rate limit) and no JSON envelope, the problem is almost certainly Cloudflare configuration, not the Worker code. One environment failing points at your code; both at once, at the shared edge in front of them.",
+          "sources": [
+            { "kind": "project", "label": "worker/.github monitor rationale: in-game mods have no fallback, so a silent edge block must page (monitor-api-health.yml L1-6)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/1bd41f5db402a402b8675d130ddd34e16066c15e/.github/workflows/monitor-api-health.yml#L1-L6" }
+          ]
+        }
+      ],
+      "lab": {
+        "id": "m05-lab",
+        "title": "PROBING THE PERIMETER",
+        "briefing": "A careful probe. In simulation this shows a normal 200 and, separately, the canned 429 you would get if you crossed the limit. We never approach 100 requests in 10 seconds: the rate limit is there to be respected, not tested.",
+        "steps": [
+          "TRANSMIT for a normal 200 from the API",
+          "Switch to the 'rate limited' case to see the edge 429",
+          "Notice the 429 has no JSON envelope: it is the edge, not the Worker"
+        ],
+        "request": { "method": "GET", "path": "/v1/health", "query": {}, "headers": {}, "editable": [] },
+        "expected": { "status": [200, 429], "headersOfInterest": ["Retry-After"], "shapeHints": ["a 429 is Cloudflare's edge response, not the JSON envelope"] },
+        "canned": [
+          {
+            "when": "default",
+            "status": 200,
+            "headers": { "Content-Type": "application/json; charset=utf-8" },
+            "body": { "schema": 1, "generated_at": null, "dataset_version": null, "data": { "status": "ok", "version": "0.1.0" } }
+          },
+          {
+            "when": "rate-limited",
+            "status": 429,
+            "headers": { "Content-Type": "text/html; charset=UTF-8", "Retry-After": "10", "cf-mitigated": "challenge" },
+            "body": "error code: 1015"
+          }
+        ],
+        "debrief": "The healthy 200 is a real capture. The 429 is reconstructed from Cloudflare's documented behavior (error 1015, a plain edge response with Retry-After), because we deliberately never trigger the real limit. The takeaway: a rate-limited caller is stopped at the edge and gets no envelope. Respect the 100/10s budget and space your requests.",
+        "sources": [
+          { "kind": "official", "label": "MDN - 429 Too Many Requests", "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/429" },
+          { "kind": "official", "label": "Cloudflare - Rate limiting rules", "url": "https://developers.cloudflare.com/waf/rate-limiting-rules/" }
+        ]
+      },
+      "quiz": [
+        {
+          "id": "m05-q1",
+          "type": "mcq",
+          "prompt": "Your client gets an HTTP 429 from /v1/locations. What is the right response?",
+          "options": [
+            { "text": "Slow down: wait (honor Retry-After) and retry at a lower rate. It is rate limiting, not an outage.", "correct": true, "feedback": "Correct. 429 means you exceeded the request budget; back off and try again shortly." },
+            { "text": "Treat the API as down and alert the maintainer.", "correct": false, "feedback": "No. The API is fine; your client is sending too fast. Fix the client's request rate." },
+            { "text": "Retry immediately in a tight loop until it works.", "correct": false, "feedback": "That makes it worse: hammering an address that is being rate limited just extends the block." }
+          ],
+          "sources": [
+            { "kind": "official", "label": "MDN - 429 Too Many Requests", "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/429" }
+          ]
+        },
+        {
+          "id": "m05-q2",
+          "type": "spot-wrong",
+          "prompt": "Which statement about the perimeter is WRONG?",
+          "options": [
+            { "text": "\"The /v1/ rate limit is enforced inside the Worker's own code.\"", "correct": true, "feedback": "This is the wrong one. The rate limit is a Cloudflare WAF rule at the edge; it blocks before the Worker runs, which is why a 429 has no envelope." },
+            { "text": "\"A rate-limited request returns 429 without the JSON envelope.\"", "correct": false, "feedback": "True. The edge blocks it before the Worker can wrap anything." },
+            { "text": "\"Bot Fight Mode can challenge automated clients like a CI runner.\"", "correct": false, "feedback": "True, and that is exactly what caused the false outage." },
+            { "text": "\"The limit counts requests per IP address over a 10-second window.\"", "correct": false, "feedback": "True: 100 requests per 10 seconds per IP on /v1/ paths." }
+          ],
+          "sources": [
+            { "kind": "official", "label": "Cloudflare - Rate limiting rules", "url": "https://developers.cloudflare.com/waf/rate-limiting-rules/" }
+          ]
+        }
+      ],
+      "scenario": {
+        "id": "m05-s1",
+        "title": "INCIDENT LOG // THE PHANTOM OUTAGE",
+        "situation": [
+          "> [monitor] health check: https://api.nczoning.net -> HTTP 403",
+          "> [monitor] health check: https://api-dev.nczoning.net -> HTTP 403",
+          "> pager: 'DATA API DOWN (both environments)'",
+          "> but: real users are loading the map fine right now"
+        ],
+        "question": {
+          "type": "mcq",
+          "prompt": "Both environments return 403 to the monitor, yet users are fine. Is the API down?",
+          "options": [
+            { "text": "No. Both environments failing at once with an edge status, while users are fine, points at Cloudflare: Bot Fight Mode is challenging the datacenter monitor. Check edge config.", "correct": true, "feedback": "Correct, and this is what happened. BFM challenged the GitHub Actions runner; disabling BFM fixed it. The Worker was never down." },
+            { "text": "Yes. Redeploy the Worker to both environments.", "correct": false, "feedback": "A redeploy fixes nothing here: the code is fine and serving users. The block is at the edge, before the Worker." },
+            { "text": "Yes. The KV data is corrupted in both environments.", "correct": false, "feedback": "Corrupt data would not return a 403 from the edge, and would not spare real users. The status code and 'both at once' both point at Cloudflare." }
+          ]
+        },
+        "debrief": "What actually happened: Bot Fight Mode was on and challenged the GitHub Actions health monitor (a datacenter IP), so both environments failed the check at once with an edge 403, while the API served users normally. Disabling BFM fixed it. The rule: both environments failing with an edge status code points at Cloudflare configuration, not your code. (Sourced from the incident record; this lives in Cloudflare edge config, not the repo.)",
+        "sources": [
+          { "kind": "official", "label": "Cloudflare - Bot Fight Mode", "url": "https://developers.cloudflare.com/bots/get-started/bot-fight-mode/" },
+          { "kind": "project", "label": ".github/workflows/monitor-api-health.yml L1-6 (why the independent monitor exists)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/1bd41f5db402a402b8675d130ddd34e16066c15e/.github/workflows/monitor-api-health.yml#L1-L6" }
+        ]
+      },
+      "recap": [
+        "A Cloudflare WAF rate limit (100 requests / 10s per IP on /v1/) blocks floods at the edge, before the Worker runs.",
+        "A rate-limited client gets a bare 429 (no envelope) because the edge stops it; 429 means slow down, not outage.",
+        "Bot Fight Mode challenges automated clients and once caused a false outage; both-environments-at-once with an edge status means look at Cloudflare, not the code."
+      ],
+      "fieldNotes": {
+        "glossaryTerms": ["rate limiting", "429 Too Many Requests", "WAF", "Bot Fight Mode", "edge"],
+        "resources": ["cf-rate-limiting", "cf-bot-fight-mode", "mdn-429"],
+        "renderCitations": true
+      }
+    },
+    {
+      "id": "m06",
+      "order": 6,
+      "title": "LAUNCH AUTHORIZATION",
+      "subtitle": "Shipping the API: CI/CD and Cloudflare tokens",
+      "clearance": 6,
+      "estMinutes": 14,
+      "hook": {
+        "type": "terminal-log",
+        "lines": [
+          "> NC-ACAD-01 // clearance check: LEVEL 6 granted",
+          "> subject: how a git push becomes a live API",
+          "> [ci] push to main (worker/**) -> run tests",
+          "> [ci] tests passed -> wrangler deploy (production)",
+          "> [ci] deployed. /v1/health version: 0.1.0",
+          "> begin."
+        ]
+      },
+      "objectives": [
+        "Describe what happens when code is pushed to main (test gate, then deploy)",
+        "Explain how the deploy proves who it is to Cloudflare (a scoped token in a secret)",
+        "Use the /v1/health version as a deploy marker"
+      ],
+      "chunks": [
+        {
+          "id": "m06-c1",
+          "type": "text",
+          "heading": "From push to production",
+          "body": "When code is pushed to the `main` branch, a **CI/CD** pipeline runs automatically. CI/CD (Continuous Integration / Continuous Deployment) means the project builds, tests, and ships itself without anyone running deploy commands by hand. Here the pipeline is **GitHub Actions** (GitHub's built-in automation). On a push that touches `worker/`, it installs dependencies, runs the test suite as a **gate**, and only if every test passes does it deploy the Worker: production from `main`, staging from `dev`.",
+          "sources": [
+            { "kind": "project", "label": ".github/workflows/deploy-api.yml L9-49 (push -> test gate -> deploy)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/1bd41f5db402a402b8675d130ddd34e16066c15e/.github/workflows/deploy-api.yml#L9-L49" }
+          ]
+        },
+        {
+          "id": "m06-c2",
+          "type": "text",
+          "heading": "The key to the door: a scoped API token",
+          "body": "To deploy, the pipeline must prove to Cloudflare that it is allowed to. It does this with a **Cloudflare API token**: a credential scoped to only the permissions it needs (this is 'least privilege', giving out no more access than required). The token is stored as a **GitHub Actions secret** (`CLOUDFLARE_API_TOKEN`), which GitHub keeps encrypted and hides from build logs, so it never appears in the code or the output.",
+          "sources": [
+            { "kind": "project", "label": ".github/workflows/deploy-api.yml L36-49 (apiToken from secrets)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/1bd41f5db402a402b8675d130ddd34e16066c15e/.github/workflows/deploy-api.yml#L36-L49" },
+            { "kind": "official", "label": "GitHub Docs - Using secrets in GitHub Actions", "url": "https://docs.github.com/en/actions/security-for-github-actions/security-guides/using-secrets-in-github-actions" },
+            { "kind": "official", "label": "Cloudflare - Create an API token (scoped permissions)", "url": "https://developers.cloudflare.com/fundamentals/api/get-started/create-token/" }
+          ]
+        },
+        {
+          "id": "m06-c3",
+          "type": "callout",
+          "variant": "warning",
+          "heading": "Two ways a token fails",
+          "body": "Getting the token wrong is the classic deploy blocker, and it bit this project twice. (1) A token missing a required permission is rejected by Cloudflare with **error code 10000** (an authentication error); the fix is to widen the token's scope to include what the deploy actually needs. (2) A scoped token could not look up which account to deploy to; the fix was to set **`account_id`** directly in `wrangler.jsonc` so the deploy tool skips the account-discovery step (which would otherwise need an extra permission). Account IDs are not secret, so they live in the committed config.",
+          "sources": [
+            { "kind": "project", "label": "worker/wrangler.jsonc L18-21 (account_id set so CI's scoped token skips the account lookup)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/1bd41f5db402a402b8675d130ddd34e16066c15e/worker/wrangler.jsonc#L18-L21" }
+          ]
+        },
+        {
+          "id": "m06-c4",
+          "type": "text",
+          "heading": "The deploy marker",
+          "body": "How do you know which version is actually live? `API_VERSION` is a plain label set by hand in `wrangler.jsonc` and bumped on each release. The Worker reports it at `/v1/health`. So hitting `/v1/health` right after a deploy and reading `data.version` tells you whether your new version is really serving, or whether the old one is still up. It is the cheapest possible smoke test.",
+          "sources": [
+            { "kind": "project", "label": "worker/wrangler.jsonc L30-34 (API_VERSION var)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/1bd41f5db402a402b8675d130ddd34e16066c15e/worker/wrangler.jsonc#L30-L34" },
+            { "kind": "project", "label": "worker/src/index.js L101-102 (/v1/health reports env.API_VERSION)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/1bd41f5db402a402b8675d130ddd34e16066c15e/worker/src/index.js#L101-L102" }
+          ]
+        }
+      ],
+      "lab": {
+        "id": "m06-lab",
+        "title": "CONFIRM THE DEPLOY",
+        "briefing": "After a deploy, the fastest check is the version marker. Read data.version from /v1/health: that is the API_VERSION that is actually live.",
+        "steps": [
+          "TRANSMIT the health request",
+          "Read data.version: this is the deployed API_VERSION",
+          "After a release you would compare it to the version you just shipped"
+        ],
+        "request": { "method": "GET", "path": "/v1/health", "query": {}, "headers": {}, "editable": [] },
+        "expected": { "status": [200], "headersOfInterest": ["Content-Type"], "shapeHints": ["data.version is the deployed API_VERSION"] },
+        "canned": [
+          {
+            "when": "default",
+            "status": 200,
+            "headers": { "Content-Type": "application/json; charset=utf-8" },
+            "body": { "schema": 1, "generated_at": null, "dataset_version": null, "data": { "status": "ok", "version": "0.1.0" } }
+          }
+        ],
+        "debrief": "data.version is 0.1.0, the current API_VERSION. Because the deploy only runs after the test gate passes, seeing your new version here means tests passed AND the deploy landed. A stale version means the deploy did not take, time to check the pipeline.",
+        "sources": [
+          { "kind": "project", "label": "worker/src/index.js L101-102", "url": "https://github.com/spuddeh/nc-zoning-board/blob/1bd41f5db402a402b8675d130ddd34e16066c15e/worker/src/index.js#L101-L102" }
+        ]
+      },
+      "quiz": [
+        {
+          "id": "m06-q1",
+          "type": "mcq",
+          "prompt": "A push to main touches worker/. What must happen before it deploys to production?",
+          "options": [
+            { "text": "The test suite must pass; it is a gate before the deploy step.", "correct": true, "feedback": "Correct. The workflow runs npm test first and only deploys if it passes, so a failing test blocks a bad release." },
+            { "text": "A maintainer must click 'approve deploy'.", "correct": false, "feedback": "No manual approval step here; the gate is automated (the tests)." },
+            { "text": "Nothing; every push deploys immediately.", "correct": false, "feedback": "No. The tests run first, and a path filter means only worker/ changes trigger the API deploy at all." }
+          ],
+          "sources": [
+            { "kind": "project", "label": ".github/workflows/deploy-api.yml L28-49", "url": "https://github.com/spuddeh/nc-zoning-board/blob/1bd41f5db402a402b8675d130ddd34e16066c15e/.github/workflows/deploy-api.yml#L28-L49" }
+          ]
+        },
+        {
+          "id": "m06-q2",
+          "type": "spot-wrong",
+          "prompt": "Which statement is WRONG?",
+          "options": [
+            { "text": "\"account_id must be kept secret, like the API token.\"", "correct": true, "feedback": "This is the wrong one. Account IDs are not secret; account_id is set in the committed wrangler.jsonc precisely so the scoped token does not need account-lookup permission. The API token is the secret." },
+            { "text": "\"The Cloudflare API token is stored as an encrypted GitHub Actions secret.\"", "correct": false, "feedback": "True: it is referenced as secrets.CLOUDFLARE_API_TOKEN and never printed." },
+            { "text": "\"Cloudflare error 10000 is an authentication problem with the token.\"", "correct": false, "feedback": "True: it means the token cannot do what the deploy asked; widen its scope." },
+            { "text": "\"/v1/health reports the deployed API_VERSION.\"", "correct": false, "feedback": "True: that is what makes it a deploy marker." }
+          ],
+          "sources": [
+            { "kind": "project", "label": "worker/wrangler.jsonc L18-21", "url": "https://github.com/spuddeh/nc-zoning-board/blob/1bd41f5db402a402b8675d130ddd34e16066c15e/worker/wrangler.jsonc#L18-L21" }
+          ]
+        }
+      ],
+      "scenario": {
+        "id": "m06-s1",
+        "title": "INCIDENT LOG // CODE 10000",
+        "situation": [
+          "> [ci] wrangler deploy (production)",
+          "> [ci] error: Authentication error [code: 10000]",
+          "> deploy failed; production still on the previous version",
+          "> the code is fine; the tests passed"
+        ],
+        "question": {
+          "type": "mcq",
+          "prompt": "The deploy fails with Cloudflare error 10000. What is wrong, and how do you fix it?",
+          "options": [
+            { "text": "The API token cannot do what the deploy needs (a missing permission, or it cannot discover the account). Widen the token's scope and set account_id in wrangler.jsonc.", "correct": true, "feedback": "Correct. Error 10000 is Cloudflare for 'this token is not authorized for that'. Scoping the token correctly and setting account_id (so it skips the account lookup) is exactly the fix this project used." },
+            { "text": "The application code is broken; revert the last commit.", "correct": false, "feedback": "The tests passed and the code compiled; 10000 is an auth error at deploy time, not a code bug." },
+            { "text": "Cloudflare is down; wait and retry.", "correct": false, "feedback": "A specific auth error code is not an outage. It is telling you the token lacks permission." }
+          ]
+        },
+        "debrief": "What actually happened: the deploy's API token was not scoped for everything wrangler needed, and separately could not discover the account. Error 10000 is Cloudflare's 'this token cannot do that'. The fixes: give the token the right permissions, and set account_id in wrangler.jsonc so it does not need the account-lookup permission at all. Both are visible in the config below.",
+        "sources": [
+          { "kind": "project", "label": "worker/wrangler.jsonc L18-21 (account_id rationale)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/1bd41f5db402a402b8675d130ddd34e16066c15e/worker/wrangler.jsonc#L18-L21" },
+          { "kind": "project", "label": ".github/workflows/deploy-api.yml L36-49 (apiToken)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/1bd41f5db402a402b8675d130ddd34e16066c15e/.github/workflows/deploy-api.yml#L36-L49" }
+        ]
+      },
+      "recap": [
+        "A push to main runs GitHub Actions: install, test as a gate, then deploy the Worker (staging from dev).",
+        "The deploy authenticates with a scoped Cloudflare API token kept as an encrypted GitHub Actions secret.",
+        "account_id is set in wrangler.jsonc (not secret) so the token skips account lookup; /v1/health version is the deploy marker."
+      ],
+      "fieldNotes": {
+        "glossaryTerms": ["CI/CD", "GitHub Actions secret", "Cloudflare API token", "account_id", "API_VERSION"],
+        "resources": ["gh-actions-secrets", "cf-api-token"],
         "renderCitations": true
       }
     }
