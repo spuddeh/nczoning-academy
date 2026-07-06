@@ -24,6 +24,7 @@
     "symbol": "€$",
     "startingBalance": 500,
     "moduleReward": 1000,
+    "rightReward": 150,
     "wrongPenalty": 250
   },
   "contentAudit": {

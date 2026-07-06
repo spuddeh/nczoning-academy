@@ -43,6 +43,7 @@
         "symbol": { "type": "string" },
         "startingBalance": { "type": "integer" },
         "moduleReward": { "type": "integer", "minimum": 0 },
+        "rightReward": { "type": "integer", "minimum": 0 },
         "wrongPenalty": { "type": "integer", "minimum": 0 }
       }
     },
