@@ -352,7 +352,7 @@
           "id": "m02-c1",
           "type": "text",
           "heading": "The ETag is the content hash",
-          "body": "An **ETag** is 'an identifier for a specific version of a resource' (MDN). Here it is not arbitrary: the ETag *is* the `dataset_version`, a SHA-256 hash of the dataset content. The cron writes new content to KV only when that hash changes, so a stable ETag genuinely means 'nothing changed'. On a read, the Worker compares your `If-None-Match` against the current ETag before it ever reads the big payload.",
+          "body": "An **ETag** (entity tag) is, in MDN's words, 'an identifier for a specific version of a resource'. Here it is not arbitrary: the ETag *is* the `dataset_version`, which is a **SHA-256 hash** of the dataset (a short fingerprint of the content: identical content always produces the same fingerprint, and any change produces a different one). The background job that rebuilds the data saves a new copy only when that fingerprint changes, so a stable ETag genuinely means 'nothing changed'. On a read, the API compares the `If-None-Match` value you send against the current ETag before it ever reads the large payload.",
           "sources": [
             { "kind": "project", "label": "worker/src/index.js L72-93 (ETag compare / 304)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/1bd41f5db402a402b8675d130ddd34e16066c15e/worker/src/index.js#L72-L93" },
             { "kind": "project", "label": "worker/src/store.js L22-27 (contentHash)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/1bd41f5db402a402b8675d130ddd34e16066c15e/worker/src/store.js#L22-L27" },
@@ -376,7 +376,7 @@
           "type": "callout",
           "variant": "warning",
           "heading": "Two bodies must not share one ETag",
-          "body": "The slim list and the `?full=1` list are built from the *same* dataset, so they share the same hash. If they shared an ETag, a client that cached the slim list and then asked for the full list could be told '304, use your cached copy' - and get the wrong body. The Worker prevents this by suffixing the full variant's ETag with `-full`. Same data, different representation, different validator.",
+          "body": "The slim list and the `?full=1` list are built from the *same* dataset, so they share the same fingerprint. If they also shared an ETag, a client that cached the slim list and then asked for the full list could be told '304, use your cached copy' and handed the wrong body. The API prevents this by adding a `-full` suffix to the full variant's ETag. Same data, different shape, different ETag.",
           "sources": [
             { "kind": "project", "label": "worker/src/index.js L76-79, L117 (-full ETag suffix)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/1bd41f5db402a402b8675d130ddd34e16066c15e/worker/src/index.js#L76-L79" }
           ]
@@ -387,7 +387,7 @@
           "heading": "Reading the Cache-Control line",
           "columns": ["Directive", "Value here", "Meaning"],
           "rows": [
-            ["public", "(present)", "May be stored in a shared cache (CDN / browser)."],
+            ["public", "(present)", "May be stored in a shared cache (a CDN, or Content Delivery Network, or the browser)."],
             ["max-age", "300", "Fresh for 300 s after it was generated; after that it is stale."],
             ["stale-while-revalidate", "3600", "For up to 3600 s past freshness, a cache may serve the stale copy while it revalidates in the background."]
           ],
@@ -563,7 +563,7 @@
           "id": "m03-c1",
           "type": "text",
           "heading": "A function at the edge",
-          "body": "There is no VM to manage. The API is a **Cloudflare Worker** - 'a serverless platform for building, deploying, and scaling apps across Cloudflare's global network... no infrastructure to manage' (Cloudflare). Each request enters the Worker's `fetch()` handler, which handles OPTIONS (CORS preflight) and method checks, then looks the path up in a small route table (`GET /v1/health`, `GET /v1/locations`, and so on). An unmatched path falls through to a 404.",
+          "body": "There is no server for us to run or patch. The API is a **Cloudflare Worker**, which Cloudflare describes as 'a serverless platform for building, deploying, and scaling apps across Cloudflare's global network... no infrastructure to manage'. **Serverless** means we write only the function that answers a request, and Cloudflare runs it for us. It runs at the **edge**: Cloudflare's servers spread around the world, close to whoever is calling. Each request enters the Worker's `fetch()` function, which deals with the browser's **CORS** (Cross-Origin Resource Sharing) preflight and method checks, then looks the path up in a small route table (`GET /v1/health`, `GET /v1/locations`, and so on). A path that matches nothing returns a 404 (not found).",
           "sources": [
             { "kind": "project", "label": "worker/src/index.js L145-171 (fetch handler + routing)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/1bd41f5db402a402b8675d130ddd34e16066c15e/worker/src/index.js#L145-L171" },
             { "kind": "official", "label": "Cloudflare - Workers", "url": "https://developers.cloudflare.com/workers/" }
@@ -573,7 +573,7 @@
           "id": "m03-c2",
           "type": "text",
           "heading": "The store is KV",
-          "body": "The Worker holds no data itself. It reads everything from **Workers KV** - 'a global, low-latency, key-value data store' optimized for heavy reads and rare writes. The dataset lives under keys like `dataset:v1` (slim), `dataset:v1:full`, `dataset:v1:districts`, `dataset:v1:tags` and `dataset:v1:meta`. A read route just fetches its key and wraps it in the envelope. That read/write asymmetry is the whole design: the cron writes occasionally, the world reads constantly.",
+          "body": "The Worker holds no data itself. It reads everything from **Workers KV**, which Cloudflare describes as 'a global, low-latency, key-value data store'. A **key-value store** is the simplest kind of database: you save a value under a name (its **key**) and read it straight back by that name. The dataset lives under keys like `dataset:v1` (the slim list), `dataset:v1:full`, `dataset:v1:districts`, `dataset:v1:tags` and `dataset:v1:meta`. A read route just fetches its key and wraps it in the envelope. That imbalance is the whole design: the rebuild writes occasionally, the world reads constantly.",
           "sources": [
             { "kind": "project", "label": "worker/src/store.js L1-20 (KV keys)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/1bd41f5db402a402b8675d130ddd34e16066c15e/worker/src/store.js#L1-L20" },
             { "kind": "official", "label": "Cloudflare - Workers KV", "url": "https://developers.cloudflare.com/kv/" }
@@ -584,7 +584,7 @@
           "type": "callout",
           "variant": "info",
           "heading": "One writer, many readers",
-          "body": "The same Worker exposes two entry points. `fetch()` answers requests (reads from KV). `scheduled()` runs on a **cron trigger** - Cloudflare maps a cron expression to the Worker's scheduled() handler - and rebuilds the dataset into KV every 5 minutes in production. Reads and the rebuild never block each other.",
+          "body": "The same Worker has two entry points. `fetch()` answers requests (reading from KV). `scheduled()` runs on a **cron trigger**: a schedule, written in the standard cron format, that Cloudflare uses to run the Worker's `scheduled()` function at fixed times. It rebuilds the dataset into KV every 5 minutes in production. Requests and the rebuild never block each other.",
           "sources": [
             { "kind": "project", "label": "worker/src/index.js L146-149 (scheduled handler)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/1bd41f5db402a402b8675d130ddd34e16066c15e/worker/src/index.js#L146-L149" },
             { "kind": "project", "label": "worker/wrangler.jsonc L46-52 (crons */5 prod)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/1bd41f5db402a402b8675d130ddd34e16066c15e/worker/wrangler.jsonc#L46-L52" },
