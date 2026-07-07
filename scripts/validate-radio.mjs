@@ -40,7 +40,8 @@ if (!validate(stations)) {
   for (const e of validate.errors) errors.push(`${e.instancePath || "/"} ${e.message}`);
 }
 
-// semantic checks: id and dial frequency must be unique
+// semantic checks: id and dial frequency must be unique (station-level);
+// track titles must be unique WITHIN a station (guards copy-paste dupes).
 const seenId = new Map();
 const seenFreq = new Map();
 stations.forEach((s, i) => {
@@ -51,6 +52,14 @@ stations.forEach((s, i) => {
   if (s?.freq != null) {
     if (seenFreq.has(s.freq)) errors.push(`duplicate freq "${s.freq}" (stations ${seenFreq.get(s.freq)} and ${i})`);
     else seenFreq.set(s.freq, i);
+  }
+  if (Array.isArray(s?.tracks)) {
+    const seenTitle = new Map();
+    s.tracks.forEach((t, j) => {
+      if (t?.title == null) return;
+      if (seenTitle.has(t.title)) errors.push(`station "${s.id}" has duplicate track title "${t.title}" (tracks ${seenTitle.get(t.title)} and ${j})`);
+      else seenTitle.set(t.title, j);
+    });
   }
 });
 

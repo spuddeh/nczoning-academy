@@ -1,8 +1,8 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://nczoning.net/schema/radio-station/v1.json",
-  "title": "radio-station/v1",
-  "description": "window.RADIO_STATIONS — the NC Radio dial. A bare array of station objects; array order = dial order. Read by the procedural Web Audio engine and validated by scripts/validate-radio.mjs.",
+  "$id": "https://nczoning.net/schema/radio-station/v2.json",
+  "title": "radio-station/v2",
+  "description": "window.RADIO_STATIONS — the NC Radio dial. A bare array of station objects; array order = dial order. Read by the procedural Web Audio engine and validated by scripts/validate-radio.mjs. v2 is multi-track: a station carries identity + dial fields and a `tracks` array; each track holds the musical fields the engine plays (the engine rotates through a station's tracks).",
   "type": "array",
   "minItems": 1,
   "items": { "$ref": "#/$defs/station" },
@@ -28,15 +28,13 @@
         "lead": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/noteName" } }
       }
     },
-    "station": {
+    "track": {
       "type": "object",
+      "description": "One song the engine can play. A station rotates through its tracks; array order = play order.",
       "additionalProperties": false,
-      "required": ["id", "name", "freq", "genre", "bpm", "cut", "swing", "crackle", "kick", "snare", "clap", "hat", "bass", "lead", "pad", "style", "prog"],
+      "required": ["title", "bpm", "cut", "swing", "crackle", "kick", "snare", "clap", "hat", "bass", "lead", "pad", "style", "prog"],
       "properties": {
-        "id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
-        "name": { "type": "string", "minLength": 1 },
-        "freq": { "type": "string", "minLength": 1 },
-        "genre": { "type": "string", "minLength": 1 },
+        "title": { "type": "string", "minLength": 1, "description": "Thematic track name shown in the UI." },
         "bpm": { "type": "integer", "minimum": 30, "maximum": 300 },
         "cut": { "type": "number", "minimum": 100, "maximum": 20000 },
         "swing": { "type": "number", "minimum": 0, "maximum": 1 },
@@ -55,6 +53,23 @@
           "minItems": 4,
           "maxItems": 4,
           "items": { "$ref": "#/$defs/bar" }
+        }
+      }
+    },
+    "station": {
+      "type": "object",
+      "description": "A dial position: identity + dial fields, plus one or more tracks the engine rotates through.",
+      "additionalProperties": false,
+      "required": ["id", "name", "freq", "genre", "tracks"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+        "name": { "type": "string", "minLength": 1 },
+        "freq": { "type": "string", "minLength": 1 },
+        "genre": { "type": "string", "minLength": 1 },
+        "tracks": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/track" }
         }
       }
     }

@@ -526,23 +526,35 @@ into the engine. This keeps the synthesis engine generic and lets stations be
 authored, validated and added in the repo without touching engine code, the same
 way courses are data the shell renders.
 
-Each station is one data object:
+**Multi-track (radio-station/v2).** A station is a genre *family* holding several
+tracks the engine rotates through, not a single track. It carries identity + dial
+fields plus a `tracks` array; each track holds the musical fields (flat names the
+engine reads directly):
 ```jsonc
-{ "id": "night-city-fm", "name": "NIGHT CITY FM", "frequency": "101.9",
-  "genre": "Synthwave", "bpm": 70,
-  "filterCutoff": 1200, "swing": 0.15, "crackle": 0.3,
-  "chords": [ { "bass": "A2", "pad": ["A3","C#4","E4"], "lead": ["A4","E4"] } /* x4 */ ],
-  "patterns": { "kick": [ /* 16 x 0|1 */ ], "snare": [], "clap": [], "hat": [] },
-  "modes": { "bass": "sustain|deep|root8|eighths|funk",
-             "lead": "arp|sparse|penta|bell", "pad": "gated|wash|stab|power" } }
+{ "id": "chrome-horizon", "name": "CHROME HORIZON", "freq": "101.9",
+  "genre": "SYNTHWAVE // OUTRUN",
+  "tracks": [                       // >= 1; array order = rotation order
+    { "title": "Chrome Sunset",
+      "bpm": 70, "cut": 2600, "swing": 0, "crackle": 0.7,
+      "kick": [0,8], "snare": [4,12], "clap": [], "hat": [2,6,10,14],
+      "bass": "sustain", "lead": "arp", "pad": "gated", "style": "synth",
+      "prog": [ { "bass": "A2", "pad": ["A3","C4","E4","G4"], "lead": ["A4","C5","E5","C5"] } /* x4 */ ] }
+    /* more tracks... */
+  ] }
 ```
-Array order = dial order. In preview, ship the stations inline as the
-`window.RADIO_STATIONS` global (works offline, no fetch); hosting reads the same
-global from a repo file. **Division of labour**: Design owns the engine and the
-radio UI; the station data is authored and validated in the repo (Claude Code)
-against a `radio-station/v1` schema + validator. Keep realism **procedural** —
-humanized timing and a synthesized-impulse convolution reverb are the levers; no
-audio samples, to preserve the zero-asset property.
+Array order = dial order; track order = rotation order within a station.
+kick/snare/clap/hat are step INDICES 0..15 (not a 16-slot 0/1 mask); note-names
+are sharps-only `^[A-G]#?[0-8]$`; `bass`/`lead`/`pad`/`style` from fixed enums;
+`prog` is exactly 4 bars. **Engine rotation:** keep a current-track index per
+station, read musical fields off the current track, advance to the next track
+after N 4-bar loops (default 4) with a bar-boundary crossfade; persist current
+station AND track index in the Service Record. In preview, ship the stations
+inline as the `window.RADIO_STATIONS` global (works offline, no fetch); hosting
+reads the same global from a repo file. **Division of labour**: Design owns the
+engine and the radio UI; the station data is authored and validated in the repo
+(Claude Code) against a `radio-station/v2` schema + validator. Keep realism
+**procedural** — humanized timing and a synthesized-impulse convolution reverb
+are the levers; no audio samples, to preserve the zero-asset property.
 
 ---
 

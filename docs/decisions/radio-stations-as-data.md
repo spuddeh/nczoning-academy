@@ -1,6 +1,6 @@
 # Decision: radio engine in the shell, stations as validated data
 
-Status: accepted (2026-07-07)
+Status: accepted (2026-07-07); revised to multi-track (radio-station/v2) 2026-07-07
 
 ## Context
 
@@ -9,10 +9,21 @@ in the browser with the Web Audio API (no audio files; every note is a scheduled
 oscillator or noise burst). It was built in Claude Design with 7 genre-distinct
 stations defined as data objects inline in the engine code.
 
-Each station is already a data object (name, frequency, genre, BPM, filter cutoff,
-swing, crackle, four chords as note-names, 16-step kick/snare/clap/hat patterns,
-and mode flags for bass/lead/pad styles). The synthesis engine is generic over
-that data. Claude Design is not the right place to author or expand tracks.
+Each station is a data object (name, dial frequency, genre, BPM, filter cutoff,
+swing, crackle, a 4-bar chord progression as note-names, 16-step
+kick/snare/clap/hat patterns, and mode flags for bass/lead/pad/style). The
+synthesis engine is generic over that data. Claude Design is not the right place
+to author or expand tracks.
+
+**Revision (v2, multi-track).** A flat station == one track proved too limited:
+distinct micro-genres competed for dial slots (darksynth vs synthwave, boogie vs
+city pop). v2 makes a station a *vibe/family* that holds MULTIPLE tracks the
+engine rotates through, so adjacent genres become sibling tracks on one station
+instead of near-duplicate stations. The dial consolidated from a projected 13
+micro-genre stations to 5 distinct families (Chrome Horizon, Kabuki After Dark,
+J-Town Gold, Neon Rain, Badlands FM), ~3 tracks each. This is a breaking
+data + engine change (the engine now reads musical fields off the current track,
+not the station); made pre-launch with no consumers.
 
 ## Decision
 
@@ -36,26 +47,47 @@ that data. Claude Design is not the right place to author or expand tracks.
    engine's author put it, "it's all just numbers in those track objects" — that
    is data authoring.
 
-## Station object shape
+## Station object shape (radio-station/v2 — multi-track)
+
+The engine reads FLAT field names (not the nested `frequency`/`filterCutoff`/
+`chords`/`patterns`/`modes` sketched in early notes). A station is identity +
+dial + a `tracks` array; each track holds the musical fields.
 
 ```jsonc
-{ "id": "night-city-fm", "name": "NIGHT CITY FM", "frequency": "101.9",
-  "genre": "Synthwave", "bpm": 70,
-  "filterCutoff": 1200, "swing": 0.15, "crackle": 0.3,
-  "chords": [ { "bass": "A2", "pad": ["A3","C#4","E4"], "lead": ["A4","E4"] } /* x4 */ ],
-  "patterns": { "kick": [ /* 16 x 0|1 */ ], "snare": [], "clap": [], "hat": [] },
-  "modes": { "bass": "sustain|deep|root8|eighths|funk",
-             "lead": "arp|sparse|penta|bell", "pad": "gated|wash|stab|power" } }
+{ "id": "chrome-horizon", "name": "CHROME HORIZON", "freq": "101.9",
+  "genre": "SYNTHWAVE // OUTRUN",
+  "tracks": [                       // >= 1; array order = rotation order
+    { "title": "Chrome Sunset",
+      "bpm": 70, "cut": 2600, "swing": 0, "crackle": 0.7,
+      "kick": [0,8], "snare": [4,12], "clap": [], "hat": [2,6,10,14],
+      "bass": "sustain", "lead": "arp", "pad": "gated", "style": "synth",
+      "prog": [ { "bass": "A2", "pad": ["A3","C4","E4","G4"], "lead": ["A4","C5","E5","C5"] } /* x4 */ ] }
+    /* more tracks... */
+  ] }
 ```
-Array order = dial order. Schema constraints: note-names `^[A-G]#?b?[0-9]$`; each
-pattern exactly 16 items of 0/1; `modes.*` from the enums above; sane `bpm` /
-`filterCutoff` ranges; `swing` / `crackle` in 0-1.
+
+Array order = dial order; within a station, track order = rotation order. Schema
+constraints: note-names `^[A-G]#?[0-8]$` (sharps only, octave 0-8); each
+kick/snare/clap/hat pattern is step INDICES 0..15 (unique), not a 16-slot 0/1
+mask; `bass`/`lead`/`pad`/`style` from the enums; `prog` is exactly 4 bars; sane
+`bpm`/`cut` ranges; `swing` in 0-1, `crackle` in 0-5. Semantic checks: station
+`id` and `freq` unique across the dial; track `title` unique within a station.
+
+**Engine rotation.** The engine keeps a current-track index per station and reads
+all musical fields off the current track. It advances to the next track after N
+4-bar loops (default 4), wrapping, with a short crossfade on a bar boundary. Both
+the current station and current-track index persist in the Service Record.
 
 ## Consequences
 
 - Stations can be added, tuned, and reviewed as repo data, authored anywhere,
   without touching the engine. The validator catches errors that are painful to
   debug by ear.
+- A station spans a genre *family*: adjacent micro-genres are sibling tracks on
+  one distinct station, not competing dial slots. New tracks reuse the existing
+  `style`/`bass`/`lead`/`pad` enums (character comes from bpm/cut/swing/prog/
+  patterns), so authoring a new track is pure data with no engine change; only
+  bespoke new voicings would need an engine change.
 - Realism is improved with code-only, asset-free levers: humanized timing/velocity
   and a synthesized-impulse convolution reverb. Actual drum samples are out (they
   would break the zero-asset property) unless a deliberate future call is made.
