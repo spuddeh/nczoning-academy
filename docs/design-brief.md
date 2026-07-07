@@ -545,10 +545,30 @@ engine reads directly):
 Array order = dial order; track order = rotation order within a station.
 kick/snare/clap/hat are step INDICES 0..15 (not a 16-slot 0/1 mask); note-names
 are sharps-only `^[A-G]#?[0-8]$`; `bass`/`lead`/`pad`/`style` from fixed enums;
-`prog` is exactly 4 bars. **Engine rotation:** keep a current-track index per
-station, read musical fields off the current track, advance to the next track
-after N 4-bar loops (default 4) with a bar-boundary crossfade; persist current
-station AND track index in the Service Record. In preview, ship the stations
+`prog` is exactly 4 bars. **Engine (as shipped).** Keep a current-track index per station and read all
+musical fields off the current track. **Track changes are instant** — a
+next/prev/dial change restarts the sequencer on a fresh downbeat, silences any
+ringing pad/bass voices (no tail), and snaps the filter/echo retune (no
+cue-and-crossfade). **Next/prev step through the current station's TRACKS**
+(they used to cycle stations); the dial selects stations. **Auto-rotate scans the
+whole dial:** when a track finishes its full length it rolls to the next track,
+and off the last track of a station into the next station, wrapping all five.
+**Play/Pause is a real transport, separate from the MUSIC mute:** pause stops and
+restarts the sequencer and remembers elapsed time; mute silences gain while
+playback continues. Persisted to the Service Record: station index, per-station
+track memory, cycle state (paused/track-progress are runtime-only).
+
+**Track length + song structure (radio-station/v2, Tier 2 direction).** Each
+track carries a required `form` preset (`drift`/`build`/`groove`/`anthem`/`haze`)
+the engine expands into an arrangement of sections (intro/build/peak/breakdown/
+outro) that gate voices/drums and drive an energy/filter envelope — so a track
+has a beginning, middle and end, not a flat loop. **Track LENGTH is engine-derived
+from the expanded arrangement + bpm** (`length = totalBars × 60/bpm × beatsPerBar`),
+NOT authored as seconds — this replaces the interim random 180-300s duration and
+guarantees a track can only end on a downbeat at a phrase end. Arrangements are
+**deterministic (Fixed)**: each `form` expands the same way every play, so tuning
+is reproducible. Presets live in the engine; the data carries only `form`. See
+`docs/decisions/radio-song-structure.md`. In preview, ship the stations
 inline as the `window.RADIO_STATIONS` global (works offline, no fetch); hosting
 reads the same global from a repo file. **Division of labour**: Design owns the
 engine and the radio UI; the station data is authored and validated in the repo

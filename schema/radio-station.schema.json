@@ -32,9 +32,13 @@
       "type": "object",
       "description": "One song the engine can play. A station rotates through its tracks; array order = play order.",
       "additionalProperties": false,
-      "required": ["title", "bpm", "cut", "swing", "crackle", "kick", "snare", "clap", "hat", "bass", "lead", "pad", "style", "prog"],
+      "required": ["title", "form", "bpm", "cut", "swing", "crackle", "kick", "snare", "clap", "hat", "bass", "lead", "pad", "style", "prog"],
       "properties": {
         "title": { "type": "string", "minLength": 1, "description": "Thematic track name shown in the UI." },
+        "form": {
+          "description": "Song-arrangement preset the engine expands into sections (intro/build/peak/breakdown/outro). The engine owns each preset's shape; this field is the per-track choice. Track length is derived from the expanded arrangement + bpm, not authored.",
+          "enum": ["drift", "build", "groove", "anthem", "haze"]
+        },
         "bpm": { "type": "integer", "minimum": 30, "maximum": 300 },
         "cut": { "type": "number", "minimum": 100, "maximum": 20000 },
         "swing": { "type": "number", "minimum": 0, "maximum": 1 },

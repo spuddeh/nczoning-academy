@@ -73,10 +73,21 @@ mask; `bass`/`lead`/`pad`/`style` from the enums; `prog` is exactly 4 bars; sane
 `bpm`/`cut` ranges; `swing` in 0-1, `crackle` in 0-5. Semantic checks: station
 `id` and `freq` unique across the dial; track `title` unique within a station.
 
-**Engine rotation.** The engine keeps a current-track index per station and reads
-all musical fields off the current track. It advances to the next track after N
-4-bar loops (default 4), wrapping, with a short crossfade on a bar boundary. Both
-the current station and current-track index persist in the Service Record.
+**Engine rotation (as shipped).** The engine keeps a current-track index per
+station and reads all musical fields off the current track. Track changes are
+**instant** — restart the sequencer on a fresh downbeat, silence ringing voices
+(no tail), snap the filter/echo retune (no cue-and-crossfade). Next/prev step
+through the current station's tracks (they used to cycle stations); the dial
+selects stations. Auto-rotate scans the whole dial: a finished track rolls to the
+next track, and off the last track of a station into the next station, wrapping
+all five. Play/Pause is a real transport (stop/restart the sequencer, remember
+elapsed) separate from the MUSIC mute (silences gain, playback continues). Station
+index, per-station track memory and cycle state persist in the Service Record;
+paused/track-progress are runtime-only.
+
+Track length and song structure (the `form` arrangement layer, engine-derived
+length, Fixed determinism) are covered in
+[radio-song-structure](radio-song-structure.md).
 
 ## Consequences
 
