@@ -8,6 +8,7 @@ Thumbs.db
 .vscode/
 .idea/
 CLAUDE.md
+docs/design-brief-assets/
 
 # Env / secrets
 .env
