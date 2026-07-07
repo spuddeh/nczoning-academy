@@ -200,9 +200,29 @@ and a **print-friendly certificate view** for the capstone.
 ## 5. Interaction and gamification specs
 
 ### 5.1 Progress and persistence
-Progress (completed modules, quiz results, eddies balance, unlocked stamps)
-persists to `localStorage` under keys prefixed `ncza:v1:` **when `persist` is
-true**. In preview (`persist:false`) it lives in memory only and resets on reload.
+All progress goes through a **single persistence adapter** (`Progress.*`) over
+**one serializable, username-keyed progress object**. No view touches
+`localStorage` directly, so login/resume, import/export, save-on-completion and
+the certificate name all read one source of truth and cannot drift.
+
+The progress object:
+```json
+{ "schemaVersion": "ncza:v1", "username": "…", "completedModules": [],
+  "quiz": { "<questionId>": "correct|wrong" }, "eddies": 650, "stamps": [],
+  "certified": false, "updatedAt": "…" }
+```
+The adapter interface: `Progress.setUser(name)`, `Progress.load()` (the current
+user's object, or a fresh one), `Progress.save()`, `Progress.export()` (a JSON
+string), `Progress.import(json)` (validate, replace, save), `Progress.listUsers()`.
+
+**Keying and persistence**: when `persist` is true, store per user under
+`ncza:v1:progress:<username>`, plus `ncza:v1:lastUser` for auto-resume on the next
+visit. When `persist` is false (preview), the same object lives in memory only and
+resets on reload. The boot screen's username **login is a named local profile, not
+authentication** (anyone on the browser may pick any name); it is a convenience and
+visibility layer, not access control. Because it all sits behind `Progress.*`, real
+accounts can be added later by pointing the adapter at a Worker keyed by a
+Cloudflare Access email, with no view changes.
 
 ### 5.2 Clearance, ranks and LEDs
 - **Clearance ladder 1-9** with rank titles, supplied in the course JSON `ranks`.
@@ -472,10 +492,11 @@ fetch or touch storage will break in the sandbox.
 
 ## 9. Out of scope
 
-No authentication, no accounts, no backend, no analytics/telemetry, and **no
-content-editing UI**. The shell renders course JSON; it never creates or edits it.
-Do not build a course authoring tool, a login, or any server. One course, one
-learner, static hosting.
+No **server-side** authentication, no accounts, no backend, no analytics/telemetry,
+and **no content-editing UI**. The shell renders course JSON; it never creates or
+edits it. The boot-screen "login" is a **local username profile only** (see 5.1),
+not real auth. Do not build a course authoring tool, a server, or a database.
+Static hosting, progress in the browser.
 
 ---
 
