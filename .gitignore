@@ -9,6 +9,7 @@ Thumbs.db
 .idea/
 CLAUDE.md
 docs/design-brief-assets/
+docs/design-handovers/
 
 # Env / secrets
 .env
