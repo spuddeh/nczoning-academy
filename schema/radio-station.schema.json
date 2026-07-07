@@ -1,0 +1,62 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://nczoning.net/schema/radio-station/v1.json",
+  "title": "radio-station/v1",
+  "description": "window.RADIO_STATIONS — the NC Radio dial. A bare array of station objects; array order = dial order. Read by the procedural Web Audio engine and validated by scripts/validate-radio.mjs.",
+  "type": "array",
+  "minItems": 1,
+  "items": { "$ref": "#/$defs/station" },
+  "$defs": {
+    "noteName": {
+      "type": "string",
+      "description": "Sharps only, octave appended, e.g. A2, C#4, D#2. Octave 4 = middle.",
+      "pattern": "^[A-G]#?[0-8]$"
+    },
+    "steps": {
+      "type": "array",
+      "description": "16-step trigger pattern as step indices 0..15 (empty = silent).",
+      "items": { "type": "integer", "minimum": 0, "maximum": 15 },
+      "uniqueItems": true
+    },
+    "bar": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["bass", "pad", "lead"],
+      "properties": {
+        "bass": { "$ref": "#/$defs/noteName" },
+        "pad": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/noteName" } },
+        "lead": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/noteName" } }
+      }
+    },
+    "station": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "name", "freq", "genre", "bpm", "cut", "swing", "crackle", "kick", "snare", "clap", "hat", "bass", "lead", "pad", "style", "prog"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+        "name": { "type": "string", "minLength": 1 },
+        "freq": { "type": "string", "minLength": 1 },
+        "genre": { "type": "string", "minLength": 1 },
+        "bpm": { "type": "integer", "minimum": 30, "maximum": 300 },
+        "cut": { "type": "number", "minimum": 100, "maximum": 20000 },
+        "swing": { "type": "number", "minimum": 0, "maximum": 1 },
+        "crackle": { "type": "number", "minimum": 0, "maximum": 5 },
+        "kick": { "$ref": "#/$defs/steps" },
+        "snare": { "$ref": "#/$defs/steps" },
+        "clap": { "$ref": "#/$defs/steps" },
+        "hat": { "$ref": "#/$defs/steps" },
+        "bass": { "enum": ["sustain", "deep", "root8", "eighths", "funk"] },
+        "lead": { "enum": ["arp", "sparse", "penta", "bell"] },
+        "pad": { "enum": ["gated", "stab", "wash", "power", "none"] },
+        "style": { "enum": ["synth", "lofi", "synthpop", "rock", "vapor", "citypop", "ambient"] },
+        "prog": {
+          "type": "array",
+          "description": "4-bar chord progression (the engine walks a 4-bar loop).",
+          "minItems": 4,
+          "maxItems": 4,
+          "items": { "$ref": "#/$defs/bar" }
+        }
+      }
+    }
+  }
+}

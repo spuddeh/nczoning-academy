@@ -6,6 +6,7 @@
   "description": "NC Zoning Academy — personal micro-module LMS for the Cyberpunk 2077 location mods map project. POC course: The Data API.",
   "scripts": {
     "validate": "node scripts/validate-courses.mjs",
+    "validate:radio": "node scripts/validate-radio.mjs",
     "freshness": "node scripts/check-freshness.mjs"
   },
   "devDependencies": {
