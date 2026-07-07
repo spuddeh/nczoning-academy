@@ -510,6 +510,42 @@ bundlers, or a framework build to run the output.
 
 ---
 
+## 11. Radio (background audio engine)
+
+The shell includes a Night Corp "radio": background 80s / lo-fi music generated
+live in the browser with the Web Audio API (no audio files; every note is a
+scheduled oscillator or noise burst). It ships a dial UI, a tempo-locked
+visualizer, per-row mute/volume, station select and auto-cycle. Music/SFX volumes,
+mute state and the current station persist in the Service Record (the progress
+object / shard, see 5.1).
+
+**Hard contract: stations are DATA, not code.** The engine must read its stations
+from an **external source** — a `window.RADIO_STATIONS` array (loaded from a
+separate `radio/stations.js` or `radio/stations.json`), never inline objects baked
+into the engine. This keeps the synthesis engine generic and lets stations be
+authored, validated and added in the repo without touching engine code, the same
+way courses are data the shell renders.
+
+Each station is one data object:
+```jsonc
+{ "id": "night-city-fm", "name": "NIGHT CITY FM", "frequency": "101.9",
+  "genre": "Synthwave", "bpm": 70,
+  "filterCutoff": 1200, "swing": 0.15, "crackle": 0.3,
+  "chords": [ { "bass": "A2", "pad": ["A3","C#4","E4"], "lead": ["A4","E4"] } /* x4 */ ],
+  "patterns": { "kick": [ /* 16 x 0|1 */ ], "snare": [], "clap": [], "hat": [] },
+  "modes": { "bass": "sustain|deep|root8|eighths|funk",
+             "lead": "arp|sparse|penta|bell", "pad": "gated|wash|stab|power" } }
+```
+Array order = dial order. In preview, ship the stations inline as the
+`window.RADIO_STATIONS` global (works offline, no fetch); hosting reads the same
+global from a repo file. **Division of labour**: Design owns the engine and the
+radio UI; the station data is authored and validated in the repo (Claude Code)
+against a `radio-station/v1` schema + validator. Keep realism **procedural** —
+humanized timing and a synthesized-impulse convolution reverb are the levers; no
+audio samples, to preserve the zero-asset property.
+
+---
+
 *Full course JSON, the JSON Schema, the validator and the authoring rulebook live
 in the project repo and are intentionally not included here. You need only the
 brand system, the seven views, the interaction specs, and the data contract with
