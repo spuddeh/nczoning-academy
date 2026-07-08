@@ -28,7 +28,7 @@ body {
   font-family: var(--font-body);
   font-size: var(--fs-md);
   -webkit-font-smoothing: antialiased;
-  overflow: hidden;
+  overflow-x: hidden;
 }
 
 button,

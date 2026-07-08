@@ -4,6 +4,7 @@
 import { useState } from 'react';
 import { Boot } from './views/Boot';
 import { Dashboard } from './views/Dashboard';
+import { AppHeader } from './components/AppHeader';
 import { IDENTITY, RECORD_SCHEMA, sanitizeName, createProgress, loadCourse } from './lib/academy';
 import type { Course, ProgressRecord } from './lib/types';
 
@@ -42,6 +43,13 @@ export function App() {
     await enter(rec.user ?? '');
   }
 
-  if (signedIn) return <Dashboard user={user} course={course} />;
+  if (signedIn) {
+    return (
+      <>
+        <AppHeader course={course} />
+        <Dashboard user={user} course={course} />
+      </>
+    );
+  }
   return <Boot onLogin={login} onSlot={slot} lastUser={progress?.lastUser() ?? ''} />;
 }

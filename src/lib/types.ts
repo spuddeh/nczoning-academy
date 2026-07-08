@@ -20,6 +20,7 @@ export interface Course {
   id?: string;
   title?: string;
   subtitle?: string;
+  estMinutes?: number;
   modules?: CourseModule[];
   economy?: {
     symbol?: string;
