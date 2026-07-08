@@ -1,0 +1,146 @@
+/* NC Zoning Academy — boot / login view styles. Tokens only (theme.css). */
+
+.boot-screen {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--sp-6);
+}
+
+.boot-card {
+  width: min(560px, 100%);
+  background: var(--panel-bg);
+  border: 1px solid var(--line-strong);
+  padding: var(--sp-8);
+}
+
+.boot-titlebar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--sp-4);
+  margin-bottom: var(--sp-6);
+}
+.boot-division {
+  font-family: var(--font-identity);
+  font-size: var(--fs-xs);
+  letter-spacing: var(--tracking-caps);
+  color: var(--primary);
+}
+.boot-termid {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  color: var(--muted);
+}
+
+.boot-log {
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  line-height: 1.7;
+  color: var(--primary);
+}
+.boot-line { white-space: pre-wrap; }
+.boot-mission {
+  color: var(--muted);
+  margin: var(--sp-4) 0 0;
+  line-height: 1.6;
+}
+
+.boot-divider {
+  height: 1px;
+  background: var(--line);
+  margin: var(--sp-6) 0;
+}
+
+.boot-prompt {
+  font-family: var(--font-mono);
+  color: var(--secondary);
+  font-size: var(--fs-sm);
+  margin-bottom: var(--sp-4);
+}
+
+.boot-label {
+  display: block;
+  font-family: var(--font-display);
+  font-size: var(--fs-xs);
+  letter-spacing: var(--tracking-caps);
+  color: var(--muted);
+  margin-bottom: var(--sp-2);
+}
+
+.boot-input {
+  width: 100%;
+  background: rgba(10, 25, 47, 0.6);
+  border: 1px solid var(--line-strong);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: var(--fs-lg);
+  padding: var(--sp-3) var(--sp-4);
+  margin-bottom: var(--sp-4);
+  border-radius: var(--radius);
+
+  &:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 1px var(--primary);
+  }
+}
+
+.boot-btn {
+  display: block;
+  width: 100%;
+  cursor: pointer;
+  background: transparent;
+  border: 1px solid var(--primary);
+  color: var(--primary);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: var(--fs-sm);
+  letter-spacing: var(--tracking-caps);
+  padding: var(--sp-3) var(--sp-4);
+  border-radius: var(--radius);
+
+  &:hover {
+    background: var(--primary);
+    color: var(--bg);
+  }
+}
+
+.boot-returning {
+  margin-top: var(--sp-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  align-items: center;
+}
+.boot-returning-label {
+  font-family: var(--font-display);
+  font-size: var(--fs-xs);
+  letter-spacing: var(--tracking-caps);
+  color: var(--muted);
+}
+.boot-btn-ghost {
+  border-color: var(--line-strong);
+  color: var(--muted);
+
+  &:hover {
+    background: var(--surface);
+    color: var(--primary);
+    border-color: var(--primary);
+  }
+}
+
+/* temporary view stub (dashboard placeholder) */
+.view-stub {
+  padding: var(--sp-8);
+  color: var(--text);
+  font-family: var(--font-body);
+  line-height: 1.7;
+}
+.view-stub h1 {
+  font-family: var(--font-display);
+  color: var(--primary);
+  letter-spacing: var(--tracking-caps);
+}
+.view-stub .muted { color: var(--muted); }
