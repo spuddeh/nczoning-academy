@@ -52,26 +52,60 @@ Concinnity. See `wiki/decisions/shell-rebuild-in-repo.md` for the full decision.
 - `public/` is now static passthrough only; the monolith and the experiment files
   were removed (kept in git history).
 
-### 2.4 Views rebuilt
-- Boot/login: built and measured pixel-faithful in the pre-React vanilla
-  architecture (`84743c2`, fix `d8bda22`) — those commits predate the migration.
-  The migration commit (`2eece57`) ported it to `Boot.tsx` and was itself
-  verified in-browser.
-- Dashboard (commits `f71f5a7`, polish `ca72a55`): header chrome, dismissible
-  orientation card, half-width course grid, relay links, and the fixed
-  SYSTEM_STATUS readout.
+### 2.4 Views rebuilt — and the parity correction (2026-07-09)
+The boot and dashboard views were first built across `84743c2`/`d8bda22`
+(pre-React) and `f71f5a7`/`ca72a55`, and this doc originally called them
+"pixel-faithful". **That claim was wrong.** They had been verified against the
+short reference-values list below (§6), not against the running monolith, and
+the list was incomplete: the course card's blueprint hero, progress bar and
+chips, relay icons and colour coding, the orientation card's mono body + shard
+icon, the boot typewriter animation, the H1 font weight, the live SYNC_OFFSET
+readout, the glossary FAB, the radio pill and the whole SFX layer were all
+missing or wrong.
 
-Every commit above was verified: `tsc` clean, `vite build` ok, rendered in a
-browser, zero console errors.
+Fixed by the full parity rebuild (2026-07-09): the live monolith was served
+from git history, its rendered DOM (inline styles = the complete spec) and app
+script were extracted into `docs/monolith-parity-spec.md`, and every view and
+satellite was rebuilt to the measured values and verified with paired
+screenshots via `scripts/parity/` (see §4). Now matching the monolith:
+
+- Boot: typewriter log (260ms lead-in; 12/34/140ms per-char delays; drive/
+  drivehi/whoosh SFX), click-or-key skip + hint, gradient divider, gated
+  two-state ACCESS button (`LOADING COURSE…` while the course JSON is in
+  flight), slot hover states, `SHARD REJECTED // <reason>` import line
+  (green/red), and the 1.7s green IDENTITY CONFIRMED welcome readout.
+- Dashboard: blueprint hero (grid overlay, cyan tag, watermark module count),
+  title underline bar, bordered chips, PROGRESS row + gradient bar, full-width
+  BEGIN/RESUME cta with hover inversion, orientation card (shard icon, Fira
+  body `#c3cfe2`, bordered dismiss, session-scoped show logic), relay links
+  with icons + cyan/gold/gray colour coding + hover inversion, header nav
+  active/inactive tab styles, balance button (label + icon row, hover), NCD
+  weight 400 headings.
+- Satellites: one-line SYSTEM_STATUS readout (2s telemetry roll, 85/10/5
+  NOMINAL/ELEVATED/CRITICAL, coloured LED with statusblink), glossary FAB,
+  radio pill (bpm-driven EQ bars, frequency, gold bouncing-marquee track name)
+  wired to the real radio engine (random station on fresh login; music starts
+  after leaving boot).
+- Cross-cutting: the WebAudio UI SFX synth (tick on any clickable, nav/ok/err/
+  access/chime/drive...), the global pointer-tick listener, the real
+  `ncza-record/v1` schema (moduleDone/quiz/eddies/revealedBy/txns/operatorName/
+  audio — replacing the invented `{user, progress}` shape), saved-record
+  restore on login, debounced local save, and the monolith's responsive
+  breakpoints (≤1024px, ≤640px).
 
 ### 2.5 Hardening (2026-07-09)
 - `loadCourse()` fetch rooted to `/courses/...` so nested router URLs
   (`/module/:id`, coming with the player) can't silently resolve the fetch
   against the wrong path and mask it with the sample-course fallback.
-- Shard import validated: `normalizeRecord()` in `academy.ts` checks the
-  `ncza-record/v1` schema tag and shape and returns null otherwise; the boot
-  slot shows a visible `SHARD REJECTED` line instead of failing silently or
-  logging in as the default operator.
+- Shard import validated (`migrateRecord`, a port of the monolith's):
+  unknown schema throws `unrecognized record schema`, non-objects throw
+  `invalid file`, and the boot slot surfaces the reason instead of failing
+  silently or logging in as the default operator.
+- Deliberate fixes vs the monolith (user-approved): the courses counter shows
+  the course count (`[ 1 ]`) — the monolith shows `modules.length` under an
+  AVAILABLE COURSES label, which is a bug; the root favicon 404 and the
+  missing input id/name are fixed; JS hover-style mutation became CSS
+  `:hover` (same visual result).
 
 ---
 
@@ -168,6 +202,16 @@ Two rules that sit above the loop:
   reach parity (0.2.0), then treat polish, new interactions, and extra themes as
   separate later passes.
 
+And the binding rule added after the 2026-07-09 parity correction:
+- **No parity claims without artefacts.** A view is done only when paired
+  monolith/rebuild screenshots from `scripts/parity/capture.mjs` exist and
+  every visible monolith element is either reproduced or explicitly listed
+  here as deferred. The measurement source is the running monolith (served
+  from git `f16bd4f`) and the extracted spec in
+  `docs/monolith-parity-spec.md` — never a from-memory summary. §6's short
+  list is what allowed the first false "pixel-faithful" claim; it is now
+  deprecated in favour of the spec doc.
+
 ---
 
 ## 5. Next steps
@@ -183,19 +227,20 @@ In priority order:
    and the module-map navigation, then build the streamed content blocks, the four
    quiz types (multiple choice, multi-select, scenario, ordering with drag), and
    the lab runner. Add the `/module/:id` route to the router landed in step 1.
-3. **Glossary** modal plus its floating button.
-4. **Service Record** view (import and export of the progress shard).
-5. **Certificate** view (name-gated, stamped).
-6. **Radio panel** in React (load `radio-engine.js` in `index.html` then), plus
-   the deferred radio pill (bottom-right) and the glossary floating button.
+3. **Glossary** modal (the FAB + header button already render; wire `open`).
+4. **Service Record** view (shard eject/slot animations, operator list, purge).
+5. **Certificate** view (name-gated, stamped; print CSS comes with it).
+6. **Radio panel** in React (the pill + engine wiring are done; the expanded
+   panel with dial, transport, volume and the MUSIC/SFX toggles remains).
 
-Smaller follow-ups:
-- Switch BOTH `App.tsx` progress callbacks that close over component state
-  (`buildSnapshot` AND `currentName`) to read live state through a ref once
-  saving is implemented. The adapter is created once in a `useState`
-  initialiser, so those closures capture first-render state; it is safe today
-  only because `enter()` calls `setUser` before any save can happen.
-- Animate the SYNC_OFFSET value in the SYSTEM_STATUS readout.
+Done as of the 2026-07-09 parity rebuild (previously listed here): the radio
+pill, the glossary floating button, the animated SYNC_OFFSET, and the
+stale-closure fix (the adapter callbacks now read live state via a ref).
+
+Known simplification pending the module player: the course progress bar and
+RESUME detection count completed modules only — the monolith also grants
+partial credit for started modules via `buildStages`, which needs the player's
+stage model. Port `partialFrac` with the player slice.
 
 Path to release:
 - Keep building on `feat/shell-rebuild`. Push the branch when a live preview is
@@ -205,9 +250,12 @@ Path to release:
 
 ---
 
-## 6. Reference values (measured from the monolith)
+## 6. Reference values (measured from the monolith) — DEPRECATED
 
-Kept here so future work does not need to re-measure the basics.
+Superseded by `docs/monolith-parity-spec.md`, which is extracted from the
+running monolith's rendered DOM and app script and is the only authoritative
+reference. This short list is kept only as a record of what the first pass
+verified against (and why that wasn't enough).
 
 - **Reference URL** (the deployed 0.1.0 monolith): a Cloudflare Pages
   `*.pages.dev` deployment of `main`.
