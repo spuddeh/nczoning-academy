@@ -22,3 +22,4 @@ raw/
 
 # Vite build output (Cloudflare builds this)
 dist/
+scripts/parity/out/
