@@ -41,10 +41,18 @@ html.theme-night-corp {
   --text:        var(--white);
   --muted:       var(--gray);
   --placeholder: #54617f;
+  --primary-dim: rgba(0, 240, 255, 0.55);  /* dimmed cyan — idle button text */
+  --field-bg:    #050a14;                  /* near-black input background */
+
+  /* surfaces */
+  --card-bg:   rgba(10, 25, 47, 0.92);
+  --card-glow: 0 0 40px rgba(0, 240, 255, 0.15);
 
   /* lines / edges */
   --line:        rgba(0, 240, 255, 0.25);
   --line-strong: rgba(0, 240, 255, 0.35);
+  --line-muted:  rgba(136, 146, 176, 0.5);
+  --line-faint:  rgba(136, 146, 176, 0.2);
 
   /* scrollbar */
   --scrollbar-track:      var(--navy);

@@ -1,7 +1,8 @@
 /* NC Zoning Academy — boot / login view.
  *
- * Terminal boot log + operator login + "slot service record shard" import.
- * Registers itself as NCZA.views.boot; the router calls it with (app, state).
+ * Structure reproduced from the 0.1.0 monolith: cyan titlebar, one cyan <pre>
+ * boot log (header + boot lines + mission), then the operator login + a
+ * "slot service record shard" label wrapping a hidden file input.
  */
 (function () {
   'use strict';
@@ -11,6 +12,16 @@
 
   NCZA.views.boot = function (app) {
     var id = NCZA.IDENTITY;
+    var apiHost = (NCZA.cfg().apiBase || 'https://api.nczoning.net').replace(/^https?:\/\//, '');
+
+    var logText =
+      id.division + '\n' +
+      'Terminal ID: ' + id.terminalId + '\n\n' +
+      '> INITIALIZING NC ZONING ACADEMY...\n' +
+      '> LINKING TO DATA API [ ' + apiHost + ' ]\n' +
+      '> ACCESS GRANTED: OPERATOR CLEARANCE LEVEL 1\n\n' +
+      'Mission: master the systems of the NC Zoning Board.\n' +
+      'Complete modules to raise standing and earn eddies.';
 
     var nameInput = el('input', {
       id: 'op-name', name: 'operator', type: 'text', class: 'boot-input',
@@ -21,45 +32,38 @@
 
     function submit() { app.login(nameInput.value); }
 
-    function slotShard() {
-      var file = el('input', {
-        type: 'file', accept: '.shard,.json,application/json', style: { display: 'none' },
-      });
-      file.addEventListener('change', function () {
-        var f = file.files && file.files[0];
+    var fileInput = el('input', {
+      type: 'file', accept: '.shard,.json,application/json', class: 'boot-file',
+      onChange: function () {
+        var f = fileInput.files && fileInput.files[0];
         if (f) {
           var reader = new FileReader();
           reader.onload = function () { app.slotShard(reader.result); };
           reader.readAsText(f);
         }
-        file.remove();
-      });
-      document.body.appendChild(file);
-      file.click();
-    }
-
-    var log = el('div', { class: 'boot-log' });
-    NCZA.bootLines().forEach(function (ln) {
-      log.appendChild(el('div', { class: 'boot-line' }, ln));
+      },
     });
-    log.appendChild(el('p', { class: 'boot-mission' },
-      'Mission: master the systems of the NC Zoning Board. Complete modules to raise standing and earn eddies.',
-      el('span', { class: 'cursor' })));
 
     return el('section', { class: 'boot-screen' },
       el('div', { class: 'boot-card' },
         el('header', { class: 'boot-titlebar' },
-          el('span', { class: 'boot-division' }, id.division),
-          el('span', { class: 'boot-termid' }, id.terminalId)),
-        log,
-        el('div', { class: 'boot-divider' }),
-        el('div', { class: 'boot-prompt' }, '> OPERATOR IDENTIFICATION REQUIRED'),
-        el('label', { class: 'boot-label', for: 'op-name' }, 'OPERATOR NAME / CALLSIGN'),
-        nameInput,
-        el('button', { class: 'boot-btn', type: 'button', onClick: submit }, '[ ACCESS TERMINAL ]'),
-        el('div', { class: 'boot-returning' },
-          el('span', { class: 'boot-returning-label' }, 'RETURNING OPERATOR?'),
-          el('button', { class: 'boot-btn boot-btn-ghost', type: 'button', onClick: slotShard },
-            '[ SLOT SERVICE RECORD SHARD ]'))));
+          el('span', { class: 'boot-tb-title' }, id.division),
+          el('span', { class: 'boot-tb-id' }, id.terminalId)),
+        el('div', { class: 'boot-body' },
+          el('pre', { class: 'boot-log' }, logText, el('span', { class: 'cursor' })),
+          el('div', { class: 'boot-form' },
+            el('div', { class: 'boot-divider' }),
+            el('div', { class: 'boot-prompt' }, '> OPERATOR IDENTIFICATION REQUIRED'),
+            el('label', { class: 'boot-field-label', for: 'op-name' }, 'OPERATOR NAME / CALLSIGN'),
+            nameInput,
+            el('button', { class: 'boot-access', type: 'button', onClick: submit }, '[ ACCESS TERMINAL ]'),
+            el('div', { class: 'boot-returning' },
+              el('span', { class: 'boot-rule' }),
+              el('span', { class: 'boot-returning-text' }, 'RETURNING OPERATOR?'),
+              el('span', { class: 'boot-rule' })),
+            el('label', { class: 'boot-slot' },
+              el('span', { class: 'boot-shard-icon' }),
+              '[ SLOT SERVICE RECORD SHARD ]',
+              fileInput)))));
   };
 })();
