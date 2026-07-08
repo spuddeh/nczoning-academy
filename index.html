@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en" class="theme-night-corp">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>NC Zoning Academy</title>
+
+  <link rel="icon" type="image/svg+xml" href="/assets/favicon-academy.svg" />
+  <link rel="alternate icon" href="/assets/favicon/favicon.ico" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;600;700;800;900&family=Rajdhani:wght@400;500;600;700&family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet" />
+
+  <!-- Global CSS stays static in public/ (linked, not bundled) so tokens/theming
+       are editable without a rebuild. -->
+  <link rel="stylesheet" href="/assets/css/theme.css" />
+  <link rel="stylesheet" href="/assets/css/style.css" />
+  <link rel="stylesheet" href="/assets/css/boot.css" />
+
+  <!-- Deploy config + data globals: static, swappable without rebuilding the app. -->
+  <script src="/config.js"></script>
+  <script src="/progress.js"></script>
+  <script src="/radio/stations.js"></script>
+</head>
+<body>
+  <div id="scanlines" aria-hidden="true"></div>
+  <div id="vignette" aria-hidden="true"></div>
+  <div id="app"></div>
+
+  <!-- React entry (Vite compiles the TS/JSX under src/). -->
+  <script type="module" src="/src/main.tsx"></script>
+</body>
+</html>

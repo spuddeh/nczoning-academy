@@ -19,3 +19,6 @@ raw/
 .env
 .env.*
 !.env.example
+
+# Vite build output (Cloudflare builds this)
+dist/

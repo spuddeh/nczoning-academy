@@ -43,7 +43,7 @@
   margin: 0;
   font-family: var(--font-mono);
   font-size: 13.5px;
-  line-height: 1.6;
+  line-height: 1.85; /* measured from the monolith: 24.975px / 13.5px */
   color: var(--primary);
   white-space: pre-wrap;
   word-break: break-word;
