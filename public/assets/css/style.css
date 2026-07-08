@@ -1,0 +1,137 @@
+/* NC Zoning Academy — base + shared primitives.
+ *
+ * Layout and component styles. Uses native CSS nesting (like the map).
+ * Everything references the semantic custom properties in theme.css — no
+ * hardcoded colour here, so a theme swap re-skins the whole app.
+ *
+ * View-specific styles (dashboard, module player, radio panel, certificate)
+ * live in their own files under assets/css/ and are added as views are rebuilt.
+ */
+
+/* ---- reset ---- */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: var(--fs-md);
+  -webkit-font-smoothing: antialiased;
+  overflow: hidden;
+}
+
+button,
+a,
+input,
+label,
+[role="button"] {
+  touch-action: manipulation;
+}
+
+/* ---- links (invert on hover, like the shell) ---- */
+a {
+  color: var(--primary);
+  text-decoration: none;
+  border-bottom: 1px solid var(--line-strong);
+
+  &:hover {
+    color: var(--bg);
+    background: var(--primary);
+    border-bottom-color: var(--primary);
+  }
+}
+
+/* touch devices must not keep the inverted state after a tap */
+@media (hover: none) {
+  a:hover {
+    color: var(--primary);
+    background: transparent;
+    border-bottom-color: var(--line-strong);
+  }
+}
+
+/* ---- form fields ---- */
+input::placeholder {
+  color: var(--placeholder);
+}
+
+/* ---- scrollbars ---- */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: var(--scrollbar-track);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border: 1px solid var(--line);
+
+  &:hover {
+    background: var(--scrollbar-thumb-hover);
+  }
+}
+
+/* ---- global CRT overlays ---- */
+#scanlines {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9990;
+  background: repeating-linear-gradient(
+    0deg,
+    var(--scanline) 0px,
+    var(--scanline) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+}
+
+#vignette {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9989;
+  background: radial-gradient(ellipse at center, transparent 55%, var(--vignette) 100%);
+}
+
+/* ---- app-wide micro-animations ---- */
+@keyframes cursorblink {
+  0%, 49% { opacity: 1; }
+  50%, 100% { opacity: 0; }
+}
+.cursor {
+  display: inline-block;
+  width: 9px;
+  height: 1.05em;
+  background: var(--primary);
+  margin-left: 2px;
+  vertical-align: -2px;
+  animation: cursorblink 1s steps(1) infinite;
+}
+
+@keyframes ledblink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.2; }
+}
+.ledblink {
+  animation: ledblink 1.1s steps(2, jump-none) infinite;
+}
+
+/* ---- accessibility ---- */
+@media (prefers-reduced-motion: reduce) {
+  #scanlines { display: none; }
+  .ledblink,
+  .cursor { animation: none !important; }
+}
