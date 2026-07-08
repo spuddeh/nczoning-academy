@@ -39,10 +39,13 @@ html.theme-night-corp {
   --success:     var(--green);
   --danger:      var(--red);
   --text:        var(--white);
+  --text-soft:   #c3cfe2;                  /* orientation-card body copy */
   --muted:       var(--gray);
-  --placeholder: #54617f;
+  --placeholder: #54617f;                  /* also dim hints (skip hint, RETURNING OPERATOR?) */
   --primary-dim: rgba(0, 240, 255, 0.55);  /* dimmed cyan — idle button text */
   --field-bg:    #050a14;                  /* near-black input background */
+  --hero-a:      #0d1f3a;                  /* course-card hero gradient start */
+  --hero-b:      #122a4d;                  /* course-card hero gradient end */
 
   /* surfaces */
   --card-bg:   rgba(10, 25, 47, 0.92);
@@ -90,7 +93,7 @@ html.theme-night-corp {
   --sp-8: 32px;
 
   /* layout */
-  --header-h: 64px;
+  --header-h: 62px; /* measured; monolith header is 62, not 64 */
   --rail-w: 280px;
 }
 

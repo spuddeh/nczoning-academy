@@ -26,9 +26,17 @@ body {
   background: var(--bg);
   color: var(--text);
   font-family: var(--font-body);
-  font-size: var(--fs-md);
+  font-size: 16px; /* monolith base; the app shell scrolls internally */
   -webkit-font-smoothing: antialiased;
-  overflow-x: hidden;
+  overflow: hidden;
+}
+
+/* post-login app shell: header + view; each view owns its scroll container */
+.app-shell {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
 }
 
 button,
@@ -129,9 +137,73 @@ input::placeholder {
   animation: ledblink 1.1s steps(2, jump-none) infinite;
 }
 
+@keyframes statusblink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+.statusled {
+  animation: statusblink 2s ease infinite;
+}
+
+/* radio pill EQ bars (duration/delay set inline per bar off the track bpm) */
+@keyframes eqbar {
+  0% { transform: scaleY(0.18); }
+  100% { transform: scaleY(1); }
+}
+
+/* bouncing marquee for overflowing track names; --mqd set from measured overflow */
+@keyframes mqbounce {
+  0%, 14% { transform: translateX(0); }
+  86%, 100% { transform: translateX(var(--mqd, 0)); }
+}
+
 /* ---- accessibility ---- */
 @media (prefers-reduced-motion: reduce) {
   #scanlines { display: none; }
   .ledblink,
   .cursor { animation: none !important; }
+}
+
+/* ---- responsive (values measured from the monolith's media blocks) ---- */
+/* Tablet (≤1024px): drop the clearance cluster, tighten the dash padding */
+@media (max-width: 1024px) {
+  .hdr-clearance { display: none !important; }
+  .dash-scroll { padding: 36px 24px 54px !important; }
+}
+
+/* Phone (≤640px): wrapping header, single-column grids, finger targets */
+@media (max-width: 640px) {
+  .app-header {
+    height: auto !important;
+    flex-wrap: wrap;
+    gap: 8px 14px;
+    padding: 10px 14px !important;
+  }
+  .sys-readout { display: none !important; }
+  .hdr-sub { display: none !important; }
+  .hdr-clearance { display: none !important; }
+  .hdr-brand-title { font-size: 15px !important; }
+  .hdr-brand { width: 100%; }
+  .hdr-nav {
+    order: 2;
+    flex: 1;
+    min-width: 0;
+    justify-content: flex-start;
+    gap: 6px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .hdr-nav button { min-height: 40px; white-space: nowrap; }
+  .hdr-meta { order: 3; margin-left: auto; gap: 10px !important; }
+  /* glossary moves into the header row; the fixed floater hides */
+  .gloss-fab { display: none !important; }
+  .gloss-hdr { display: inline-flex !important; padding: 7px 11px !important; min-height: 40px; }
+
+  .dash-scroll { padding: 22px 15px 46px !important; }
+  .dash-h1 { font-size: 25px !important; }
+  .dash-lead { font-size: 14px !important; }
+  .course-grid { grid-template-columns: 1fr !important; }
+
+  button { min-height: 44px; }
+  input:not([type="file"]) { min-height: 44px; }
 }
