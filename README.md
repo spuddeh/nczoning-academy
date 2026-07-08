@@ -60,3 +60,14 @@ Cloudflare Pages, free tier, Git integration, output directory `public/`, no
 build command. Preview environments (e.g. Claude Design) must override
 `ACADEMY_CONFIG` to `liveMode:false` / `persist:false` and render inlined sample
 data so the sandbox never fetches or writes storage.
+
+## Licence and fan content
+
+NC Zoning Academy is unofficial **fan content** made under CD PROJEKT RED's
+[Fan Content Guidelines](https://www.cdprojektred.com/en/fan-content). It is
+not affiliated with, endorsed by, or sponsored by CD PROJEKT RED. Cyberpunk,
+Cyberpunk 2077 and related marks (including in-universe names such as Night
+Corp) are trademarks of CD PROJEKT S.A.
+
+Site typography includes [Night Corp Display](https://github.com/spuddeh/nc-type-foundry)
+(SIL OFL 1.1).
