@@ -48,6 +48,10 @@ export function App() {
       <>
         <AppHeader course={course} />
         <Dashboard user={user} course={course} />
+        <div className="sys-readout">
+          <span className="sys-status">[SYSTEM_STATUS: NOMINAL]</span>
+          <span className="sys-offset">SYNC_OFFSET: 42.00ms</span>
+        </div>
       </>
     );
   }
