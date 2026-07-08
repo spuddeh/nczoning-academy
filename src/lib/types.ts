@@ -49,14 +49,14 @@ export interface ProgressAdapter {
   load(name?: string): ProgressRecord | null;
   lastUser(): string;
   remove(name?: string): boolean;
-  import(json: string | object): ProgressRecord;
+  import(json: string | object): ProgressRecord | null;
   listUsers(): string[];
 }
 
 export interface ProgressHost {
   persistEnabled(): boolean;
   buildSnapshot(): ProgressRecord;
-  normalize(rec: unknown): ProgressRecord;
+  normalize(rec: unknown): ProgressRecord | null;
   sanitize(name: string): string;
   currentName(): string;
 }

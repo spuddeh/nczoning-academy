@@ -174,6 +174,16 @@
 }
 .boot-file { display: none; }
 
+/* shard rejection line (shown under the slot button when import fails) */
+.boot-slot-error {
+  margin: 10px 0 0;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 1.54px;
+  color: var(--danger);
+  text-align: center;
+}
+
 /* temporary view stub (dashboard placeholder) */
 .view-stub {
   padding: var(--sp-8);

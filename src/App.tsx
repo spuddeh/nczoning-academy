@@ -5,20 +5,23 @@ import { useState } from 'react';
 import { Boot } from './views/Boot';
 import { Dashboard } from './views/Dashboard';
 import { AppHeader } from './components/AppHeader';
-import { IDENTITY, RECORD_SCHEMA, sanitizeName, createProgress, loadCourse } from './lib/academy';
+import { IDENTITY, RECORD_SCHEMA, sanitizeName, createProgress, loadCourse, normalizeRecord } from './lib/academy';
 import type { Course, ProgressRecord } from './lib/types';
 
 export function App() {
   const [user, setUser] = useState('');
   const [course, setCourse] = useState<Course | null>(null);
   const [signedIn, setSignedIn] = useState(false);
+  const [slotError, setSlotError] = useState('');
 
   // One Progress adapter for the app's lifetime, with the five injected callbacks.
-  // (buildSnapshot will read live state via a ref once we implement saving.)
+  // (buildSnapshot AND currentName close over first-render state — both must read
+  // live state via a ref once we implement saving. Safe today only because enter()
+  // calls setUser before any save.)
   const [progress] = useState(() => createProgress({
     persistEnabled: () => !!window.ACADEMY_CONFIG?.persist,
     buildSnapshot: () => ({ schema: RECORD_SCHEMA, user, course: course?.id, progress: {} }),
-    normalize: (rec) => (rec as ProgressRecord) ?? {},
+    normalize: normalizeRecord,
     sanitize: (n) => sanitizeName(n),
     currentName: () => user,
   }));
@@ -39,7 +42,11 @@ export function App() {
     if (!progress) return;
     let rec: ProgressRecord | null = null;
     try { rec = progress.import(json); } catch { rec = null; }
-    if (!rec) return;
+    if (!rec) {
+      setSlotError('> SHARD REJECTED: NOT A VALID SERVICE RECORD');
+      return;
+    }
+    setSlotError('');
     await enter(rec.user ?? '');
   }
 
@@ -55,5 +62,5 @@ export function App() {
       </>
     );
   }
-  return <Boot onLogin={login} onSlot={slot} lastUser={progress?.lastUser() ?? ''} />;
+  return <Boot onLogin={login} onSlot={slot} lastUser={progress?.lastUser() ?? ''} slotError={slotError} />;
 }

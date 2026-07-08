@@ -8,9 +8,10 @@ interface BootProps {
   onLogin: (name: string) => void;
   onSlot: (json: string) => void;
   lastUser: string;
+  slotError?: string;
 }
 
-export function Boot({ onLogin, onSlot, lastUser }: BootProps) {
+export function Boot({ onLogin, onSlot, lastUser, slotError }: BootProps) {
   const [name, setName] = useState(lastUser);
 
   const logText = [
@@ -29,6 +30,7 @@ export function Boot({ onLogin, onSlot, lastUser }: BootProps) {
     const reader = new FileReader();
     reader.onload = () => onSlot(String(reader.result));
     reader.readAsText(f);
+    e.target.value = ''; // allow re-slotting the same file after a rejection
   }
 
   function onKey(e: KeyboardEvent<HTMLInputElement>) {
@@ -78,6 +80,7 @@ export function Boot({ onLogin, onSlot, lastUser }: BootProps) {
                 onChange={onFile}
               />
             </label>
+            {slotError && <div className="boot-slot-error" role="alert">{slotError}</div>}
           </div>
         </div>
       </div>

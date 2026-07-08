@@ -3,7 +3,7 @@
 // importable functions so React code never touches window directly.
 
 import type {
-  AcademyConfig, Course, ProgressAdapter, ProgressHost,
+  AcademyConfig, Course, ProgressAdapter, ProgressHost, ProgressRecord,
 } from './types';
 
 declare global {
@@ -50,14 +50,33 @@ export function createProgress(host: ProgressHost): ProgressAdapter | null {
   return window.Progress?.create(host) ?? null;
 }
 
+// Strict half of the shard contract: accept only records this app wrote.
+// Returns a cleaned record, or null so callers can show a rejection state.
+export function normalizeRecord(rec: unknown): ProgressRecord | null {
+  if (typeof rec !== 'object' || rec === null || Array.isArray(rec)) return null;
+  const r = rec as Record<string, unknown>;
+  if (r.schema !== RECORD_SCHEMA) return null;
+  const progress = (typeof r.progress === 'object' && r.progress !== null && !Array.isArray(r.progress))
+    ? (r.progress as Record<string, unknown>)
+    : {};
+  return {
+    schema: RECORD_SCHEMA,
+    user: typeof r.user === 'string' ? sanitizeName(r.user) : '',
+    course: typeof r.course === 'string' ? r.course : undefined,
+    progress,
+  };
+}
+
 // Live half of the course data contract: fetch the real course when liveMode,
 // else (or on failure) fall back to the inline SAMPLE_COURSE.
+// The URL must stay rooted (/courses/...): a relative path would resolve
+// against nested router URLs like /module/3 and silently hit the fallback.
 export async function loadCourse(): Promise<Course> {
   const c = cfg();
   const fallback = window.SAMPLE_COURSE ?? {};
   if (!c.liveMode || typeof fetch !== 'function') return fallback;
   try {
-    const r = await fetch(`courses/${c.course || 'sample'}.json`, { credentials: 'omit' });
+    const r = await fetch(`/courses/${c.course || 'sample'}.json`, { credentials: 'omit' });
     if (!r.ok) throw new Error(`HTTP ${r.status}`);
     return (await r.json()) as Course;
   } catch {
