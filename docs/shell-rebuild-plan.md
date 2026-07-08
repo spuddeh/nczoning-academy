@@ -1,6 +1,6 @@
 # NC Zoning Academy - Shell Rebuild Plan
 
-Status: in progress (2026-07-08). Branch: `feat/shell-rebuild`.
+Status: in progress (updated 2026-07-09). Branch: `feat/shell-rebuild`.
 Live site (`main`) is unaffected and still serving the 0.1.0 baseline.
 
 This doc records what has been done, the working method for getting each view
@@ -53,13 +53,25 @@ Concinnity. See `wiki/decisions/shell-rebuild-in-repo.md` for the full decision.
   were removed (kept in git history).
 
 ### 2.4 Views rebuilt
-- Boot/login (commit `d8bda22`): pixel-faithful to the monolith.
+- Boot/login: built and measured pixel-faithful in the pre-React vanilla
+  architecture (`84743c2`, fix `d8bda22`) — those commits predate the migration.
+  The migration commit (`2eece57`) ported it to `Boot.tsx` and was itself
+  verified in-browser.
 - Dashboard (commits `f71f5a7`, polish `ca72a55`): header chrome, dismissible
   orientation card, half-width course grid, relay links, and the fixed
   SYSTEM_STATUS readout.
 
 Every commit above was verified: `tsc` clean, `vite build` ok, rendered in a
 browser, zero console errors.
+
+### 2.5 Hardening (2026-07-09)
+- `loadCourse()` fetch rooted to `/courses/...` so nested router URLs
+  (`/module/:id`, coming with the player) can't silently resolve the fetch
+  against the wrong path and mask it with the sample-course fallback.
+- Shard import validated: `normalizeRecord()` in `academy.ts` checks the
+  `ncza-record/v1` schema tag and shape and returns null otherwise; the boot
+  slot shows a visible `SHARD REJECTED` line instead of failing silently or
+  logging in as the default operator.
 
 ---
 
@@ -74,8 +86,8 @@ browser, zero console errors.
   browser is ordinary JS.
 - **Vite**: the dev server and build tool. `npm run dev` gives a local server with
   hot reload; `npm run build` produces an optimised `dist/` folder.
-- **react-router** (to be added with the module player): gives each view a real
-  URL so a module can be bookmarked and deep-linked.
+- **react-router**: already installed (`react-router-dom` ^7) but not yet wired
+  in. Gives each view a real URL so a module can be bookmarked and deep-linked.
 
 ### 3.2 File structure
 ```text
@@ -103,11 +115,13 @@ nczoning-academy/
 ```
 
 ### 3.3 How data and modules connect
-- `config.js`, `progress.js`, `radio-engine.js`, and `stations.js` load as classic
-  scripts in `index.html` and publish globals. `src/lib/academy.ts` wraps those
-  globals with typed functions so the React code never touches `window` directly.
+- `config.js`, `progress.js`, and `radio/stations.js` load as classic scripts
+  in `index.html` and publish globals (`radio-engine.js` joins them when the
+  radio panel view is rebuilt). `src/lib/academy.ts` wraps those globals with
+  typed functions so the React code never touches `window` directly.
 - The course loads at runtime: in live mode the app fetches
-  `courses/<id>.json`; otherwise it falls back to an inline sample.
+  `/courses/<id>.json` (rooted, never relative — see §2.5); otherwise it falls
+  back to an inline sample.
 - CSS lives in `public/assets/css/*.css` and is linked in `index.html`. This keeps
   the design tokens and theming editable without a rebuild.
 
@@ -160,20 +174,27 @@ Two rules that sit above the loop:
 
 In priority order:
 
-1. **Module player** (the core view, and the reason for React). Measure its shell
+1. **Routing slice** (small, do first). Wire react-router over the *existing*
+   views only (`/` boot, `/dashboard`), add `public/_redirects`
+   (`/* /index.html 200`), push the branch, and verify deep links on the
+   Cloudflare branch preview. This isolates all deep-link plumbing risk from
+   the player build.
+2. **Module player** (the core view, and the reason for React). Measure its shell
    and the module-map navigation, then build the streamed content blocks, the four
    quiz types (multiple choice, multi-select, scenario, ordering with drag), and
-   the lab runner. Introduce **react-router** here (`/module/:id`) and add a
-   `public/_redirects` file (`/* /index.html 200`) so deep links work on Cloudflare.
-2. **Glossary** modal plus its floating button.
-3. **Service Record** view (import and export of the progress shard).
-4. **Certificate** view (name-gated, stamped).
-5. **Radio panel** in React, plus the deferred radio pill (bottom-right) and the
-   glossary floating button.
+   the lab runner. Add the `/module/:id` route to the router landed in step 1.
+3. **Glossary** modal plus its floating button.
+4. **Service Record** view (import and export of the progress shard).
+5. **Certificate** view (name-gated, stamped).
+6. **Radio panel** in React (load `radio-engine.js` in `index.html` then), plus
+   the deferred radio pill (bottom-right) and the glossary floating button.
 
 Smaller follow-ups:
-- Switch `App.tsx` `buildSnapshot` to read live state through a ref once saving is
-  implemented, so an ejected shard always serialises current progress.
+- Switch BOTH `App.tsx` progress callbacks that close over component state
+  (`buildSnapshot` AND `currentName`) to read live state through a ref once
+  saving is implemented. The adapter is created once in a `useState`
+  initialiser, so those closures capture first-render state; it is safe today
+  only because `enter()` calls `setUser` before any save can happen.
 - Animate the SYNC_OFFSET value in the SYSTEM_STATUS readout.
 
 Path to release:
