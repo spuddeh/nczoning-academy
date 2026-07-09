@@ -1,8 +1,9 @@
-// Top-level app: owns the operator/record state, the view state machine
-// (boot → dashboard → …), the Progress adapter, the SFX synth, and the radio
-// engine host. Views and fixed satellites render from here.
-// (react-router lands as its own slice before the module player.)
+// Top-level app: owns the operator/record state, the Progress adapter, the
+// SFX synth, and the radio engine host. Views are routes (boot at /,
+// dashboard at /dashboard; /module/:id arrives with the player); the
+// dashboard route is guarded — deep links land on boot until signed in.
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 import { Boot } from './views/Boot';
 import { Dashboard } from './views/Dashboard';
 import { AppHeader } from './components/AppHeader';
@@ -15,8 +16,6 @@ import {
 } from './lib/academy';
 import { Sfx, attachPointerTick } from './lib/sfx';
 import type { Course, ProgressRecord, RadioEngine, RecordAudio } from './lib/types';
-
-type View = 'boot' | 'dashboard';
 
 interface ImportMsg { ok: boolean; text: string; }
 
@@ -36,7 +35,9 @@ const freshOperator = (eddies: number): OperatorState => ({
 });
 
 export function App() {
-  const [view, setView] = useState<View>('boot');
+  const navigate = useNavigate();
+  const atBoot = useLocation().pathname === '/';
+  const [signedIn, setSignedIn] = useState(false);
   const [course, setCourse] = useState<Course | null>(null);
   const [courseLoading, setCourseLoading] = useState(false);
   const [op, setOp] = useState<OperatorState>(() => freshOperator(500));
@@ -105,22 +106,23 @@ export function App() {
 
   // Debounced local save whenever operator state changes (persist only).
   useEffect(() => {
-    if (!cfg().persist || !progress || view === 'boot') return;
+    if (!cfg().persist || !progress || !signedIn) return;
     const t = window.setTimeout(() => { try { progress.save(); } catch { /* storage unavailable */ } }, 400);
     return () => window.clearTimeout(t);
-  }, [op, view, progress]);
+  }, [op, signedIn, progress]);
 
   // Music runs only off the boot screen.
-  useEffect(() => { radio.current?.setActive(view !== 'boot'); }, [view]);
+  useEffect(() => { radio.current?.setActive(!atBoot); }, [atBoot]);
 
   // ---- login / import flows ----
   const finishBoot = useCallback(() => {
     window.clearTimeout(welcomeT.current);
     welcomeT.current = window.setTimeout(() => {
       setBootWelcome(false);
-      setView('dashboard');
+      setSignedIn(true);
+      navigate('/dashboard');
     }, 1700);
-  }, []);
+  }, [navigate]);
 
   const applyAudio = useCallback((a: RecordAudio | null) => {
     if (a) {
@@ -196,23 +198,21 @@ export function App() {
     [course, op.moduleDone],
   );
 
-  if (view === 'boot') {
-    return (
-      <Boot
-        sfx={sfx.current}
-        lastUser={cfg().persist ? (progress?.lastUser() ?? '') : ''}
-        courseLoading={courseLoading}
-        importMsg={importMsg}
-        welcome={bootWelcome ? { name: op.operatorName || 'OPERATOR', clearance } : null}
-        onSubmit={submitAuth}
-        onSlot={slotAtBoot}
-        onSlotReadError={readFailed}
-        cleanInput={cleanNameInput}
-      />
-    );
-  }
+  const boot = (
+    <Boot
+      sfx={sfx.current}
+      lastUser={cfg().persist ? (progress?.lastUser() ?? '') : ''}
+      courseLoading={courseLoading}
+      importMsg={importMsg}
+      welcome={bootWelcome ? { name: op.operatorName || 'OPERATOR', clearance } : null}
+      onSubmit={submitAuth}
+      onSlot={slotAtBoot}
+      onSlotReadError={readFailed}
+      cleanInput={cleanNameInput}
+    />
+  );
 
-  return (
+  const dashboard = signedIn ? (
     <div className="app-shell">
       <AppHeader course={course} moduleDone={op.moduleDone} eddies={op.eddies} />
       <Dashboard course={course} moduleDone={op.moduleDone} />
@@ -220,5 +220,15 @@ export function App() {
       <GlossaryFab />
       <RadioPill stationIdx={radioIdx.station} trackIdx={radioIdx.track} playing={radioIdx.playing} />
     </div>
+  ) : (
+    <Navigate to="/" replace />
+  );
+
+  return (
+    <Routes>
+      <Route path="/" element={boot} />
+      <Route path="/dashboard" element={dashboard} />
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
   );
 }

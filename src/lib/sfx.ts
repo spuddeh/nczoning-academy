@@ -31,7 +31,10 @@ export class Sfx {
   /** The shared AudioContext (for the radio engine). Created on first use. */
   context(): AudioContext | null { return this.ac(); }
 
-  close(): void { try { void this.ctx?.close(); } catch { /* already closed */ } }
+  close(): void {
+    try { void this.ctx?.close(); } catch { /* already closed */ }
+    this.ctx = null; // a later play()/context() re-creates (dev StrictMode remounts)
+  }
 
   private tone(f1: number, f2: number, dur: number, type: OscillatorType, vol: number, when = 0, detune = 0): void {
     const ac = this.ac();
