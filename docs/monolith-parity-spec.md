@@ -525,3 +525,114 @@ could never serve anything but the default 200):
   query/header value equals `<value>` (m01's `full=1`); other states
   (`stale`, `not-ready`, `rate-limited`) are not operator-reachable.
 - The request line renders `path?query` from the current values.
+
+## Overlay modals: Field Glossary + Transaction History (extracted 2026-07-09)
+
+Both mount at app root (after the cert/name-prompt overlays, before the
+music player) and share one shell pattern:
+
+- Scrim: `position:fixed inset:0 z-index:9995`, bg `rgba(5,10,20,0.86)`,
+  `backdrop-filter:blur(4px)`, `display:flex align-items:flex-start
+  justify-content:center`, padding `56px 24px` (txn narrow ≤640:
+  `20px 8px`), `overflow:auto`. Click on the scrim closes; clicks inside
+  the box `stopPropagation`.
+- Box: navy `#0a192f`, `max-width:100%`, flex column,
+  `max-height:calc(100vh - 112px)` (txn narrow: `calc(100vh - 40px)`).
+- Title bar (flexShrink 0, pad 12 20, solid accent bg, navy text):
+  left = NCD/'Orbitron' 400 15px ls .1em title + Fira 400 11px dimmed
+  `// <sub>`; right = `[ ESC ] CLOSE` button — transparent, 1px
+  `rgba(10,25,47,0.5)` border, navy, Orbitron 700 12px ls .1em,
+  pad 6 12, line-height 1.
+- Escape closes (checked BEFORE the input-tag guard in the key handler —
+  works while focus is in the search input). Glossary check precedes txn.
+
+### Field Glossary (renderGlossary / filteredGlossary)
+
+Box 900px, 1px cyan border, glow `0 0 50px rgba(0,240,255,0.18)`. Title
+`FIELD GLOSSARY` `// NC-ACAD-01` (sub opacity .65). Body scroll pad
+`28px 32px 34px`:
+
+- `> INDEXING FIELD TERMINOLOGY...` Fira 12px ls .1em cyan, mb 8.
+- Intro, gray 15px, mb 22: "Reference terminology cited across the
+  coursework. Open anytime — filter by clearance tier or search the index."
+- Search + filter row (flex gap 12 wrap, mb 12): search wrap
+  `flex:1 min-width:240px relative` with a `>` prompt (absolute left 12,
+  vert-centred, gray Fira 13px); input full-width, bg navy, 1px cyan-.3
+  border, white Fira 13px ls .06em, pad `11px 12px 11px 28px`,
+  placeholder `SEARCH TERMS`. Tier pills (gap 8): ALL / PROJECT / GENERAL —
+  Fira 10.5px ls .12em pad 7 14, transition none; ON = solid cyan bg,
+  navy text, cyan border; OFF = transparent, gray text, border
+  `rgba(136,146,176,0.4)`.
+- Count line: Fira 11px ls .14em gray, border-bottom
+  `rgba(136,146,176,0.25)`, pb 10 mb 20 — `ENTRIES ` +
+  cyan `[ shown / total ]`.
+- Entry list (flex column gap 14). Card: 1px cyan-.18 border, bg
+  `rgba(17,34,64,0.5)`, backdrop blur 4, pad 18 20. Term row (flex gap 12
+  mb 8): term Orbitron 700 16px ls .06em cyan + tier badge Fira 9px
+  ls .14em pad 3 8 — PROJECT amber text/border, GENERAL cyan text /
+  `rgba(0,240,255,0.5)` border (tier defaults to `general`). Definition:
+  white 15px lh 1.65 through md(). Sources row (same primitive as chunks).
+- Empty state: dashed `rgba(136,146,176,0.4)` border, pad 34, centred
+  Fira 13px ls .08em gray — `> NO MATCHING ENTRIES. Adjust the query or
+  clear the tier filter.`
+- Filter: tier `all|project|general` against `g.tier || 'general'`; query
+  lowercased substring over term OR def; sort `localeCompare` on term.
+- `glossaryQuery`/`glossaryTier` live in app state — they persist across
+  open/close for the session and are NOT in the record.
+- Openers: the floating FAB (default placement) — open state = solid cyan
+  bg, navy text, cyan border; hover (closed) bg `rgba(0,240,255,0.14)`.
+  `goGlossary()` (a glossary *view*) is dead code — never called.
+- Real course data: 42 entries, tiers exactly project(16)/general(26),
+  fields term/tier/def/sources, all entries have sources.
+  `fieldNotes.glossaryTerms` in course data is never consumed — no feature.
+
+### Transaction History (renderTxnHistory / openTxns / jumpToTxn)
+
+Opened from the header balance chip (`#op-balance`, title "View
+transaction history"); `openTxns` plays an explicit `tick` (on top of the
+global pointer tick). Box 760px, gold border, glow
+`0 0 50px rgba(255,212,0,0.16)`; title `TRANSACTION HISTORY`
+`// ACCOUNT LEDGER` (sub opacity .7) on solid gold. Body pad
+`24px 28px 30px` (narrow ≤640: `16px 14px 22px`):
+
+- `> ACCESS GRANTED. RENDERING SIGNED LEDGER...` Fira 12px ls .1em gold,
+  mb 16.
+- Summary cells (flex gap 12 wrap, mb 22): OPENING BALANCE (gray) /
+  EARNED `+€$ n` (green) / DEDUCTED `-€$ n` (red) / CURRENT (gold; red if
+  negative). Cell `flex:1 1 0` (narrow: `calc(50% - 6px)`), 1px cyan-.18
+  border, bg `rgba(17,34,64,0.5)`, pad 12 16 (narrow 10 12); label Fira
+  9.5px ls .14em gray mb 6; value Fira 600 17px (narrow 15px) ls .04em.
+  Opening = `economy.startingBalance || 500`; earned/deducted summed from
+  txn deltas.
+- `LEDGER [ n ]` line: Fira 11px ls .14em gray, gold count, border-bottom
+  `rgba(136,146,176,0.25)` pb 10 mb 6; right-floated gray .7
+  `GROUPED BY MODULE · NEWEST FIRST`.
+- Rows = `txns` reversed (newest first), grouped by `moduleId` preserving
+  that order. Group header: flex gap 10, pad 9 12, bg cyan-.06,
+  border-left 2px cyan; title Orbitron 700 11px ls .1em cyan (ellipsis),
+  `[count]` Fira 9.5px gray, right `NET ±€$ n` Fira 600 12px green/red.
+- Row (wide) = full-width button, flex gap 16, 1px
+  `rgba(136,146,176,0.16)` border with border-top none (rows share
+  edges), pad 14 12; jumpable (has qid+moduleId) → pointer cursor + hover
+  bg `rgba(255,212,0,0.06)` / border `rgba(255,212,0,0.4)`. Cells: time
+  92px Fira 10px gray (`MMM dd HH:mm`, 24h); kind tag 118px centred
+  Orbitron 700 9px ls .12em pad 4 8 — `MODULE CLEARED` gold /
+  `rgba(255,212,0,0.5)`, `CORRECT` green /.5, `INCORRECT` red /.5; title
+  flex-1 white 13.5px nowrap-ellipsis (module txn = `Certified: <title>`,
+  else `qPrompt || 'Knowledge check'`) + `↳ JUMP TO ANSWER` Fira 9.5px
+  gray mt 3 when jumpable; delta 96px right Fira 600 15px green/red
+  `±€$ n`; `BAL €$ n` 80px right Fira 11px gray.
+- Row (narrow ≤640): column layout — tag+time row with delta right;
+  title white 14px lh 1.45 wraps; bottom row `BAL` + gold
+  `↳ JUMP TO ANSWER` right.
+- Empty state: dashed border, pad 34, mt 16 — `> NO TRANSACTIONS YET.
+  Answer a knowledge check to open your ledger.`
+- `jumpToTxn` (only when qid+moduleId): find module → buildStages → idx
+  of the stage whose data id === qid → `revealed = max(resume, idx+1)`
+  (revealedBy is NOT written) → close modal, enter player with stick OFF
+  → double-rAF scroll `main.scrollTop += el.top - main.top - 24` to
+  `#stg-<mid>-<qid>` → flash `box-shadow: 0 0 0 2px cyan,
+  0 0 24px rgba(0,240,255,0.4)` (transition .2s) cleared after 1400ms.
+- Txn shape (writer + reader agree, incl. 0.1.0 shards):
+  `{ id, ts, kind:'answer'|'module', moduleId, moduleTitle, qid, qPrompt,
+  correct, delta, balanceAfter }`.

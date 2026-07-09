@@ -115,6 +115,28 @@ export interface QuizAnswerState {
   order?: number[];    // order permutation (values are step indices)
 }
 
+export interface GlossaryEntry {
+  term?: string;
+  tier?: 'project' | 'general' | string;
+  def?: string;
+  sources?: Source[];
+}
+
+// Ledger entry, written by the economy and read by the txn-history modal.
+// Fields are optional for tolerance: imported 0.1.0 shards carry these too.
+export interface Txn {
+  id?: string;
+  ts?: number;
+  kind?: 'answer' | 'module' | string;
+  moduleId?: string | null;
+  moduleTitle?: string;
+  qid?: string | null;
+  qPrompt?: string;
+  correct?: boolean;
+  delta?: number;
+  balanceAfter?: number;
+}
+
 export interface Course {
   schemaVersion?: string;
   id?: string;
@@ -129,7 +151,7 @@ export interface Course {
     rightReward?: number;
     wrongPenalty?: number;
   };
-  glossary?: unknown[];
+  glossary?: GlossaryEntry[];
   ranks?: CourseRank[];
   [k: string]: unknown;
 }

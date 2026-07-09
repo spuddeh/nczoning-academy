@@ -3,7 +3,7 @@
 // lib/player.ts; measured spec: docs/monolith-parity-spec.md — "Module player".
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { Course, CourseModule, QuizAnswerState } from '../lib/types';
-import { buildStages, partialFrac, stageDataId, stageGated } from '../lib/player';
+import { buildStages, partialFrac, resumeRevealed, stageDataId, stageGated } from '../lib/player';
 import { sortedModules } from '../lib/academy';
 import { ChunkView } from '../components/player/ChunkView';
 import { QuizView } from '../components/player/QuizView';
@@ -26,16 +26,19 @@ interface PlayerProps {
   onBackToDashboard: () => void;
   onComplete: (m: CourseModule) => void;
   onSaveProgress: (moduleId: string, revealed: number) => void;
+  /** Ledger deep-link target; tick marks each fresh jump (same-module too). */
+  jump: { moduleId: string; qid: string; tick: number } | null;
 }
 
 export function Player({
   course, moduleId, quiz, moduleDone, revealedBy, quizApi,
   moduleReward, economySymbol,
   onAdvance, onSelectModule, onBackToDashboard, onComplete, onSaveProgress,
+  jump,
 }: PlayerProps) {
   const mods = sortedModules(course ?? {});
   const m = mods.find((x) => x.id === moduleId) ?? mods[0];
-  const [revealed, setRevealed] = useState(() => Math.max(revealedBy[m?.id ?? ''] ?? 0, 1));
+  const [revealed, setRevealed] = useState(() => (m ? resumeRevealed(m, moduleDone, revealedBy) : 1));
   const [drawerOpen, setDrawerOpen] = useState(false);
   const mainRef = useRef<HTMLElement>(null);
   const followRaf = useRef(0);
@@ -57,17 +60,43 @@ export function Player({
     followRaf.current = requestAnimationFrame(loop);
   }, []);
 
-  // Resume position + jump to the furthest revealed content on module change,
-  // then engage the follower.
+  // A jump is "live" until its flash window has passed; after that, later
+  // module changes take the normal resume path. Marked via a timeout (not in
+  // the effect body) so StrictMode's double mount-run takes the same branch
+  // both times — the relative scroll re-measures, so re-running converges.
+  const jumpDone = useRef(0);
+
+  // Module entry: either apply a live ledger jump (reveal up to the answered
+  // question, scroll to it with the follower OFF, flash it) or the normal
+  // resume flow (jump to the furthest revealed content, engage the follower).
   useEffect(() => {
     if (!m) return;
-    setRevealed(Math.max(revealedBy[m.id] ?? 0, 1));
     setDrawerOpen(false);
-    const go = () => { const el = mainRef.current; if (el) el.scrollTop = el.scrollHeight; };
-    requestAnimationFrame(() => { go(); requestAnimationFrame(() => { go(); follow(); }); });
+    const j = jump && jump.moduleId === m.id && jump.tick !== jumpDone.current ? jump : null;
+    if (j) {
+      window.setTimeout(() => { jumpDone.current = j.tick; }, 1500);
+      const stages = buildStages(m);
+      const idx = stages.findIndex((st) => stageDataId(st) === j.qid);
+      setRevealed(Math.max(resumeRevealed(m, moduleDone, revealedBy), idx >= 0 ? idx + 1 : 1));
+      const scrollTo = () => {
+        const el = document.getElementById(`stg-${m.id}-${j.qid}`);
+        const main = mainRef.current;
+        if (el && main) {
+          main.scrollTop += el.getBoundingClientRect().top - main.getBoundingClientRect().top - 24;
+          el.style.transition = 'box-shadow 0.2s';
+          el.style.boxShadow = '0 0 0 2px #00f0ff, 0 0 24px rgba(0,240,255,0.4)';
+          window.setTimeout(() => { el.style.boxShadow = 'none'; }, 1400);
+        }
+      };
+      requestAnimationFrame(() => requestAnimationFrame(scrollTo));
+    } else {
+      setRevealed(resumeRevealed(m, moduleDone, revealedBy));
+      const go = () => { const el = mainRef.current; if (el) el.scrollTop = el.scrollHeight; };
+      requestAnimationFrame(() => { go(); requestAnimationFrame(() => { go(); follow(); }); });
+    }
     return () => cancelAnimationFrame(followRaf.current);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [m?.id]);
+  }, [m?.id, jump?.tick]);
 
   // A user wheel/touch cancels the follower until the next advance.
   useEffect(() => {

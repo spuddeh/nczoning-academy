@@ -19,7 +19,8 @@ npx serve -l 4173 --no-clipboard /tmp/ncza-monolith/public
 npm run dev          # port 5173
 
 # 3. Capture pairs (launches its own headless Chrome)
-node scripts/parity/capture.mjs
+node scripts/parity/capture.mjs          # boot + dashboard
+node scripts/parity/capture-modals.mjs   # glossary + txn ledger (seeds a record)
 ```
 
 Outputs `scripts/parity/out/{monolith,rebuild}-{boot-typing,boot-form,boot-welcome,dashboard}.png`

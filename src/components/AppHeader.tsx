@@ -1,6 +1,7 @@
 // Shared app header chrome: brand, nav tabs, clearance + balance cluster.
-// Measured spec: docs/monolith-parity-spec.md — "App shell". The balance is a
-// button (transaction history — later slice). SERVICE RECORD routes to the
+// Measured spec: docs/monolith-parity-spec.md — "App shell". The balance
+// button opens the transaction-history modal; the header GLOSSARY button is
+// the ≤640px opener (the FAB hides there). SERVICE RECORD routes to the
 // Service Record view when that slice lands. DASHBOARD is the active tab for
 // both the dashboard and player views (the monolith's navTabStyle rule).
 import { useMemo } from 'react';
@@ -13,9 +14,12 @@ interface AppHeaderProps {
   moduleDone: Record<string, unknown>;
   eddies: number;
   balPulse?: string | null;
+  glossaryOpen: boolean;
+  onOpenGlossary: () => void;
+  onOpenTxns: () => void;
 }
 
-export function AppHeader({ course, moduleDone, eddies, balPulse }: AppHeaderProps) {
+export function AppHeader({ course, moduleDone, eddies, balPulse, glossaryOpen, onOpenGlossary, onOpenTxns }: AppHeaderProps) {
   const navigate = useNavigate();
   const path = useLocation().pathname;
   const dashActive = path === '/dashboard' || path.startsWith('/module');
@@ -45,7 +49,12 @@ export function AppHeader({ course, moduleDone, eddies, balPulse }: AppHeaderPro
         <button className="hdr-nav-btn" type="button">SERVICE RECORD</button>
       </nav>
       <div className="hdr-meta">
-        <button className="gloss-hdr" type="button" title="Open glossary">
+        <button
+          className={`gloss-hdr${glossaryOpen ? ' open' : ''}`}
+          type="button"
+          title="Open glossary"
+          onClick={onOpenGlossary}
+        >
           <BookIcon size={14} />
           GLOSSARY
         </button>
@@ -58,6 +67,7 @@ export function AppHeader({ course, moduleDone, eddies, balPulse }: AppHeaderPro
           className="hdr-balance"
           type="button"
           title="View transaction history"
+          onClick={onOpenTxns}
           style={balPulse ? { boxShadow: `0 0 18px ${balPulse}`, borderColor: balPulse } : undefined}
         >
           <div className="hdr-balance-row">

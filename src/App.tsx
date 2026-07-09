@@ -13,6 +13,9 @@ import { GlossaryFab } from './components/GlossaryFab';
 import { RadioPill } from './components/RadioPill';
 import { FlyerLayer, TransferOverlay } from './components/Overlays';
 import type { Flyer, TransferState } from './components/Overlays';
+import { GlossaryModal } from './components/modals/GlossaryModal';
+import type { GlossaryTier } from './components/modals/GlossaryModal';
+import { TxnHistoryModal } from './components/modals/TxnHistoryModal';
 import {
   RECORD_SCHEMA, cfg, cleanNameInput, clearanceAndRank, createProgress,
   loadCourse, migrateRecord, sanitizeName, sortedModules, stations,
@@ -21,7 +24,7 @@ import { Sfx, attachPointerTick } from './lib/sfx';
 import type { QuizApi } from './components/player/QuizView';
 import type {
   Course, CourseModule, ProgressRecord, Question, QuizAnswerState,
-  RadioEngine, RecordAudio,
+  RadioEngine, RecordAudio, Txn,
 } from './lib/types';
 
 interface ImportMsg { ok: boolean; text: string; }
@@ -67,6 +70,12 @@ export function App() {
   const [bootWelcome, setBootWelcome] = useState(false);
   const [importMsg, setImportMsg] = useState<ImportMsg | null>(null);
   const [radioIdx, setRadioIdx] = useState({ station: 0, track: 0, playing: false });
+  // Overlay modals. Glossary query/tier persist across open/close for the
+  // session (monolith keeps them in app state; NOT part of the record).
+  const [glossaryOpen, setGlossaryOpen] = useState(false);
+  const [glossaryQuery, setGlossaryQuery] = useState('');
+  const [glossaryTier, setGlossaryTier] = useState<GlossaryTier>('all');
+  const [txnOpen, setTxnOpen] = useState(false);
 
   const sfx = useRef<Sfx>(null as unknown as Sfx);
   if (!sfx.current) sfx.current = new Sfx();
@@ -78,6 +87,16 @@ export function App() {
   // Live-state ref so adapter/economy callbacks never capture a stale render.
   const live = useRef({ op, course });
   live.current = { op, course };
+
+  // Modal flags mirrored into a ref so the mount-time key handler sees them.
+  const modals = useRef({ glossaryOpen, txnOpen });
+  modals.current = { glossaryOpen, txnOpen };
+
+  // Ledger deep-link target. Plain state (not a consume-once ref) so the
+  // player's mount effect stays idempotent under StrictMode's double run —
+  // both runs must decide the same branch. The tick distinguishes a fresh
+  // jump (same-module jumps included) from a later plain module change.
+  const [jump, setJump] = useState<{ moduleId: string; qid: string; tick: number } | null>(null);
 
   const econ = useMemo(() => ({ ...ECON_DEFAULTS, ...(course?.economy ?? {}) }), [course]);
   const econRef = useRef(econ);
@@ -127,6 +146,9 @@ export function App() {
     }
     // Keyboard scrolling of the lesson/dashboard (targets the visible <main>).
     const onKey = (e: KeyboardEvent) => {
+      // Escape closes modals BEFORE the input guard — works from the search box.
+      if (e.key === 'Escape' && modals.current.glossaryOpen) { setGlossaryOpen(false); return; }
+      if (e.key === 'Escape' && modals.current.txnOpen) { setTxnOpen(false); return; }
       const tg = e.target as HTMLElement | null;
       const tag = tg?.tagName ?? '';
       if (tag === 'INPUT' || tag === 'TEXTAREA' || tg?.isContentEditable) return;
@@ -293,6 +315,23 @@ export function App() {
     setOp((o) => ({ ...o, revealedBy: { ...o.revealedBy, [moduleId]: Math.max(o.revealedBy[moduleId] ?? 0, revealed) } }));
   }, []);
 
+  // Ledger modal: explicit tick on open (on top of the global pointer tick,
+  // as the monolith does). Jump = close, navigate, stash the target for the
+  // player to consume (reveal + scroll + flash happen there).
+  const openTxns = useCallback(() => {
+    sfx.current.play('tick');
+    setTxnOpen(true);
+  }, []);
+
+  const jumpToTxn = useCallback((t: Txn) => {
+    if (!t.qid || !t.moduleId) { setTxnOpen(false); return; }
+    const m = sortedModules(live.current.course ?? {}).find((x) => x.id === t.moduleId);
+    if (!m) { setTxnOpen(false); return; }
+    setTxnOpen(false);
+    setJump((j) => ({ moduleId: t.moduleId as string, qid: t.qid as string, tick: (j?.tick ?? 0) + 1 }));
+    navigate(`/module/${t.moduleId}`);
+  }, [navigate]);
+
   // Dashboard entry: first not-yet-complete module (fall back to the last).
   const openCourse = useCallback(() => {
     const mods = sortedModules(live.current.course ?? {});
@@ -401,13 +440,42 @@ export function App() {
 
   const shell = (content: React.ReactNode) => signedIn ? (
     <div className="app-shell">
-      <AppHeader course={course} moduleDone={op.moduleDone} eddies={eddiesShown} balPulse={balPulse} />
+      <AppHeader
+        course={course}
+        moduleDone={op.moduleDone}
+        eddies={eddiesShown}
+        balPulse={balPulse}
+        glossaryOpen={glossaryOpen}
+        onOpenGlossary={() => setGlossaryOpen(true)}
+        onOpenTxns={openTxns}
+      />
       {content}
       <SysReadout />
-      <GlossaryFab />
-      <RadioPill stationIdx={radioIdx.station} trackIdx={radioIdx.track} playing={radioIdx.playing} />
+      <GlossaryFab open={glossaryOpen} onOpen={() => setGlossaryOpen(true)} />
       <FlyerLayer flyers={flyers} />
       <TransferOverlay t={transfer} symbol={econ.symbol} />
+      {glossaryOpen && (
+        <GlossaryModal
+          course={course}
+          query={glossaryQuery}
+          tier={glossaryTier}
+          onQuery={setGlossaryQuery}
+          onTier={setGlossaryTier}
+          onClose={() => setGlossaryOpen(false)}
+        />
+      )}
+      {txnOpen && (
+        <TxnHistoryModal
+          txns={op.txns as Txn[]}
+          symbol={econ.symbol}
+          startingBalance={econ.startingBalance}
+          eddies={op.eddies}
+          onJump={jumpToTxn}
+          onClose={() => setTxnOpen(false)}
+        />
+      )}
+      {/* last, like the monolith: same z as the modal scrim, wins by DOM order */}
+      <RadioPill stationIdx={radioIdx.station} trackIdx={radioIdx.track} playing={radioIdx.playing} />
     </div>
   ) : (
     <Navigate to="/" replace />
@@ -433,6 +501,7 @@ export function App() {
           onBackToDashboard={() => navigate('/dashboard')}
           onComplete={completeModule}
           onSaveProgress={saveProgress}
+          jump={jump}
         />,
       )} />
       <Route path="*" element={<Navigate to="/" replace />} />

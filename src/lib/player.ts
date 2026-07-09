@@ -37,6 +37,19 @@ export function stageDataId(stage: Stage): string | undefined {
   return 'data' in stage ? (stage.data as { id?: string }).id : undefined;
 }
 
+// Resume position on module entry — the monolith's _resumeRevealed: a
+// completed module reveals ALL stages; otherwise the recorded reveal,
+// clamped to [1, total] (a stale record can exceed a re-authored module).
+export function resumeRevealed(
+  m: CourseModule,
+  moduleDone: Record<string, unknown>,
+  revealedBy: Record<string, number>,
+): number {
+  const total = buildStages(m).length;
+  if (moduleDone[m.id]) return total;
+  return Math.min(total, Math.max(1, revealedBy[m.id] ?? 1));
+}
+
 // Partial-progress credit for the dashboard bar and rail dots — the
 // monolith's partialFrac: completed = 1; started (revealed past stage 1)
 // = (revealed-1)/(stages-1); untouched = 0.

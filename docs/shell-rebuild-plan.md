@@ -235,8 +235,22 @@ In priority order:
    Cloudflare preview end-to-end. Remaining player-adjacent pieces live with
    their own slices: txn-history modal + eject/slot overlay animations
    (Service Record), glossary modal, certificate flow from CERTIFIED.
-3. **Glossary** modal (the FAB + header button already render; wire `open`).
-4. **Service Record** view (shard eject/slot animations, operator list, purge).
+3. ~~Glossary modal + transaction history~~ **DONE (2026-07-09).** Both
+   overlay modals extracted to the parity spec and built on a shared
+   `ModalShell` (scrim/box/title bar/[ ESC ] CLOSE): glossary with search +
+   tier filter (query/tier persist in app state across open/close), txn
+   ledger with summary cells, module grouping and jump-to-answer deep link
+   back into the player (reveal + relative scroll + 1400ms flash). Openers
+   wired (FAB + header button + balance chip); Escape closes from inside
+   inputs; radio pill moved after the modals in DOM order (same z-index —
+   the monolith wins by order). Harness-verified: identical counts
+   (42/42, 16/42 project, LEDGER [ 3 ], NET +€$ 900), identical jump
+   offset (24px) and flash, pixel-matched pairs. Fixed along the way (in
+   the rebuild only): `resumeRevealed` now matches the monolith — a
+   completed module reveals ALL stages (was resuming at the recorded
+   reveal, so re-entering a certified module hid its tail).
+4. **Service Record** view (shard eject/slot animations, operator list,
+   purge; the txn-history modal shipped with slice 3).
 5. **Certificate** view (name-gated, stamped; print CSS comes with it).
 6. **Radio panel** in React (the pill + engine wiring are done; the expanded
    panel with dial, transport, volume and the MUSIC/SFX toggles remains).
