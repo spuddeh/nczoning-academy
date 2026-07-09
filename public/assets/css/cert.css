@@ -308,7 +308,12 @@
   cursor: pointer;
 }
 
-/* ---- print: the certificate is the page ---- */
+/* ---- print: the certificate is the page ----
+   Fix over the monolith (which only flipped visibility): browsers strip
+   background colours by default when printing, so the navy card and cyan
+   titlebar vanished and left neon text on white paper. This variant is
+   ink-on-paper by design — dark navy/teal/green text and borders, no
+   reliance on backgrounds printing at all. */
 
 @media print {
   body * { visibility: hidden !important; }
@@ -319,7 +324,50 @@
     top: 0;
     width: 100% !important;
     box-shadow: none !important;
+    background: #fff !important;
+    border-color: #0a192f !important;
   }
   /* rebuild ids: #vignette here (monolith had #vign) */
   #scanlines, #vignette, #cert-controls { display: none !important; }
+
+  /* Night Corp palette on paper (user call, 2026-07-09): NC Navy takes the
+     cyan roles, gold takes the green roles, black takes the grey roles,
+     black logo. The titlebar stays a solid navy band: print-color-adjust
+     exact makes the background print AND stops Chrome darkening the light
+     text; the inset box-shadow is a band fallback for browsers that ignore
+     the hint (shadows print as content ink either way). */
+  #cert-print {
+    .cert-titlebar {
+      background: #0a192f !important;
+      box-shadow: inset 0 0 0 200px #0a192f;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+      color: #e6f1ff;
+    }
+    .cert-grid { display: none; }
+    .cert-content > img { filter: brightness(0); } /* white monogram → black ink */
+    .cert-kicker,
+    .cert-awarded-label,
+    .cert-attained-label,
+    .cert-course-sub,
+    .cert-footer { color: #000; }
+    .cert-course-title { color: #0a192f; }
+    .cert-name {
+      color: #ffd400;
+      text-shadow: none;
+    }
+    .cert-rule { background: #0a192f; }
+    .cert-clearance { color: #0a192f; }
+    .cert-stamp {
+      color: #ffd400;
+      border-color: #ffd400;
+      background: transparent !important;
+      box-shadow: none;
+    }
+    .cert-footer {
+      border-top-color: #0a192f;
+      .cert-issued { color: #0a192f; }
+      .cert-auth { color: #0a192f; }
+    }
+  }
 }

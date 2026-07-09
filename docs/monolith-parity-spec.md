@@ -921,3 +921,19 @@ Scrim `rgba(5,10,20,0.9)` blur(4px) pad 32, click-outside CANCELS. Box
 Rebuild note: our vignette element id is `#vignette` (monolith: `#vign`) —
 target the rebuild's ids. Visibility (not display) keeps layout so the
 absolutely-positioned cert prints at the page origin.
+
+DELIBERATE DIVERGENCE (user-signed-off 2026-07-09): the monolith's print
+output is broken — it only flips visibility, and real print dialogs strip
+`background` colours by default and darken light text, so paper output was
+neon text on white with no card, no header bar, and an invisible white
+monogram (never caught: Design's preview can't print). The rebuild adds an
+ink-on-paper restyle inside `@media print` (screen untouched): NC Navy
+takes the cyan roles, gold takes the green roles (name + CERTIFIED stamp),
+black takes the grey roles, monogram → black via `filter: brightness(0)`,
+grid hidden. The titlebar stays a solid navy band with NC-white text via
+`print-color-adjust: exact` (disables both background stripping AND
+Chrome's light-text darkening; Chromium honours it with the dialog
+checkbox off) plus an inset box-shadow fill as fallback — shadows print as
+content ink. Verified with `page.pdf({ printBackground: false })`; note
+`emulateMediaType('print')` applies print CSS but NOT the stripping, so it
+cannot catch this bug class.
