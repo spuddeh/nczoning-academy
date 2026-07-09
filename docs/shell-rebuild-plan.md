@@ -218,15 +218,19 @@ And the binding rule added after the 2026-07-09 parity correction:
 
 In priority order:
 
-1. **Routing slice** (small, do first). Wire react-router over the *existing*
-   views only (`/` boot, `/dashboard`), add `public/_redirects`
-   (`/* /index.html 200`), push the branch, and verify deep links on the
-   Cloudflare branch preview. This isolates all deep-link plumbing risk from
-   the player build.
-2. **Module player** (the core view, and the reason for React). Measure its shell
-   and the module-map navigation, then build the streamed content blocks, the four
-   quiz types (multiple choice, multi-select, scenario, ordering with drag), and
-   the lab runner. Add the `/module/:id` route to the router landed in step 1.
+1. ~~Routing slice~~ **DONE (2026-07-09, `ad86574`).** react-router over `/`
+   (boot) and `/dashboard` (guarded — deep links redirect to boot until
+   signed in; unknown routes → `/`), `public/_redirects` shipped. Verified on
+   the Cloudflare branch preview: `/dashboard` deep link serves the SPA (200),
+   guard redirects, login navigates, zero console errors.
+2. **Module player** (the core view, and the reason for React). Extract its
+   spec from the monolith first (renderPlayer/renderChunk/renderQuiz/renderLab/
+   buildStages + the rail/drawer templates → append to
+   `docs/monolith-parity-spec.md`), then build: module-map rail, streamed
+   content blocks, the four quiz types (multiple choice, multi-select,
+   scenario, ordering with drag), the lab runner, and the eddies award flow.
+   Add the `/module/:id` route. Port `partialFrac` (partial progress credit)
+   back into the dashboard bar when `buildStages` exists.
 3. **Glossary** modal (the FAB + header button already render; wire `open`).
 4. **Service Record** view (shard eject/slot animations, operator list, purge).
 5. **Certificate** view (name-gated, stamped; print CSS comes with it).
