@@ -1,6 +1,6 @@
 {
   "name": "nczoning-academy",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "type": "module",
   "description": "NC Zoning Academy — personal micro-module LMS for the Cyberpunk 2077 location mods map project. POC course: The Data API.",
