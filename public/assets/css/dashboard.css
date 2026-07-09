@@ -1,0 +1,468 @@
+/* NC Zoning Academy — app header (shared chrome), dashboard content, and the
+ * fixed satellites (SYSTEM_STATUS readout, glossary FAB, radio pill).
+ * Every value measured from the 0.1.0 monolith (docs/monolith-parity-spec.md).
+ */
+
+/* ---- app header (shared chrome) ---- */
+.app-header {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: var(--header-h);
+  padding: 0 22px;
+  background: rgba(10, 25, 47, 0.9);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid rgba(0, 240, 255, 0.2);
+}
+.hdr-brand { display: flex; align-items: center; gap: 16px; flex: none; }
+.hdr-logo {
+  height: 40px;
+  width: auto;
+  display: block;
+  filter: brightness(0) invert(1) drop-shadow(0 0 6px rgba(0, 240, 255, 0.35));
+}
+.hdr-brand-title {
+  font-family: var(--font-identity);
+  font-weight: 400;
+  font-size: 20px;
+  letter-spacing: 0.11em;
+  color: var(--text);
+  line-height: 1;
+}
+.hdr-sub {
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.14em;
+  color: var(--muted);
+  margin-top: 3px;
+  white-space: nowrap;
+}
+
+.hdr-nav { display: flex; align-items: center; gap: 6px; }
+.hdr-nav-btn {
+  font-family: var(--font-display);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  padding: 8px 15px;
+  cursor: pointer;
+  background: transparent;
+  border: 1px solid transparent; /* inactive tabs are borderless text */
+  color: var(--muted);
+
+  &.active {
+    background: rgba(0, 240, 255, 0.1);
+    border-color: var(--primary);
+    color: var(--primary);
+  }
+}
+
+.hdr-meta { display: flex; align-items: center; gap: 18px; flex: none; }
+.hdr-clearance { text-align: right; }
+.hdr-clearance-label {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  color: var(--muted);
+}
+.hdr-clearance-val {
+  font-family: var(--font-display);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--primary);
+}
+
+/* balance is a button (opens transaction history) */
+.hdr-balance {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  background: rgba(255, 212, 0, 0.05);
+  border: 1px solid rgba(255, 212, 0, 0.5);
+  padding: 6px 12px;
+  cursor: pointer;
+  transition: box-shadow 0.3s, border-color 0.3s, background 0.15s;
+
+  &:hover {
+    background: rgba(255, 212, 0, 0.12);
+    border-color: rgba(255, 212, 0, 0.85);
+  }
+}
+.hdr-balance-row { display: flex; align-items: center; gap: 6px; }
+.hdr-balance-label {
+  font-family: var(--font-mono);
+  font-size: 8.5px;
+  letter-spacing: 0.14em;
+  color: var(--muted);
+}
+.hdr-balance-icon { display: block; flex: none; opacity: 0.85; }
+.hdr-balance-val {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  font-size: 14px;
+  letter-spacing: 0.06em;
+  color: var(--tertiary);
+
+  &.negative { color: var(--danger); }
+}
+
+/* header glossary button — desktop hides it (the FAB shows instead);
+   the ≤640px block in style.css swaps them */
+.gloss-hdr {
+  display: none;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 13px;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  cursor: pointer;
+  background: transparent;
+  border: 1px solid rgba(0, 240, 255, 0.55);
+  color: var(--primary);
+
+  &:hover { background: rgba(0, 240, 255, 0.12); border-color: var(--primary); }
+}
+
+/* ---- dashboard content ---- */
+/* the view's scroll container (also the keyboard-scroll target <main>) */
+.dash-scroll {
+  flex: 1;
+  overflow-y: auto;
+  padding: 48px 40px 60px;
+}
+.dash { max-width: 1100px; margin: 0 auto; }
+
+.dash-terminal {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  color: var(--primary);
+  margin-bottom: 8px;
+}
+.dash-h1 {
+  font-family: var(--font-identity);
+  font-weight: 400; /* Night Corp Display has no 700 — bold renders faux */
+  font-size: 38px;
+  letter-spacing: 0.06em;
+  color: var(--text);
+  margin: 0 0 6px;
+}
+.dash-lead {
+  font-family: var(--font-body);
+  font-size: 16px;
+  letter-spacing: 0.02em;
+  color: var(--muted);
+  margin: 0 0 38px;
+}
+
+/* section headers: AVAILABLE COURSES [ n ] / TRANSMISSION RELAYS // ... */
+.dash-section-hdr {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  color: var(--muted);
+  border-bottom: 1px solid rgba(136, 146, 176, 0.25);
+  padding-bottom: 10px;
+  margin-bottom: 24px;
+}
+.dash-section-hdr b { color: var(--primary); font-weight: 400; }
+.dash-relays-hdr { margin-bottom: 20px; }
+.dash-relays { margin-top: 48px; }
+
+/* ---- orientation card (session-dismissible) ---- */
+.orient-card {
+  position: relative;
+  border: 1px solid rgba(0, 240, 255, 0.3);
+  background: rgba(0, 240, 255, 0.04);
+  padding: 18px 20px 18px 18px;
+  margin-bottom: 34px;
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+}
+.orient-icon {
+  width: 26px;
+  height: 12.3px;
+  flex: none;
+  margin-top: 3px;
+  background: var(--primary);
+  -webkit-mask: url(../shard-icon.svg) center / contain no-repeat;
+  mask: url(../shard-icon.svg) center / contain no-repeat;
+  display: inline-block;
+}
+.orient-content { flex: 1; min-width: 0; }
+.orient-title {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  color: var(--primary);
+  margin-bottom: 7px;
+}
+.orient-body {
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  line-height: 1.75;
+  letter-spacing: 0.02em;
+  color: var(--text-soft);
+}
+.orient-body b { color: var(--primary); font-weight: 400; }
+.orient-dismiss {
+  flex: none;
+  background: transparent;
+  border: 1px solid rgba(136, 146, 176, 0.4);
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  line-height: 1;
+  padding: 5px 9px;
+  cursor: pointer;
+
+  &:hover { color: var(--primary); border-color: var(--primary); }
+}
+
+/* ---- course grid + card ---- */
+.course-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+  gap: 22px;
+}
+
+/* the whole card is clickable (opens the course) */
+.course-card {
+  border: 1px solid rgba(0, 240, 255, 0.25);
+  background: rgba(17, 34, 64, 0.5);
+  backdrop-filter: blur(6px);
+  cursor: pointer;
+  text-align: left;
+  padding: 0;
+  color: inherit;
+  font: inherit;
+}
+
+/* blueprint hero: gradient + grid overlay + tag + watermark module count */
+.course-hero {
+  height: 132px;
+  background: linear-gradient(135deg, var(--hero-a), var(--hero-b));
+  border-bottom: 1px solid rgba(0, 240, 255, 0.25);
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: flex-end;
+  padding: 14px;
+}
+.course-hero-grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(0, 240, 255, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 240, 255, 0.06) 1px, transparent 1px);
+  background-size: 22px 22px;
+}
+.course-tag {
+  position: absolute;
+  top: 0;
+  left: 0;
+  background: var(--primary);
+  color: var(--navy);
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  padding: 4px 10px;
+}
+.course-watermark {
+  position: relative;
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: 26px;
+  letter-spacing: 0.12em;
+  color: rgba(0, 240, 255, 0.18);
+}
+
+.course-body { padding: 18px 18px 20px; }
+.course-title {
+  font-family: var(--font-identity);
+  font-weight: 400;
+  font-size: 20px;
+  letter-spacing: 0.04em;
+  color: var(--text);
+}
+.course-title-bar {
+  width: 44px;
+  height: 2px;
+  background: var(--primary);
+  margin: 9px 0 11px;
+}
+.course-sub {
+  font-family: var(--font-body);
+  color: var(--muted);
+  font-size: 15px;
+  margin-bottom: 16px;
+}
+
+.course-chips { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+.course-chip {
+  border: 1px solid rgba(136, 146, 176, 0.4);
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  padding: 4px 9px;
+}
+
+.course-progress-row {
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+.course-progress-count { color: var(--primary); }
+.course-bar {
+  height: 5px;
+  background: var(--navy);
+  border: 1px solid rgba(0, 240, 255, 0.2);
+}
+.course-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--cyan), var(--green));
+}
+
+.course-cta {
+  margin-top: 18px;
+  width: 100%;
+  background: transparent;
+  border: 1px solid var(--primary);
+  color: var(--primary);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 12.5px;
+  letter-spacing: 0.16em;
+  padding: 12px;
+  cursor: pointer;
+
+  &:hover { background: var(--primary); color: var(--navy); }
+}
+
+/* ---- transmission relays (external links) ---- */
+.dash-links { display: flex; flex-wrap: wrap; gap: 12px; }
+.dash-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  padding: 11px 16px;
+
+  /* colour variants; hover inverts to the solid colour */
+  &.cyan {
+    border: 1px solid rgba(0, 240, 255, 0.4);
+    color: var(--cyan);
+    background: rgba(0, 240, 255, 0.04);
+    &:hover { background: var(--cyan); color: var(--navy); border-color: var(--cyan); }
+  }
+  &.gold {
+    border: 1px solid rgba(255, 212, 0, 0.4);
+    color: var(--gold);
+    background: rgba(255, 212, 0, 0.04);
+    &:hover { background: var(--gold); color: var(--navy); border-color: var(--gold); }
+  }
+  &.gray {
+    border: 1px solid rgba(136, 146, 176, 0.4);
+    color: var(--gray);
+    background: rgba(136, 146, 176, 0.04);
+    &:hover { background: var(--gray); color: var(--navy); border-color: var(--gray); }
+  }
+}
+.dash-link-icon { display: inline-flex; line-height: 0; }
+.dash-link-kofi { width: 19px; height: 19px; display: block; object-fit: contain; }
+
+/* ---- fixed satellites ---- */
+
+/* bottom-left telemetry readout — one line: status text, LED, offset */
+.sys-readout {
+  position: fixed;
+  left: 18px;
+  bottom: 14px;
+  z-index: 9100;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 7px 4px;
+  pointer-events: none;
+  font-family: var(--font-display);
+  font-size: 10px;
+  opacity: 0.9;
+  transition: left 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+
+  /* the player rail occupies the left edge; the readout slides beside it */
+  &.player { left: 306px; }
+}
+.sys-status {
+  letter-spacing: 1px;
+  transition: color 0.5s ease;
+  display: inline-block;
+  white-space: nowrap;
+  flex-shrink: 0;
+  color: var(--primary);
+}
+.sys-led {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+  flex-shrink: 0;
+  background: var(--success);
+  box-shadow: 0 0 8px var(--success);
+  transition: background 0.5s ease, box-shadow 0.5s ease;
+}
+/* ELEVATED / CRITICAL escalation (85/10/5 telemetry roll) */
+.sys-readout.elevated .sys-status { color: var(--secondary); }
+.sys-readout.elevated .sys-led { background: var(--secondary); box-shadow: 0 0 8px var(--secondary); }
+.sys-readout.critical .sys-status { color: var(--danger); }
+.sys-readout.critical .sys-led { background: var(--danger); box-shadow: 0 0 8px var(--danger); }
+.sys-offset {
+  font-family: var(--font-mono);
+  letter-spacing: 0.08em;
+  color: var(--primary);
+  opacity: 0.75;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* glossary floating button (desktop) */
+.gloss-fab {
+  position: fixed;
+  top: 76px;
+  right: 22px;
+  z-index: 9200;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 14px;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  cursor: pointer;
+  background: rgba(10, 25, 47, 0.92);
+  border: 1px solid rgba(0, 240, 255, 0.55);
+  color: var(--primary);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+
+  &:hover { background: rgba(0, 240, 255, 0.14); border-color: var(--primary); }
+}
+.gloss-fab svg { display: block; flex: none; }
+
+/* radio pill + panel styles live in radio.css */

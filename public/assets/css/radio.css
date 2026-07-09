@@ -1,0 +1,307 @@
+/* NC Radio — collapsed pill + expanded panel (monolith renderMusicPlayer).
+   Measured spec: docs/monolith-parity-spec.md — "Radio panel". Both share
+   the corner slot: fixed right/bottom 22, z 9995 (same as the modal scrim;
+   the radio wins by DOM order). EQ bar animation values are inline per bar
+   (duration from the track bpm). */
+
+/* ---- collapsed pill ---- */
+
+.radio-pill {
+  position: fixed;
+  right: 22px;
+  bottom: 22px;
+  z-index: 9995;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  background: rgba(10, 25, 47, 0.94);
+  border: 1px solid rgba(0, 240, 255, 0.5);
+  box-shadow: 0 0 22px rgba(0, 240, 255, 0.14);
+  cursor: pointer;
+  backdrop-filter: blur(4px);
+
+  &:hover { border-color: var(--primary); }
+  &.muted { border-color: rgba(136, 146, 176, 0.4); }
+  &.muted:hover { border-color: var(--primary); }
+  &.muted .radio-freq, &.muted .radio-track { color: var(--gray); }
+}
+.radio-eq { display: flex; align-items: flex-end; gap: 2px; }
+.radio-eq-bar {
+  width: 3px;
+  height: 100%;
+  background: var(--primary);
+  transform-origin: center bottom;
+  border-radius: 1px;
+  box-shadow: 0 0 5px var(--primary);
+  /* animation duration/delay/play-state set inline per bar from the bpm */
+}
+.radio-freq {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  font-weight: 600;
+  color: var(--primary);
+  flex: none;
+}
+.radio-track-window { overflow: hidden; width: 96px; flex: none; }
+.radio-track {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  font-weight: 600;
+  color: var(--tertiary);
+  white-space: nowrap;
+  display: inline-block;
+  will-change: transform;
+}
+
+/* ---- expanded panel ---- */
+
+.radio-panel {
+  position: fixed;
+  right: 22px;
+  bottom: 22px;
+  z-index: 9995;
+  width: 300px;
+  max-width: calc(100vw - 44px);
+  background: rgba(8, 18, 34, 0.97);
+  border: 1px solid var(--primary);
+  box-shadow: 0 0 40px rgba(0, 240, 255, 0.22);
+  backdrop-filter: blur(5px);
+  font-family: var(--font-mono);
+}
+
+.radio-panel-titlebar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--primary);
+  color: var(--navy);
+  padding: 8px 8px 8px 14px;
+
+  > span {
+    font-family: var(--font-identity);
+    font-weight: 400;
+    font-size: 13px;
+    letter-spacing: 0.12em;
+  }
+}
+.radio-minimize {
+  background: transparent;
+  border: none;
+  color: var(--navy);
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0 4px;
+  font-weight: 700;
+}
+
+.radio-panel-body { padding: 16px 16px 18px; }
+
+/* now-playing box — .dim marks muted-or-paused text/fill */
+.radio-now {
+  padding: 13px 15px;
+  border: 1px solid rgba(0, 240, 255, 0.25);
+  background: rgba(0, 240, 255, 0.04);
+}
+.radio-now-top {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+
+  > div:first-child { min-width: 0; flex: 1; }
+}
+.radio-now-freq {
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--primary);
+  letter-spacing: 0.02em;
+  line-height: 1;
+  text-shadow: 0 0 12px rgba(0, 240, 255, 0.4);
+
+  &.dim { color: var(--gray); text-shadow: none; }
+}
+.radio-now-station {
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  color: var(--white);
+  margin-top: 5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+  &.dim { color: var(--gray); }
+}
+.radio-now-title {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  color: var(--tertiary);
+  margin-top: 9px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+  &.dim { color: var(--gray); }
+}
+.radio-now-status {
+  font-size: 9px;
+  letter-spacing: 0.13em;
+  color: var(--gray);
+  margin-top: 3px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.radio-prog { margin-top: 12px; }
+.radio-prog-bar { position: relative; height: 4px; background: rgba(136, 146, 176, 0.22); }
+.radio-prog-fill {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  background: var(--primary);
+  box-shadow: 0 0 8px var(--primary);
+
+  &.dim { background: var(--gray); box-shadow: none; }
+}
+.radio-prog-times {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 5px;
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  color: var(--gray);
+}
+
+/* transport */
+.radio-transport { display: flex; gap: 8px; margin-top: 14px; }
+.radio-tbtn {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 40px;
+  height: 38px;
+  padding: 0 12px;
+  background: transparent;
+  border: 1px solid rgba(136, 146, 176, 0.45);
+  color: var(--white);
+  font-family: var(--font-mono);
+  font-size: 15px;
+  cursor: pointer;
+  letter-spacing: 0.04em;
+
+  &:hover { border-color: var(--primary); color: var(--primary); }
+  &.big {
+    flex: 1;
+    min-width: auto;
+    background: rgba(0, 240, 255, 0.1);
+    border-color: var(--primary);
+    color: var(--primary);
+  }
+}
+.radio-caption {
+  margin-top: 8px;
+  text-align: center;
+  font-size: 9px;
+  letter-spacing: 0.16em;
+  color: var(--gray);
+}
+
+/* station chips */
+.radio-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 14px; }
+.radio-chip {
+  padding: 5px 8px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  background: transparent;
+  color: var(--gray);
+  border: 1px solid rgba(136, 146, 176, 0.35);
+  font-weight: 400;
+
+  &:hover { border-color: var(--primary); color: var(--primary); }
+  &.on {
+    background: var(--primary);
+    color: var(--navy);
+    border-color: var(--primary);
+    font-weight: 700;
+  }
+}
+
+/* auto-rotate toggle */
+.radio-cycle {
+  margin-top: 12px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 32px;
+  cursor: pointer;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  font-weight: 600;
+  background: transparent;
+  border: 1px solid rgba(136, 146, 176, 0.4);
+  color: var(--gray);
+
+  > span { font-size: 13px; }
+  &:hover { border-color: var(--primary); }
+  &.on {
+    background: rgba(0, 240, 255, 0.12);
+    border-color: var(--primary);
+    color: var(--primary);
+  }
+}
+
+/* volume rows */
+.radio-volrow { margin-top: 12px; }
+.radio-volhead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 5px;
+
+  > div { display: flex; align-items: center; gap: 8px; }
+}
+.radio-volmute {
+  width: 24px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 1px solid rgba(0, 240, 255, 0.5);
+  color: var(--primary);
+  cursor: pointer;
+  padding: 0;
+
+  &.muted { border-color: var(--danger); color: var(--danger); }
+}
+.radio-vollabel {
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  color: var(--gray);
+}
+.radio-volval {
+  font-size: 10px;
+  color: var(--primary);
+
+  &.muted { color: var(--danger); }
+}
+.radio-volrange {
+  width: 100%;
+  accent-color: var(--primary);
+  cursor: pointer;
+  height: 4px;
+
+  &:disabled { cursor: default; opacity: 0.35; }
+}

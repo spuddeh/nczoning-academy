@@ -1,0 +1,233 @@
+/* NC Zoning Academy — boot / login view.
+ * Every value measured from the 0.1.0 monolith (docs/monolith-parity-spec.md).
+ * The whole screen is click-to-skip during the typewriter animation; the form
+ * appears only once the boot log completes (or is skipped).
+ */
+
+.boot-screen {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg);
+  z-index: 50;
+  padding: 24px;
+  overflow: hidden;
+}
+
+/* faint cyan halo behind the card, anchored to the top of the screen */
+.boot-backdrop {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 50% 0%, rgba(0, 240, 255, 0.06), transparent 60%);
+}
+
+.boot-card {
+  position: relative;
+  width: 640px;
+  max-width: 100%;
+  background: var(--card-bg);
+  border: 1px solid var(--primary);
+  box-shadow: var(--card-glow);
+}
+
+/* cyan titlebar — navy text on cyan */
+.boot-titlebar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 14px;
+  background: var(--primary);
+  color: var(--navy);
+  font-family: var(--font-identity);
+  font-weight: 400;
+  font-size: 12px;
+  letter-spacing: 0.05em;
+  padding: 11px 20px;
+  white-space: nowrap;
+}
+.boot-tb-title {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.boot-tb-id { opacity: 0.7; flex: none; }
+
+.boot-body {
+  padding: 26px 28px 28px;
+}
+
+/* boot log — one cyan mono block; height reserved so the card doesn't jump
+   while the typewriter runs */
+.boot-log {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 13.5px;
+  line-height: 1.85; /* measured: 24.975px / 13.5px */
+  color: var(--primary);
+  white-space: pre-wrap;
+  word-break: break-word;
+  min-height: 150px;
+}
+
+/* post-login confirmation readout (shows for 1.7s in place of the form) */
+.boot-welcome {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 13.5px;
+  line-height: 1.85;
+  color: var(--success);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.boot-form { margin-top: 22px; }
+
+/* divider fades out to the right */
+.boot-divider {
+  height: 1px;
+  background: linear-gradient(90deg, var(--primary), transparent);
+  margin: 0 0 20px;
+}
+
+.boot-prompt {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  color: var(--muted);
+  margin: 0 0 9px;
+}
+
+.boot-field-label {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  color: var(--primary);
+  margin: 0 0 7px;
+}
+
+.boot-input {
+  display: block;
+  width: 100%;
+  background: var(--field-bg);
+  color: var(--text);
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  padding: 12px 14px;
+  margin: 0 0 18px;
+  border: 1px solid rgba(0, 240, 255, 0.4);
+  border-radius: var(--radius);
+  outline: none;
+
+  &::placeholder {
+    color: var(--placeholder);
+    font-weight: 400;
+    letter-spacing: normal;
+  }
+}
+
+/* ACCESS TERMINAL — two states: ready (name typed, course loaded) is solid
+   cyan; not-ready is the dimmed outline */
+.boot-access {
+  display: block;
+  width: 100%;
+  text-align: center;
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  padding: 15px;
+  border-radius: var(--radius);
+  background: transparent;
+  border: 1px solid rgba(0, 240, 255, 0.35);
+  color: var(--primary-dim);
+  cursor: not-allowed;
+
+  &.ready {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: var(--navy);
+    cursor: pointer;
+  }
+}
+
+/* [line] RETURNING OPERATOR? [line] */
+.boot-returning {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 14px 0 0;
+}
+.boot-rule {
+  flex: 1;
+  height: 1px;
+  background: var(--line-faint);
+}
+.boot-returning-text {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  color: var(--placeholder);
+  white-space: nowrap;
+}
+
+/* slot button (a label wrapping a hidden file input) */
+.boot-slot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  cursor: pointer;
+  margin: 14px 0 0;
+  background: transparent;
+  color: var(--muted);
+  font-family: var(--font-display);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  padding: 12px;
+  border: 1px solid var(--line-muted);
+  border-radius: var(--radius);
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+
+  &:hover {
+    background: rgba(0, 240, 255, 0.08);
+    border-color: var(--primary);
+    color: var(--primary);
+  }
+}
+.boot-shard-icon {
+  display: inline-block;
+  width: 22px;
+  height: 10.4px;
+  flex: none;
+  background: currentColor;
+  -webkit-mask: url(../shard-icon.svg) center / contain no-repeat;
+  mask: url(../shard-icon.svg) center / contain no-repeat;
+}
+.boot-file { display: none; }
+
+/* import result line under the slot button: green ok / red rejection */
+.boot-import-msg {
+  margin: 14px 0 0;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  color: var(--danger);
+
+  &.ok { color: var(--success); }
+}
+
+/* skip hint, only while the typewriter is running */
+.boot-skip-hint {
+  margin-top: 16px;
+  text-align: center;
+  color: var(--placeholder);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+}
