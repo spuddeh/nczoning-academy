@@ -7,6 +7,7 @@
 // "AVAILABLE COURSES" label, which is a bug.
 import { useState } from 'react';
 import { sortedModules } from '../lib/academy';
+import { partialFrac } from '../lib/player';
 import type { Course } from '../lib/types';
 
 type LinkKind = 'cyan' | 'gold' | 'gray';
@@ -23,14 +24,20 @@ const LINKS: Relay[] = [
 interface DashboardProps {
   course: Course | null;
   moduleDone: Record<string, unknown>;
+  revealedBy: Record<string, number>;
+  onOpenCourse: () => void;
 }
 
-export function Dashboard({ course, moduleDone }: DashboardProps) {
+export function Dashboard({ course, moduleDone, revealedBy, onOpenCourse }: DashboardProps) {
   const c = course ?? {};
   const mods = sortedModules(c);
   const doneCount = mods.filter((m) => moduleDone[m.id]).length;
-  const anyProgress = doneCount > 0;
-  const frac = mods.length ? doneCount / mods.length : 0;
+  const startedCount = mods.filter((m) => !moduleDone[m.id] && partialFrac(m, moduleDone, revealedBy) > 0).length;
+  const anyProgress = doneCount > 0 || startedCount > 0;
+  // course fraction with partial-module credit (the monolith's courseFrac)
+  const frac = mods.length
+    ? mods.reduce((a, m) => a + partialFrac(m, moduleDone, revealedBy), 0) / mods.length
+    : 0;
   // orientation card: session-scoped (resets on reload, like the monolith)
   const [firstRunSeen, setFirstRunSeen] = useState(false);
   const showOrient = !anyProgress && !firstRunSeen;
@@ -63,7 +70,7 @@ export function Dashboard({ course, moduleDone }: DashboardProps) {
 
         <div className="dash-section-hdr">AVAILABLE COURSES <b>[ 1 ]</b></div>
         <div className="course-grid">
-          <article className="course-card">
+          <article className="course-card" onClick={onOpenCourse}>
             <div className="course-hero">
               <div className="course-hero-grid" />
               <div className="course-tag">COURSE // {(c.id ?? 'course').toUpperCase()}</div>
@@ -84,7 +91,7 @@ export function Dashboard({ course, moduleDone }: DashboardProps) {
               <div className="course-bar">
                 <div className="course-bar-fill" style={{ width: `${Math.round(frac * 100)}%` }} />
               </div>
-              <button className="course-cta" type="button">
+              <button className="course-cta" type="button" onClick={onOpenCourse}>
                 [ {anyProgress ? 'RESUME PROGRAM' : 'BEGIN PROGRAM'} ]
               </button>
             </div>

@@ -10,9 +10,10 @@ interface AppHeaderProps {
   course: Course | null;
   moduleDone: Record<string, unknown>;
   eddies: number;
+  balPulse?: string | null;
 }
 
-export function AppHeader({ course, moduleDone, eddies }: AppHeaderProps) {
+export function AppHeader({ course, moduleDone, eddies, balPulse }: AppHeaderProps) {
   const { clearance, rankTitle } = useMemo(
     () => clearanceAndRank(course ?? {}, moduleDone),
     [course, moduleDone],
@@ -41,7 +42,13 @@ export function AppHeader({ course, moduleDone, eddies }: AppHeaderProps) {
           <div className="hdr-clearance-label">OPERATOR CLEARANCE</div>
           <div className="hdr-clearance-val">LVL {clearance} {rankTitle}</div>
         </div>
-        <button className="hdr-balance" type="button" title="View transaction history">
+        <button
+          id="op-balance"
+          className="hdr-balance"
+          type="button"
+          title="View transaction history"
+          style={balPulse ? { boxShadow: `0 0 18px ${balPulse}`, borderColor: balPulse } : undefined}
+        >
           <div className="hdr-balance-row">
             <div className="hdr-balance-label">BALANCE</div>
             <svg className="hdr-balance-icon" viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="#8892b0" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

@@ -3,11 +3,14 @@
 // 5% critical (800-1800ms). Status text + LED colour follow the tier.
 // Deliberately keeps running under prefers-reduced-motion (it's an ambient
 // text/opacity readout, not transform motion) so the terminal reads as live.
+// In the player view it slides right of the module-map rail (left 306px).
 import { useEffect, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 
 type Tier = 'NOMINAL' | 'ELEVATED' | 'CRITICAL';
 
 export function SysReadout() {
+  const inPlayer = useLocation().pathname.startsWith('/module');
   const [offset, setOffset] = useState(88.4);
   const [tier, setTier] = useState<Tier>('NOMINAL');
 
@@ -26,7 +29,7 @@ export function SysReadout() {
 
   const tierClass = tier === 'CRITICAL' ? ' critical' : tier === 'ELEVATED' ? ' elevated' : '';
   return (
-    <div className={`sys-readout${tierClass}`}>
+    <div className={`sys-readout${tierClass}${inPlayer ? ' player' : ''}`}>
       <span className="sys-status">[SYSTEM_STATUS: {tier}]</span>
       <span className="sys-led statusled" />
       <span className="sys-offset">SYNC_OFFSET: {offset.toFixed(2)}ms</span>

@@ -81,6 +81,12 @@ export class Sfx {
     src.stop(t + dur + 0.02);
   }
 
+  /** One raw tone (used by the transfer overlay's rising data chatter). */
+  playTone(f1: number, f2: number, dur: number, type: OscillatorType, vol: number): void {
+    if (this.muted || this.sfxVol <= 0) return;
+    this.tone(f1, f2, dur, type, vol);
+  }
+
   play(name: SfxName): void {
     if (this.muted || this.sfxVol <= 0) return;
     switch (name) {
