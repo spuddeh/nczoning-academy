@@ -962,3 +962,42 @@ cannot catch this bug class.
   save (monolith saves from componentDidUpdate); the snapshot's `audio`
   object (line ~723) is built from LIVE state. Monolith defaults:
   sfxVol 0.8, musicVol 0.4, unmuted, cycle on.
+
+## Final parity sweep (2026-07-09) — full-monolith audit
+
+Method: exhaustive inventory of the f16bd4f monolith cross-checked against
+the rebuild — all 139 class methods, the full initial-state field list, all
+13 `sc-if` markup regions, the props bag vs markup consumption, the global
+`<style>` block (keyframes, responsive tiers, print), mount/unmount
+listeners, and a file-level diff of every shared asset.
+
+Results:
+
+- **Methods**: every method maps to a built slice or a documented
+  divergence. Confirmed DEAD in the monolith (do not port): `goGlossary`
+  (glossary is a modal, never a view), `_beep` (defined, never called),
+  the header MUSIC/SFX props block (2074–2081).
+- **State fields**: all mapped (view→routes; hoverLink/bump→CSS;
+  vw→matchMedia; the rest are 1:1 React state).
+- **Markup**: all 13 template regions built (boot incl. cursor/skip/
+  welcome/first-run, dashboard, player, progress=Service Record, glossary
+  floating+header variants, import msg).
+- **Global CSS**: all keyframes present except `floatup` and `flashbg` —
+  both defined but UNUSED in the monolith (dead CSS, not ported). All
+  responsive tiers present (≤1024, ≤640 incl. drawer rail + 44px targets,
+  `(hover: none)` link reset, tap-highlight/touch-action).
+- **Shared files**: progress.js, radio-engine.js, radio/stations.js,
+  config.js and every asset byte-identical / complete. support.js (DC
+  runtime) intentionally absent from the rebuild.
+- **Design-preview props** (`glossaryPlacement`, `showScanlines`,
+  `demoAutoBoot`): preview-only knobs; production defaults are what the
+  rebuild implements (floating FAB + header button at ≤640, scanlines on,
+  typed boot).
+- **Fixed by the sweep**: index.html `<head>` was missing the PNG favicon
+  sizes (16/32), `apple-touch-icon` and `site.webmanifest` links from the
+  monolith helmet. Only gap found.
+- Behavioural equivalences (not gaps): keydown `_syncMusic` → lazy
+  AudioContext resume on first gesture; keydown `_stick` writes → the
+  player's own scroll listener; balance re-seat `_courseStarted` gate →
+  login is gated on `courseLoading`, so the unconditional re-seat runs
+  strictly before any progress exists.
