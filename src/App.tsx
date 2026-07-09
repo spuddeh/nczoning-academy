@@ -43,6 +43,16 @@ const freshOperator = (eddies: number): OperatorState => ({
 
 const ECON_DEFAULTS = { symbol: '€$', startingBalance: 500, moduleReward: 1000, rightReward: 150, wrongPenalty: 250 };
 
+// Route adapter for the player. MUST live at module scope: defining it inside
+// App gives it a new component identity every render, and React then remounts
+// the whole player on every state tick (eddies count-up, flyers) — re-running
+// the mount scroll and flashing the view.
+type PlayerRouteProps = Omit<React.ComponentProps<typeof Player>, 'moduleId'>;
+function PlayerRoute(props: PlayerRouteProps) {
+  const { moduleId } = useParams();
+  return <Player {...props} moduleId={moduleId} />;
+}
+
 export function App() {
   const navigate = useNavigate();
   const atBoot = useLocation().pathname === '/';
@@ -403,34 +413,28 @@ export function App() {
     <Navigate to="/" replace />
   );
 
-  const PlayerRoute = () => {
-    const { moduleId } = useParams();
-    return (
-      <Player
-        course={course}
-        moduleId={moduleId}
-        quiz={op.quiz}
-        moduleDone={op.moduleDone}
-        revealedBy={op.revealedBy}
-        quizApi={quizApi}
-        moduleReward={(m) => m.reward ?? econ.moduleReward}
-        economySymbol={econ.symbol}
-        onAdvance={advance}
-        onSelectModule={(id) => navigate(`/module/${id}`)}
-        onBackToDashboard={() => navigate('/dashboard')}
-        onComplete={completeModule}
-        onSaveProgress={saveProgress}
-      />
-    );
-  };
-
   return (
     <Routes>
       <Route path="/" element={boot} />
       <Route path="/dashboard" element={shell(
         <Dashboard course={course} moduleDone={op.moduleDone} revealedBy={op.revealedBy} onOpenCourse={openCourse} />,
       )} />
-      <Route path="/module/:moduleId" element={shell(<PlayerRoute />)} />
+      <Route path="/module/:moduleId" element={shell(
+        <PlayerRoute
+          course={course}
+          quiz={op.quiz}
+          moduleDone={op.moduleDone}
+          revealedBy={op.revealedBy}
+          quizApi={quizApi}
+          moduleReward={(m) => m.reward ?? econ.moduleReward}
+          economySymbol={econ.symbol}
+          onAdvance={advance}
+          onSelectModule={(id) => navigate(`/module/${id}`)}
+          onBackToDashboard={() => navigate('/dashboard')}
+          onComplete={completeModule}
+          onSaveProgress={saveProgress}
+        />,
+      )} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );

@@ -1,8 +1,10 @@
 // Shared app header chrome: brand, nav tabs, clearance + balance cluster.
 // Measured spec: docs/monolith-parity-spec.md — "App shell". The balance is a
 // button (transaction history — later slice). SERVICE RECORD routes to the
-// Service Record view when that slice lands.
+// Service Record view when that slice lands. DASHBOARD is the active tab for
+// both the dashboard and player views (the monolith's navTabStyle rule).
 import { useMemo } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { IDENTITY, clearanceAndRank } from '../lib/academy';
 import type { Course } from '../lib/types';
 
@@ -14,6 +16,9 @@ interface AppHeaderProps {
 }
 
 export function AppHeader({ course, moduleDone, eddies, balPulse }: AppHeaderProps) {
+  const navigate = useNavigate();
+  const path = useLocation().pathname;
+  const dashActive = path === '/dashboard' || path.startsWith('/module');
   const { clearance, rankTitle } = useMemo(
     () => clearanceAndRank(course ?? {}, moduleDone),
     [course, moduleDone],
@@ -30,7 +35,13 @@ export function AppHeader({ course, moduleDone, eddies, balPulse }: AppHeaderPro
         </div>
       </div>
       <nav className="hdr-nav">
-        <button className="hdr-nav-btn active" type="button">DASHBOARD</button>
+        <button
+          className={`hdr-nav-btn${dashActive ? ' active' : ''}`}
+          type="button"
+          onClick={() => navigate('/dashboard')}
+        >
+          DASHBOARD
+        </button>
         <button className="hdr-nav-btn" type="button">SERVICE RECORD</button>
       </nav>
       <div className="hdr-meta">

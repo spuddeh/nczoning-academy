@@ -40,29 +40,31 @@ export function Player({
   const mainRef = useRef<HTMLElement>(null);
   const followRaf = useRef(0);
 
-  // Smoothly follow to the bottom of the stream (the monolith's stick follower).
+  // Smoothly follow the bottom of the stream (the monolith's stick follower).
+  // Runs CONTINUOUSLY while stuck so any content growth — a new stage, quiz
+  // feedback expanding — glides down instead of stepping; a user wheel/touch
+  // disengages it until the next advance/module entry.
   const follow = useCallback(() => {
     cancelAnimationFrame(followRaf.current);
-    let stable = 0;
     const loop = () => {
       const el = mainRef.current;
       if (!el) return;
       const target = el.scrollHeight - el.clientHeight;
       const diff = target - el.scrollTop;
-      if (Math.abs(diff) < 1) { stable++; if (stable > 6) return; }
-      else { stable = 0; el.scrollTop = el.scrollTop + diff * 0.16; }
+      if (Math.abs(diff) >= 1) el.scrollTop = el.scrollTop + diff * 0.16;
       followRaf.current = requestAnimationFrame(loop);
     };
     followRaf.current = requestAnimationFrame(loop);
   }, []);
 
-  // Resume position + jump to the furthest revealed content on module change.
+  // Resume position + jump to the furthest revealed content on module change,
+  // then engage the follower.
   useEffect(() => {
     if (!m) return;
     setRevealed(Math.max(revealedBy[m.id] ?? 0, 1));
     setDrawerOpen(false);
     const go = () => { const el = mainRef.current; if (el) el.scrollTop = el.scrollHeight; };
-    requestAnimationFrame(() => { go(); requestAnimationFrame(go); });
+    requestAnimationFrame(() => { go(); requestAnimationFrame(() => { go(); follow(); }); });
     return () => cancelAnimationFrame(followRaf.current);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [m?.id]);
