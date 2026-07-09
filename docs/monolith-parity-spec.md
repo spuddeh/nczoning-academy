@@ -821,3 +821,103 @@ Monolith: rail SAVE PROGRESS = `revealedBy[id] = max(…, revealed)` then
 `exportRecord()` directly. Both show the full eject animation. The
 rebuild's slice-2 `saveProgress` (bare download + whoosh) predates the
 overlay — fix it to route through the shared eject flow.
+
+## Certificate + name prompt + print CSS (extracted 2026-07-09)
+
+Monolith source: `git archive f16bd4f public/` → index.html. Methods:
+`openCert`/`confirmName`/`cancelNamePrompt`/`editCertName`/`closeCert`/
+`printCert` (957–967), `renderNamePrompt` (1628), `renderCert` (1950),
+print CSS (46–51). Root order: cert renders after the purge confirm, name
+prompt after cert (z decides anyway: cert 9998, prompt 9999).
+
+### Flow
+
+`openCert()` (VIEW CERTIFICATE, enabled only when certified): operator name
+non-blank → `certMode`; blank → `certPrompt` with EMPTY `nameInput`.
+`confirmName()`: sanitize `nameInput`; empty → no-op (button also disabled);
+else set operatorName (+ save), close prompt, open cert. `editCertName()`
+(from the cert): close cert, open prompt with nameInput = CURRENT name.
+`printCert()` = `window.print()`. `nameInput` stores the RAW value (maxLength
+42); sanitation happens on confirm only.
+
+### renderCert (z 9998)
+
+Scrim: fixed inset-0, `rgba(5,10,20,0.9)` + blur(4px), flex-centred, pad
+32, `overflow: auto`. NO click-outside close and NOT Escape-wired (close is
+the button only). Column (flex col centre, gap 18): the certificate box +
+a controls row.
+
+`#cert-print` box: 720px max 100%, bg navy, 2px cyan border, glow
+`0 0 50px rgba(0,240,255,0.2)`:
+
+- Titlebar solid cyan (navy text, pad 12 22, flex between gap 14 nowrap,
+  Night Corp Display 400 12px ls .06em): left
+  `NIGHT CORP // URBAN PLANNING DIVISION` (min-width 0,
+  ellipsis), right terminal id `NC-ACAD-01` (opacity .7, flex none).
+- Body pad `44px 48px 40px`, centred, relative. Grid overlay: absolute
+  inset-0, two linear-gradients `rgba(0,240,255,0.05) 1px, transparent
+  1px` (rows + 90deg columns), size 26×26, pointer-events none. Content
+  wrapper `position: relative` above it:
+  - nc-monogram.svg 52×28, centred, mb 20, opacity .92
+  - `CERTIFICATE OF FIELD CERTIFICATION` Fira 11px ls .24em gray, mb 18
+  - Course title Orbitron 800 30px ls .08em white, mb 6 (fallback
+    `TRANSMISSION PROTOCOLS`); subtitle gray 15px, mb 26
+  - `AWARDED TO` Fira 11px ls .18em gray, mb 8
+  - Operator name (sanitized, fallback `OPERATOR`) Orbitron 800 27px
+    ls .06em green, text-shadow `0 0 18px rgba(0,255,157,0.35)`, mb 6
+  - Rule 160×1px `rgba(0,240,255,0.35)` centred, mb 26
+  - `THIS CERTIFIES THAT THE OPERATOR HAS ATTAINED` Fira 12px ls .1em
+    gray, mb 6
+  - `CLEARANCE LEVEL <n> // <rank>` Orbitron 700 20px ls .1em cyan,
+    mb 30. Clearance = max clearance of DONE modules (same as the view).
+    Rank = the LAST entry in `course.ranks` (the top rank — NOT the
+    earned rank; fallback `CERTIFIED FIELD OPERATOR`).
+  - CERTIFIED stamp: inline-block, 3px green border, green text, pad
+    14 26, Orbitron 800 26px ls .2em, rotate(-4deg), bg
+    `rgba(0,255,157,0.08)`, glow `0 0 24px rgba(0,255,157,0.25)`, mb 32
+  - Footer: flex between, border-top `rgba(0,240,255,0.2)`, pt 18, Fira
+    11px ls .08em gray — `ISSUED <date>` (date white; `new
+    Date().toLocaleDateString('en-US', {year:'numeric', month:'long',
+    day:'numeric'})`) / `AUTH <NIGHT CORP // AUTOMATED>` (value cyan).
+
+`#cert-controls` row (flex gap 12): `[ PRINT CERTIFICATE ]` solid cyan
+(navy text, Orbitron 700 12px ls .14em, pad 12 22); `[ EDIT NAME ]` cyan
+outline; `[ CLOSE ]` gray outline.
+
+`renderCert` reads `certified` from progressStats but never checks it —
+`certMode` is the only gate (openCert is unreachable while the button is
+disabled). Keep the same reliance.
+
+### renderNamePrompt (z 9999, cyan — not the red confirm shell)
+
+Scrim `rgba(5,10,20,0.9)` blur(4px) pad 32, click-outside CANCELS. Box
+440px max 100%, bg navy, 1px cyan border, glow
+`0 0 44px rgba(0,240,255,0.22)`. Solid cyan titlebar
+`OPERATOR IDENTIFICATION` (navy text, pad 11 20, Night Corp Display 400
+14px ls .1em). Body pad `26px 28px 28px`:
+
+- `> The certificate must be issued in an operator name. Enter the name
+  or callsign to print on the record.` Fira 12px ls .08em gray lh 1.6,
+  mb 18
+- Label `OPERATOR NAME / CALLSIGN` Fira 10px ls .14em cyan, mb 7
+- Input: autoFocus, maxLength 42, same styling as the Service Record
+  identity input, mb 22. Enter → confirm; Escape → cancel (wired on the
+  INPUT, not globally).
+- Buttons flex gap 12: `[ ISSUE CERTIFICATE ]` flex 1, navy text — valid
+  (trimmed input non-empty): solid cyan; empty: bg `rgba(0,240,255,0.25)`,
+  border cyan-.3, not-allowed. `[ CANCEL ]` gray outline.
+
+### Print CSS
+
+```css
+@media print {
+  body * { visibility: hidden !important; }
+  #cert-print, #cert-print * { visibility: visible !important; }
+  #cert-print { position: absolute !important; left: 0; top: 0; width: 100% !important; box-shadow: none !important; }
+  #scanlines, #vign, #cert-controls { display: none !important; }
+}
+```
+
+Rebuild note: our vignette element id is `#vignette` (monolith: `#vign`) —
+target the rebuild's ids. Visibility (not display) keeps layout so the
+absolutely-positioned cert prints at the page origin.

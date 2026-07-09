@@ -265,7 +265,19 @@ In priority order:
    (overwrite confirm → cancel message) — all probes identical, pairs
    pixel-matched. VIEW CERTIFICATE gating (disabled unless certified) is in;
    its onClick lands with slice 5.
-5. **Certificate** view (name-gated, stamped; print CSS comes with it).
+5. ~~Certificate~~ **DONE (2026-07-09).** `CertificateOverlay` (no
+   click-outside/Escape close — button only, like the monolith; rank on the
+   cert is the TOP course rank, clearance is earned) + `NamePromptDialog`
+   (cyan, click-outside cancels, Enter/Escape on the input, raw value until
+   confirm) + print CSS in cert.css (`#cert-print` becomes the printed page;
+   rebuild ids — `#vignette`, not the monolith's `#vign`). VIEW CERTIFICATE
+   onClick wired (name-blank → prompt path). Harness-verified with a fully
+   certified seed (capture-cert.mjs): view gating, cert content
+   (CLEARANCE LEVEL 9 // CERTIFIED FIELD OPERATOR), print-media emulation
+   (cert visible+absolute, chrome hidden, controls display:none), edit-name
+   round trip (prefill → cleared disables ISSUE → reissue as new name →
+   propagates to the record view) — all probes identical, pairs
+   pixel-matched.
 6. **Radio panel** in React (the pill + engine wiring are done; the expanded
    panel with dial, transport, volume and the MUSIC/SFX toggles remains).
 

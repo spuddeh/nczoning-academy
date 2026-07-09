@@ -22,6 +22,7 @@ npm run dev          # port 5173
 node scripts/parity/capture.mjs          # boot + dashboard
 node scripts/parity/capture-modals.mjs   # glossary + txn ledger (seeds a record)
 node scripts/parity/capture-record.mjs   # Service Record + eject/slot/purge (seeds a record)
+node scripts/parity/capture-cert.mjs     # certificate + name prompt + print CSS (seeds a certified record)
 ```
 
 Outputs `scripts/parity/out/{monolith,rebuild}-{boot-typing,boot-form,boot-welcome,dashboard}.png`

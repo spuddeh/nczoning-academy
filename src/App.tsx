@@ -12,6 +12,8 @@ import { AppHeader } from './components/AppHeader';
 import { ShardOverlay } from './components/ShardOverlay';
 import type { ShardIOState } from './components/ShardOverlay';
 import { ConfirmDialog } from './components/ConfirmDialog';
+import { CertificateOverlay } from './components/CertificateOverlay';
+import { NamePromptDialog } from './components/NamePromptDialog';
 import { SysReadout } from './components/SysReadout';
 import { GlossaryFab } from './components/GlossaryFab';
 import { RadioPill } from './components/RadioPill';
@@ -85,6 +87,11 @@ export function App() {
   const [shardIO, setShardIO] = useState<ShardIOState | null>(null);
   const [pendingShard, setPendingShard] = useState<ProgressRecord | null>(null);
   const [purgePrompt, setPurgePrompt] = useState(false);
+  // Certificate: the overlay, its name-gate prompt, and the prompt's RAW
+  // input (sanitized only on confirm).
+  const [certMode, setCertMode] = useState(false);
+  const [certPrompt, setCertPrompt] = useState(false);
+  const [nameInput, setNameInput] = useState('');
 
   const sfx = useRef<Sfx>(null as unknown as Sfx);
   if (!sfx.current) sfx.current = new Sfx();
@@ -474,6 +481,20 @@ export function App() {
     setOp((o) => ({ ...o, operatorName: cleanNameInput(v) }));
   }, []);
 
+  // ---- certificate (gated on a non-blank operator name) ----
+  const openCert = () => {
+    if (op.operatorName.trim()) setCertMode(true);
+    else { setNameInput(''); setCertPrompt(true); }
+  };
+
+  const confirmName = () => {
+    const name = sanitizeName(nameInput);
+    if (!name) return;
+    setOp((o) => ({ ...o, operatorName: name }));
+    setCertPrompt(false);
+    setCertMode(true);
+  };
+
   const advance = useCallback((moduleId: string, revealed: number) => {
     setOp((o) => ({ ...o, revealedBy: { ...o.revealedBy, [moduleId]: Math.max(o.revealedBy[moduleId] ?? 0, revealed) } }));
   }, []);
@@ -631,6 +652,24 @@ export function App() {
           onCancel={() => setPurgePrompt(false)}
         />
       )}
+      {certMode && (
+        <CertificateOverlay
+          course={course}
+          moduleDone={op.moduleDone}
+          operatorName={op.operatorName}
+          onPrint={() => window.print()}
+          onEditName={() => { setCertMode(false); setNameInput(op.operatorName || ''); setCertPrompt(true); }}
+          onClose={() => setCertMode(false)}
+        />
+      )}
+      {certPrompt && (
+        <NamePromptDialog
+          value={nameInput}
+          onChange={setNameInput}
+          onConfirm={confirmName}
+          onCancel={() => setCertPrompt(false)}
+        />
+      )}
       {/* last, like the monolith: same z as the modal scrim, wins by DOM order */}
       <RadioPill stationIdx={radioIdx.station} trackIdx={radioIdx.track} playing={radioIdx.playing} />
     </div>
@@ -654,7 +693,7 @@ export function App() {
           onNameChange={setOperatorName}
           onEject={exportRecord}
           onSlotFile={slotFile}
-          onViewCert={() => { /* certificate slice (next) wires this */ }}
+          onViewCert={openCert}
           onPurge={() => setPurgePrompt(true)}
         />,
       )} />
