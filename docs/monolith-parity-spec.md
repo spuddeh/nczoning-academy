@@ -506,3 +506,22 @@ border + 44px glow; titlebar solid cyan `OPERATOR IDENTIFICATION` NCD 400
 `[ ISSUE CERTIFICATE ]` (solid cyan when a name is typed; dimmed
 `rgba(0,240,255,0.25)` + not-allowed when empty) + `[ CANCEL ]` outline
 gray. Enter confirms, Escape cancels.
+
+### Lab data contract (GAP FIX, 2026-07-09 — diverges from the monolith)
+The shell (monolith included) was built against the Design sample course,
+whose only lab was conditional retrieval — so it hardcoded one
+`If-None-Match:` input onto every lab and matched only
+`if-none-match-matches`. The authored course declares a richer per-lab
+contract the monolith never implemented (user-confirmed bug: m01's lab
+could never serve anything but the default 200):
+
+- `request.editable: string[]` — which fields the operator edits;
+  `query.<k>` renders a `?k=` input, `headers.<k>` renders a `k:` input;
+  empty = no inputs. `request.query`/`request.headers` carry base values
+  (m08 has a fixed `?full=1`).
+- canned `when` selection, first match in authored order, else `default`:
+  `if-none-match-matches` = edited If-None-Match equals the default
+  response's quote-stripped ETag; generic `<key>=<value>` = edited
+  query/header value equals `<value>` (m01's `full=1`); other states
+  (`stale`, `not-ready`, `rate-limited`) are not operator-reachable.
+- The request line renders `path?query` from the current values.

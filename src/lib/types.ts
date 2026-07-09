@@ -57,12 +57,21 @@ export interface LabCanned {
   body?: unknown;
 }
 
+export interface LabRequest {
+  method?: string;
+  path?: string;
+  query?: Record<string, string>;
+  headers?: Record<string, string>;
+  /** Which fields the operator may edit: 'query.<k>' or 'headers.<k>'. */
+  editable?: string[];
+}
+
 export interface Lab {
   id?: string;
   title?: string;
   briefing?: string;
   steps?: string[];
-  request?: { method?: string; path?: string };
+  request?: LabRequest;
   expected?: unknown;
   canned?: LabCanned[];
   debrief?: string;
