@@ -306,13 +306,15 @@ RESUME detection count completed modules only — the monolith also grants
 partial credit for started modules via `buildStages`, which needs the player's
 stage model. Port `partialFrac` with the player slice.
 
-Path to release:
-- All work goes through PRs (feature branch → `main`; no dev/main split, but
-  the practice stands). [PR #1](https://github.com/spuddeh/nczoning-academy/pull/1)
-  is the tracking PR for this rebuild; Cloudflare build comments land there.
-- Branch preview: https://feat-shell-rebuild.nczoning-academy.pages.dev
-- Merge PR #1 only at parity (this becomes 0.2.0). The 0.1.0 monolith keeps
-  serving until then.
+Path to release — **SHIPPED as 0.2.0, 2026-07-09**:
+- [PR #1](https://github.com/spuddeh/nczoning-academy/pull/1) merged to
+  `main` (`be63fa8`) at verified full parity after the final monolith sweep;
+  the 0.1.0 monolith (`public/index.html` + `support.js`) is retired from
+  `main` and remains reachable at git `f16bd4f` for the parity harness.
+- Production deploy verified end-to-end on the Pages URL (deep-link
+  redirect, login, live course fetch, zero console errors).
+- Release record: `CHANGELOG.md` (version headings, no tags). Next feature:
+  lab scenario selector (issue #2, `docs/decisions/lab-scenario-selector.md`).
 
 ---
 
