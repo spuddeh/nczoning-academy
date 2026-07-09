@@ -16,7 +16,8 @@ import { CertificateOverlay } from './components/CertificateOverlay';
 import { NamePromptDialog } from './components/NamePromptDialog';
 import { SysReadout } from './components/SysReadout';
 import { GlossaryFab } from './components/GlossaryFab';
-import { RadioPill } from './components/RadioPill';
+import { MusicPlayer } from './components/MusicPlayer';
+import type { RadioUiState } from './components/MusicPlayer';
 import { FlyerLayer, TransferOverlay } from './components/Overlays';
 import type { Flyer, TransferState } from './components/Overlays';
 import { GlossaryModal } from './components/modals/GlossaryModal';
@@ -35,7 +36,8 @@ import type {
 
 interface ImportMsg { ok: boolean; text: string; }
 
-// The operator-progress slice of state (mirrors the record fields).
+// The operator-progress slice of state (mirrors the record fields; audio is
+// NOT here — the snapshot builds it from the live radio/SFX state).
 interface OperatorState {
   operatorName: string;
   moduleDone: Record<string, unknown>;
@@ -43,12 +45,15 @@ interface OperatorState {
   eddies: number;
   revealedBy: Record<string, number>;
   txns: unknown[];
-  audio: RecordAudio | null;
 }
 
 const freshOperator = (eddies: number): OperatorState => ({
-  operatorName: '', moduleDone: {}, quiz: {}, eddies, revealedBy: {}, txns: [], audio: null,
+  operatorName: '', moduleDone: {}, quiz: {}, eddies, revealedBy: {}, txns: [],
 });
+
+const RADIO_DEFAULTS: RadioUiState = {
+  station: 0, track: 0, stationTracks: {}, cycle: true, musicVol: 0.4, musicMuted: false, paused: false,
+};
 
 const ECON_DEFAULTS = { symbol: '€$', startingBalance: 500, moduleReward: 1000, rightReward: 150, wrongPenalty: 250 };
 
@@ -75,7 +80,15 @@ export function App() {
   const [transfer, setTransfer] = useState<TransferState | null>(null);
   const [bootWelcome, setBootWelcome] = useState(false);
   const [importMsg, setImportMsg] = useState<ImportMsg | null>(null);
-  const [radioIdx, setRadioIdx] = useState({ station: 0, track: 0, playing: false });
+  // Radio: mirror of the engine's discrete state, the pill/panel toggle, and
+  // the track progress (polled every 400ms only while the panel is open).
+  const [radioSt, setRadioSt] = useState<RadioUiState>(RADIO_DEFAULTS);
+  const [playerOpen, setPlayerOpen] = useState(false);
+  const [trackPos, setTrackPos] = useState({ frac: 0, dur: 240 });
+  // SFX prefs are React state (the panel renders them); synced into the Sfx
+  // instance below. Monolith defaults: sfx 0.8, unmuted.
+  const [sfxMuted, setSfxMuted] = useState(false);
+  const [sfxVol, setSfxVolState] = useState(0.8);
   // Overlay modals. Glossary query/tier persist across open/close for the
   // session (monolith keeps them in app state; NOT part of the record).
   const [glossaryOpen, setGlossaryOpen] = useState(false);
@@ -94,7 +107,7 @@ export function App() {
   const [nameInput, setNameInput] = useState('');
 
   const sfx = useRef<Sfx>(null as unknown as Sfx);
-  if (!sfx.current) sfx.current = new Sfx();
+  if (!sfx.current) { sfx.current = new Sfx(); sfx.current.sfxVol = 0.8; }
   const radio = useRef<RadioEngine | null>(null);
   const welcomeT = useRef<number | undefined>(undefined);
   const flyerId = useRef(0);
@@ -108,8 +121,8 @@ export function App() {
   const ioClear = useRef<number | undefined>(undefined);
 
   // Live-state ref so adapter/economy callbacks never capture a stale render.
-  const live = useRef({ op, course });
-  live.current = { op, course };
+  const live = useRef({ op, course, radioSt, sfxMuted, sfxVol });
+  live.current = { op, course, radioSt, sfxMuted, sfxVol };
 
   // Modal flags mirrored into a ref so the mount-time key handler sees them.
   const modals = useRef({ glossaryOpen, txnOpen });
@@ -126,7 +139,7 @@ export function App() {
   econRef.current = econ;
 
   const snapshot = useCallback((): ProgressRecord => {
-    const { op: o, course: c } = live.current;
+    const { op: o, course: c, radioSt: r, sfxMuted: m, sfxVol: sv } = live.current;
     return {
       schema: RECORD_SCHEMA,
       course: c?.id || 'sample',
@@ -134,7 +147,10 @@ export function App() {
       moduleDone: o.moduleDone, quiz: o.quiz, eddies: o.eddies,
       revealedBy: o.revealedBy, txns: o.txns,
       operatorName: sanitizeName(o.operatorName),
-      audio: o.audio,
+      audio: {
+        muted: m, musicOn: !r.musicMuted, musicVol: r.musicVol, sfxVol: sv,
+        stationIdx: r.station, trackIdx: r.track, stationTracks: r.stationTracks, cycle: r.cycle,
+      },
     };
   }, []);
 
@@ -164,7 +180,16 @@ export function App() {
         stations: stations(),
         audioContext: sfx.current.context(),
         autoRotate: true,
-        onStateChange: (st) => setRadioIdx({ station: st.stationIndex, track: st.trackIndex, playing: !st.paused && !st.musicMuted }),
+        onStateChange: (st) => setRadioSt({
+          station: st.stationIndex, track: st.trackIndex, stationTracks: st.trackIndexByStation,
+          cycle: st.cycle, musicVol: st.musicVolume, musicMuted: st.musicMuted, paused: st.paused,
+        }),
+      });
+      // the engine doesn't emit on create — seed the mirror
+      const st = radio.current.getState();
+      setRadioSt({
+        station: st.stationIndex, track: st.trackIndex, stationTracks: st.trackIndexByStation,
+        cycle: st.cycle, musicVol: st.musicVolume, musicMuted: st.musicMuted, paused: st.paused,
       });
     }
     // Keyboard scrolling of the lesson/dashboard (targets the visible <main>).
@@ -207,15 +232,36 @@ export function App() {
     };
   }, []);
 
-  // Debounced local save whenever operator state changes (persist only).
+  // Debounced local save whenever operator state OR the persisted audio
+  // prefs change (persist only). The monolith saves on every state update;
+  // these are the fields the snapshot actually carries.
   useEffect(() => {
     if (!cfg().persist || !progress || !signedIn) return;
     const t = window.setTimeout(() => { try { progress.save(); } catch { /* storage unavailable */ } }, 400);
     return () => window.clearTimeout(t);
-  }, [op, signedIn, progress]);
+  }, [op, radioSt, sfxMuted, sfxVol, signedIn, progress]);
 
   // Music runs only off the boot screen.
   useEffect(() => { radio.current?.setActive(!atBoot); }, [atBoot]);
+
+  // The Sfx instance mirrors the React prefs (it gates every play() call).
+  useEffect(() => {
+    sfx.current.muted = sfxMuted;
+    sfx.current.sfxVol = sfxVol;
+  }, [sfxMuted, sfxVol]);
+
+  // Track progress: poll the engine every 400ms, only while the panel is
+  // open (continuous values are NOT emitted through onStateChange).
+  useEffect(() => {
+    if (!playerOpen) return;
+    const tick = () => {
+      const st = radio.current?.getState();
+      setTrackPos({ frac: st?.trackProgress ?? 0, dur: st?.trackDuration || 240 });
+    };
+    tick();
+    const t = window.setInterval(tick, 400);
+    return () => window.clearInterval(t);
+  }, [playerOpen]);
 
   // ---- eddies economy ----
   const animateEddies = useCallback((target: number) => {
@@ -319,8 +365,12 @@ export function App() {
   // ---- record adoption (login + slot share it) ----
   const applyAudio = useCallback((a: RecordAudio | null) => {
     if (a) {
-      if (typeof a.muted === 'boolean') sfx.current.muted = a.muted;
-      if (typeof a.sfxVol === 'number') sfx.current.sfxVol = Math.max(0, Math.min(1, a.sfxVol));
+      if (typeof a.muted === 'boolean') { sfx.current.muted = a.muted; setSfxMuted(a.muted); }
+      if (typeof a.sfxVol === 'number') {
+        const v = Math.max(0, Math.min(1, a.sfxVol));
+        sfx.current.sfxVol = v;
+        setSfxVolState(v);
+      }
       radio.current?.restore({
         stationIndex: typeof a.stationIdx === 'number' && a.stationIdx >= 0 ? a.stationIdx : undefined,
         trackIndexByStation: a.stationTracks && typeof a.stationTracks === 'object' ? a.stationTracks : undefined,
@@ -338,7 +388,7 @@ export function App() {
   const adoptRecord = useCallback((rec: ProgressRecord, name: string) => {
     setOp({
       operatorName: name, moduleDone: rec.moduleDone, quiz: rec.quiz as Record<string, QuizAnswerState>,
-      eddies: rec.eddies, revealedBy: rec.revealedBy, txns: rec.txns, audio: rec.audio,
+      eddies: rec.eddies, revealedBy: rec.revealedBy, txns: rec.txns,
     });
     setEddiesShown(rec.eddies);
     applyAudio(rec.audio);
@@ -479,6 +529,55 @@ export function App() {
 
   const setOperatorName = useCallback((v: string) => {
     setOp((o) => ({ ...o, operatorName: cleanNameInput(v) }));
+  }, []);
+
+  // ---- radio panel intents (monolith: user-initiated SFX is a host concern;
+  // the engine does the swap and emits the new state) ----
+  const togglePlayer = useCallback(() => {
+    setPlayerOpen((o) => !o);
+    sfx.current.play('tick');
+  }, []);
+
+  const advanceTrack = useCallback((dir: number) => {
+    if (!radio.current) return;
+    sfx.current.play('drivehi');
+    if (dir > 0) radio.current.next(); else radio.current.prev();
+  }, []);
+
+  const selectStation = useCallback((i: number) => {
+    if (!radio.current) return;
+    sfx.current.play('drivehi');
+    radio.current.selectStation(i);
+  }, []);
+
+  const togglePlay = useCallback(() => {
+    if (!radio.current) return;
+    radio.current.toggle();
+    sfx.current.play('nav');
+  }, []);
+
+  const toggleCycle = useCallback(() => {
+    if (!radio.current) return;
+    radio.current.toggleCycle();
+    sfx.current.play('tick');
+  }, []);
+
+  const setMusicVol = useCallback((v: number) => radio.current?.setMusicVolume(v), []);
+  const setSfxVol = useCallback((v: number) => setSfxVolState(Math.max(0, Math.min(1, v))), []);
+
+  // Unmuting confirms audibly with a nav blip (muting is silent, obviously).
+  const toggleMusic = useCallback(() => {
+    const r = radio.current;
+    if (!r) return;
+    r.toggleMusicMuted();
+    if (!r.getState().musicMuted) sfx.current.play('nav');
+  }, []);
+
+  const toggleMute = useCallback(() => {
+    const next = !sfx.current.muted;
+    sfx.current.muted = next; // ahead of the state sync so the blip gates right
+    setSfxMuted(next);
+    if (!next) sfx.current.play('nav');
   }, []);
 
   // ---- certificate (gated on a non-blank operator name) ----
@@ -671,7 +770,25 @@ export function App() {
         />
       )}
       {/* last, like the monolith: same z as the modal scrim, wins by DOM order */}
-      <RadioPill stationIdx={radioIdx.station} trackIdx={radioIdx.track} playing={radioIdx.playing} />
+      <MusicPlayer
+        open={playerOpen}
+        st={radioSt}
+        trackProg={trackPos.frac}
+        trackDur={trackPos.dur}
+        sfxMuted={sfxMuted}
+        sfxVol={sfxVol}
+        sfx={sfx.current}
+        onToggleOpen={togglePlayer}
+        onPrev={() => advanceTrack(-1)}
+        onNext={() => advanceTrack(1)}
+        onTogglePlay={togglePlay}
+        onToggleCycle={toggleCycle}
+        onSelectStation={selectStation}
+        onMusicVol={setMusicVol}
+        onSfxVol={setSfxVol}
+        onToggleMusic={toggleMusic}
+        onToggleMute={toggleMute}
+      />
     </div>
   ) : (
     <Navigate to="/" replace />

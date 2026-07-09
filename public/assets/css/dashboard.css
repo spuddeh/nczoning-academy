@@ -465,48 +465,4 @@
 }
 .gloss-fab svg { display: block; flex: none; }
 
-/* radio pill (collapsed music player) */
-.radio-pill {
-  position: fixed;
-  right: 22px;
-  bottom: 22px;
-  z-index: 9995;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 10px 14px;
-  background: rgba(10, 25, 47, 0.94);
-  border: 1px solid rgba(0, 240, 255, 0.5);
-  box-shadow: 0 0 22px rgba(0, 240, 255, 0.14);
-  cursor: pointer;
-  backdrop-filter: blur(4px);
-}
-.radio-eq { display: flex; align-items: flex-end; gap: 2px; height: 16px; }
-.radio-eq-bar {
-  width: 3px;
-  height: 16px;
-  background: var(--primary);
-  transform-origin: center bottom;
-  border-radius: 1px;
-  box-shadow: 0 0 5px var(--primary);
-  /* animation duration/delay set inline per bar from the track bpm */
-}
-.radio-freq {
-  font-family: var(--font-mono);
-  font-size: 11px;
-  letter-spacing: 0.12em;
-  font-weight: 600;
-  color: var(--primary);
-  flex: none;
-}
-.radio-track-window { overflow: hidden; width: 96px; flex: none; }
-.radio-track {
-  font-family: var(--font-mono);
-  font-size: 11px;
-  letter-spacing: 0.12em;
-  font-weight: 600;
-  color: var(--tertiary);
-  white-space: nowrap;
-  display: inline-block;
-  will-change: transform;
-}
+/* radio pill + panel styles live in radio.css */

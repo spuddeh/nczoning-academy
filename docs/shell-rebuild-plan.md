@@ -149,9 +149,9 @@ nczoning-academy/
 ```
 
 ### 3.3 How data and modules connect
-- `config.js`, `progress.js`, and `radio/stations.js` load as classic scripts
-  in `index.html` and publish globals (`radio-engine.js` joins them when the
-  radio panel view is rebuilt). `src/lib/academy.ts` wraps those globals with
+- `config.js`, `progress.js`, `radio/stations.js` and `radio-engine.js` load
+  as classic scripts in `index.html` and publish globals.
+  `src/lib/academy.ts` wraps those globals with
   typed functions so the React code never touches `window` directly.
 - The course loads at runtime: in live mode the app fetches
   `/courses/<id>.json` (rooted, never relative — see §2.5); otherwise it falls
@@ -278,8 +278,24 @@ In priority order:
    round trip (prefill → cleared disables ISSUE → reissue as new name →
    propagates to the record view) — all probes identical, pairs
    pixel-matched.
-6. **Radio panel** in React (the pill + engine wiring are done; the expanded
-   panel with dial, transport, volume and the MUSIC/SFX toggles remains).
+6. ~~Radio panel~~ **DONE (2026-07-09).** `MusicPlayer` replaces `RadioPill`
+   (one component, collapsed pill + expanded panel, like the monolith's
+   renderMusicPlayer): now-playing box (freq/station/10-bar EQ/track/status/
+   progress with 400ms polling while open), transport, station chips,
+   AUTO-ROTATE, MUSIC + SYSTEM SOUNDS volume rows (speaker mutes, sliders,
+   right-click reset to defaults). Pill gains the muted variant (gray
+   border/text) and opens the panel. App now mirrors the FULL engine state
+   plus SFX prefs as React state and — closing a known spec gap — the record
+   snapshot builds `audio` from live state instead of echoing the adopted
+   value, so shards/persistence carry the operator's actual radio + SFX
+   prefs (monolith default sfxVol 0.8 adopted too). The monolith's header
+   MUSIC/SFX button props turned out to be dead code (never consumed in the
+   DC markup), so the volume rows are the only mute UI — parity confirmed.
+   Harness-verified (capture-radio.mjs, seeded audio pins the station):
+   pill, panel, pause/play, next-track, station dial, cycle toggle, music
+   mute, slider + right-click reset, SFX mute, muted pill, and the
+   persisted audio object — byte-identical on both apps after the same
+   interaction sequence; pairs pixel-matched.
 
 Done as of the 2026-07-09 parity rebuild (previously listed here): the radio
 pill, the glossary floating button, the animated SYNC_OFFSET, and the

@@ -937,3 +937,28 @@ checkbox off) plus an inset box-shadow fill as fallback — shadows print as
 content ink. Verified with `page.pdf({ printBackground: false })`; note
 `emulateMediaType('print')` applies print CSS but NOT the stripping, so it
 cannot catch this bug class.
+
+### Radio panel — implementation addenda (extracted 2026-07-09)
+
+- Handler SFX (host concern; the engine only swaps audio): dial/track
+  changes `drivehi`; play/pause `nav`; cycle toggle, panel open AND close,
+  and volume right-click reset `tick`; unmuting (music or SFX) confirms
+  with `nav` — muting is silent.
+- Track progress/duration are runtime-only (NOT emitted through
+  onStateChange): the monolith polls `getState().trackProgress` every
+  400ms while the panel is open (`_startProgTimer`), duration
+  `trackDuration || 240`.
+- Cycle button textContent is `⟳AUTO-ROTATE · ON|OFF` (no space — the
+  flex gap is the spacing). Caption: `TRACK n / total  ·  ⏮ ⏭ STEP TRACKS`
+  (two source spaces, collapse to one on render).
+- Pill track text falls back to the STATION NAME when the track has no
+  title (`T.title || ST.name`).
+- The header MUSIC/SFX toggle props (`toggleMusic`, `musicBtnStyle`,
+  `sfxBtnStyle`, titles/icons at monolith lines 2074-2081) are DEAD CODE —
+  produced in the props bag but never consumed anywhere in the DC markup.
+  The panel's volume-row speaker buttons are the only mute UI. Do not
+  "restore" header buttons later.
+- Audio persistence: every radio/SFX state change schedules the debounced
+  save (monolith saves from componentDidUpdate); the snapshot's `audio`
+  object (line ~723) is built from LIVE state. Monolith defaults:
+  sfxVol 0.8, musicVol 0.4, unmuted, cycle on.
