@@ -28,11 +28,20 @@ step.
 
 ## The views
 
-- **Boot splash / login** — terminal boot sequence with a floppy-read tick
-  sound; a pseudo-login where you enter an operator name (defaults to
+- **Lock / standby (`/`)** — the landing page, in front of boot. States what
+  the Academy is and renders a SYSTEM BROADCAST announcements feed from
+  `public/messages.json` (fetched `no-store`, so posts go live without a
+  rebuild; empty hides the panel, a failed fetch shows an evergreen fallback).
+  The LOGIN click is the audio gate: it resumes the shared `AudioContext` and
+  builds the radio engine, so boot inherits a running context instead of
+  playing silently. The clock reports Night City's year (2077). See
+  [`decisions/lock-screen-and-audio-gate.md`](decisions/lock-screen-and-audio-gate.md).
+- **Boot splash / login (`/boot`)** — terminal boot sequence with a floppy-read
+  tick sound; a pseudo-login where you enter an operator name (defaults to
   "S. Dorsett") before you can access the terminal — that name carries through
   to the certificate and the service record; plus a "SLOT SERVICE RECORD
-  SHARD" import path that takes you straight in.
+  SHARD" import path that takes you straight in. Hard-guarded: reached only by
+  passing through the lock, so a refresh or direct hit redirects to `/`.
 - **Dashboard** — operator standing, eddies balance, course list, and quick
   links (map, Discord, Ko-fi, GitHub repos) with custom SVG icons; animated
   `SYSTEM_STATUS` telemetry sits in the bottom-left readout.

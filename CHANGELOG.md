@@ -3,6 +3,21 @@
 Version headings in this file are the release record (no git tags or
 GitHub Releases, matching the map repo's convention).
 
+## [Unreleased]
+
+### Added
+
+- Lock / standby screen at `/` — landing page with a `SYSTEM BROADCAST` feed
+  read from `public/messages.json` (editable, no rebuild). Boot moves to
+  `/boot`, guarded so a refresh or direct hit returns to the lock.
+
+### Fixed
+
+- No autoplay warning on load: the radio engine (and its `AudioContext`) now
+  builds on the LOGIN gesture rather than at app mount.
+- The lock's `access` cue no longer races `AudioContext.resume()`, which
+  dropped it silently on keyboard activation.
+
 ## 0.2.0 - 2026-07-09
 
 Shell rebuilt from the Claude Design 0.1.0 monolith into React + TypeScript
