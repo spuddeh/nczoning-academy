@@ -223,14 +223,18 @@ In priority order:
    signed in; unknown routes → `/`), `public/_redirects` shipped. Verified on
    the Cloudflare branch preview: `/dashboard` deep link serves the SPA (200),
    guard redirects, login navigates, zero console errors.
-2. **Module player** (the core view, and the reason for React). Extract its
-   spec from the monolith first (renderPlayer/renderChunk/renderQuiz/renderLab/
-   buildStages + the rail/drawer templates → append to
-   `docs/monolith-parity-spec.md`), then build: module-map rail, streamed
-   content blocks, the four quiz types (multiple choice, multi-select,
-   scenario, ordering with drag), the lab runner, and the eddies award flow.
-   Add the `/module/:id` route. Port `partialFrac` (partial progress credit)
-   back into the dashboard bar when `buildStages` exists.
+2. ~~Module player~~ **DONE (2026-07-09, `d4182d0`).** Spec extracted to the
+   parity doc, then built: rail (+ drawer ≤640px), stage stream with gated
+   CONTINUE and resume, all chunk types, the four quiz types (incl.
+   lift-and-carry drag), lab runner (canned + ETag matching; per-lab state
+   fixes the monolith's cross-module lab-state leak), war-story scenario,
+   eddies economy (flyers, ledger, TRANSFER overlay, balance count-up/pulse),
+   `/module/:moduleId` route, `partialFrac` restored to the dashboard.
+   Verified against the monolith through the same headless drive (identical
+   stage flow, award amounts and balances; rail row height exact) and on the
+   Cloudflare preview end-to-end. Remaining player-adjacent pieces live with
+   their own slices: txn-history modal + eject/slot overlay animations
+   (Service Record), glossary modal, certificate flow from CERTIFIED.
 3. **Glossary** modal (the FAB + header button already render; wire `open`).
 4. **Service Record** view (shard eject/slot animations, operator list, purge).
 5. **Certificate** view (name-gated, stamped; print CSS comes with it).
