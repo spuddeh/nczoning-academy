@@ -1,0 +1,277 @@
+/* NC Zoning Academy — lock / standby screen (pre-boot landing).
+ * Same house style as boot.css: navy ground, cyan halo, sharp corners, caps.
+ * References the semantic tokens in theme.css only — no hardcoded colour.
+ */
+
+.lock-screen {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: var(--bg);
+  z-index: 50;
+  padding: 40px 24px;
+  overflow-x: hidden;
+  overflow-y: auto; /* grid centering scrolls cleanly when content is tall */
+}
+
+/* cyan halo, anchored slightly below the top edge */
+.lock-backdrop {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 50% 12%, rgba(0, 240, 255, 0.08), transparent 62%);
+}
+
+/* thin scan line across the very top of the frame */
+.lock-topline {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--primary), transparent);
+  opacity: 0.5;
+}
+
+.lock-stack {
+  position: relative;
+  width: 560px;
+  max-width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.lock-logo {
+  height: 72px;
+  width: auto;
+  display: block;
+  margin: 0 0 22px;
+  filter: brightness(0) invert(1) drop-shadow(0 0 14px rgba(0, 240, 255, 0.45));
+}
+
+.lock-wordmark {
+  margin: 0;
+  font-family: var(--font-identity);
+  font-weight: 400;
+  font-size: 34px;
+  letter-spacing: 0.14em;
+  line-height: 1;
+  color: var(--text);
+}
+
+.lock-sub {
+  margin-top: 10px;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.22em;
+  color: var(--muted);
+}
+
+/* plain-language "what this is" line */
+.lock-desc {
+  max-width: 440px;
+  margin: 18px 0 0;
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--text-soft);
+  text-wrap: pretty;
+
+  & strong { color: var(--text); font-weight: 600; }
+}
+
+/* SYSTEM LOCKED status strip + live clock */
+.lock-status {
+  width: 100%;
+  margin: 30px 0 26px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 20px;
+  border: 1px solid rgba(0, 240, 255, 0.28);
+  background: rgba(10, 25, 47, 0.6);
+}
+.lock-status-left {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  text-align: left;
+}
+.lock-led {
+  width: 9px;
+  height: 9px;
+  flex: none;
+  border-radius: 50%;
+  background: var(--secondary);
+  box-shadow: 0 0 10px var(--secondary);
+}
+.lock-status-title {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 0.16em;
+  color: var(--secondary);
+}
+.lock-status-note {
+  margin-top: 3px;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.16em;
+  color: var(--placeholder);
+}
+.lock-clock { text-align: right; }
+.lock-clock-time {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  font-size: 20px;
+  letter-spacing: 0.08em;
+  line-height: 1;
+  color: var(--primary);
+  font-variant-numeric: tabular-nums;
+}
+.lock-clock-date {
+  margin-top: 4px;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.16em;
+  color: var(--muted);
+}
+
+/* ---- SYSTEM BROADCAST feed (announcements from /messages.json) ---- */
+.lock-broadcast {
+  width: 100%;
+  margin: 0 0 26px;
+  text-align: left;
+  border: 1px solid rgba(0, 240, 255, 0.28);
+  background: rgba(10, 25, 47, 0.6);
+}
+.lock-broadcast-head {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 11px 18px;
+  border-bottom: 1px solid rgba(0, 240, 255, 0.18);
+  background: rgba(0, 240, 255, 0.04);
+}
+.lock-broadcast-led {
+  width: 7px;
+  height: 7px;
+  flex: none;
+  border-radius: 50%;
+  background: var(--primary);
+  box-shadow: 0 0 8px var(--primary);
+}
+.lock-broadcast-title {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  color: var(--primary);
+}
+.lock-broadcast-list {
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+.lock-msg {
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+  padding: 13px 18px;
+  border-bottom: 1px solid rgba(136, 146, 176, 0.12);
+
+  &:last-child { border-bottom: 0; }
+}
+/* per-level accent — drives the dot and the tag colour */
+.lock-msg { --lvl: var(--muted); }
+.lock-msg.update { --lvl: var(--primary); }
+.lock-msg.alert  { --lvl: var(--secondary); }
+.lock-msg.info   { --lvl: var(--muted); }
+
+.lock-msg-dot {
+  width: 7px;
+  height: 7px;
+  flex: none;
+  border-radius: 50%;
+  margin-top: 5px;
+  background: var(--lvl);
+  box-shadow: 0 0 7px var(--lvl);
+}
+.lock-msg-body { min-width: 0; flex: 1; }
+.lock-msg-head {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.lock-msg-tag {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 9px;
+  letter-spacing: 0.16em;
+  color: var(--lvl);
+}
+.lock-msg-title {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  color: var(--text);
+}
+.lock-msg-date {
+  margin-left: auto;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  color: var(--placeholder);
+}
+.lock-msg-text {
+  margin-top: 4px;
+  font-family: var(--font-body);
+  font-size: 13.5px;
+  line-height: 1.45;
+  color: var(--muted);
+}
+
+/* the one action — solid cyan, matching the boot ACCESS button's ready state */
+.lock-login {
+  width: 100%;
+  text-align: center;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 15px;
+  letter-spacing: 0.2em;
+  padding: 17px;
+  cursor: pointer;
+  background: var(--primary);
+  border: 1px solid var(--primary);
+  border-radius: var(--radius);
+  color: var(--navy);
+  box-shadow: 0 0 22px rgba(0, 240, 255, 0.25);
+  transition: box-shadow 0.2s;
+
+  &:hover {
+    box-shadow: 0 0 34px rgba(0, 240, 255, 0.55);
+  }
+}
+
+.lock-audio-hint {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-top: 18px;
+  color: var(--placeholder);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+}
+
+@media (max-width: 640px) {
+  .lock-wordmark { font-size: 26px; }
+  .lock-status { flex-direction: column; align-items: flex-start; gap: 12px; }
+  .lock-clock { text-align: left; }
+  .lock-login { min-height: 52px; }
+}

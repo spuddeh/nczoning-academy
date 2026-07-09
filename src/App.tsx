@@ -1,9 +1,10 @@
 // Top-level app: owns the operator/record state, the Progress adapter, the
 // SFX synth, the radio engine host, and the eddies economy (flyers, ledger,
-// transfer). Views are routes: / (boot), /dashboard, /module/:moduleId —
+// transfer). Views are routes: / (lock), /boot, /dashboard, /module/:moduleId —
 // post-login routes are guarded and share the app shell.
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Navigate, Route, Routes, useLocation, useNavigate, useParams } from 'react-router-dom';
+import { Lock } from './views/Lock';
 import { Boot } from './views/Boot';
 import { Dashboard } from './views/Dashboard';
 import { Player } from './views/Player';
@@ -31,7 +32,7 @@ import { Sfx, attachPointerTick } from './lib/sfx';
 import type { QuizApi } from './components/player/QuizView';
 import type {
   Course, CourseModule, ProgressRecord, Question, QuizAnswerState,
-  RadioEngine, RecordAudio, Txn,
+  RadioEngine, RadioEngineState, RecordAudio, Txn,
 } from './lib/types';
 
 interface ImportMsg { ok: boolean; text: string; }
@@ -69,8 +70,13 @@ function PlayerRoute(props: PlayerRouteProps) {
 
 export function App() {
   const navigate = useNavigate();
-  const atBoot = useLocation().pathname === '/';
+  // The whole pre-auth surface: the lock screen and the boot splash behind it.
+  const path = useLocation().pathname;
+  const preAuth = path === '/' || path === '/boot';
   const [signedIn, setSignedIn] = useState(false);
+  // Set as the operator leaves the lock; gates /boot. In-memory on purpose —
+  // a refresh clears it, so every fresh load starts at the lock screen.
+  const [entered, setEntered] = useState(false);
   const [course, setCourse] = useState<Course | null>(null);
   const [courseLoading, setCourseLoading] = useState(false);
   const [op, setOp] = useState<OperatorState>(() => freshOperator(500));
@@ -162,7 +168,27 @@ export function App() {
     currentName: () => live.current.op.operatorName,
   }));
 
-  // ---- mount: course load, pointer tick, radio engine, keyboard scrolling ----
+  // Build the radio engine. Deliberately NOT called at mount: it needs the
+  // shared AudioContext, and constructing one before user activation is what
+  // makes Chrome log "The AudioContext was not allowed to start". The lock
+  // screen's LOGIN click is the gesture, so this runs from there. The engine
+  // constructs inactive (active=false), so music still waits for /dashboard.
+  const startRadio = useCallback(() => {
+    if (radio.current || !window.NCRadio || !stations().length) return;
+    const mirror = (st: RadioEngineState) => setRadioSt({
+      station: st.stationIndex, track: st.trackIndex, stationTracks: st.trackIndexByStation,
+      cycle: st.cycle, musicVol: st.musicVolume, musicMuted: st.musicMuted, paused: st.paused,
+    });
+    radio.current = window.NCRadio.create({
+      stations: stations(),
+      audioContext: sfx.current.context(),
+      autoRotate: true,
+      onStateChange: mirror,
+    });
+    mirror(radio.current.getState()); // the engine doesn't emit on create — seed the mirror
+  }, []);
+
+  // ---- mount: course load, pointer tick, keyboard scrolling ----
   useEffect(() => {
     let alive = true;
     setCourseLoading(true);
@@ -175,23 +201,6 @@ export function App() {
       setEddiesShown(bal);
     });
     const detachTick = attachPointerTick(sfx.current);
-    if (window.NCRadio && stations().length) {
-      radio.current = window.NCRadio.create({
-        stations: stations(),
-        audioContext: sfx.current.context(),
-        autoRotate: true,
-        onStateChange: (st) => setRadioSt({
-          station: st.stationIndex, track: st.trackIndex, stationTracks: st.trackIndexByStation,
-          cycle: st.cycle, musicVol: st.musicVolume, musicMuted: st.musicMuted, paused: st.paused,
-        }),
-      });
-      // the engine doesn't emit on create — seed the mirror
-      const st = radio.current.getState();
-      setRadioSt({
-        station: st.stationIndex, track: st.trackIndex, stationTracks: st.trackIndexByStation,
-        cycle: st.cycle, musicVol: st.musicVolume, musicMuted: st.musicMuted, paused: st.paused,
-      });
-    }
     // Keyboard scrolling of the lesson/dashboard (targets the visible <main>).
     const onKey = (e: KeyboardEvent) => {
       // Escape closes modals BEFORE the input guard — works from the search box.
@@ -241,8 +250,8 @@ export function App() {
     return () => window.clearTimeout(t);
   }, [op, radioSt, sfxMuted, sfxVol, signedIn, progress]);
 
-  // Music runs only off the boot screen.
-  useEffect(() => { radio.current?.setActive(!atBoot); }, [atBoot]);
+  // Music runs only once the operator is past the lock and boot screens.
+  useEffect(() => { radio.current?.setActive(!preAuth); }, [preAuth]);
 
   // The Sfx instance mirrors the React prefs (it gates every play() call).
   useEffect(() => {
@@ -680,6 +689,13 @@ export function App() {
     [course, op.moduleDone],
   );
 
+  const lock = (
+    <Lock
+      sfx={sfx.current}
+      onLogin={() => { startRadio(); setEntered(true); navigate('/boot'); }}
+    />
+  );
+
   const boot = (
     <Boot
       sfx={sfx.current}
@@ -796,7 +812,10 @@ export function App() {
 
   return (
     <Routes>
-      <Route path="/" element={boot} />
+      <Route path="/" element={lock} />
+      {/* Boot is a transient splash, not a destination: reaching it without the
+          LOGIN gesture means a silent boot, the exact state the lock prevents. */}
+      <Route path="/boot" element={entered ? boot : <Navigate to="/" replace />} />
       <Route path="/dashboard" element={shell(
         <Dashboard course={course} moduleDone={op.moduleDone} revealedBy={op.revealedBy} onOpenCourse={openCourse} />,
       )} />
