@@ -271,3 +271,238 @@ replace it. localStorage keys are `ncza:v1:progress:<name>` + `ncza:v1:lastUser`
    — fixed in the rebuild.
 3. Hover states move from JS style-mutation to CSS `:hover` (same visual
    result; idiomatic in the rebuild's architecture).
+
+## Module player (extracted 2026-07-09; build slice pending)
+
+### Shell
+`isPlayer` view replaces the dashboard under the same app header:
+`.player-wrap` flex row, `flex:1; overflow:hidden; position:relative`.
+
+- **Rail** `aside.player-rail`: 288px, border-right cyan .2, bg
+  `rgba(10,25,47,0.85)`, own scroll, flex column.
+  - Top block (pad 16 18, border-bottom cyan .15): `RETURN TO DASHBOARD`
+    button with a leading chevron — Fira 10.5px ls .12em gray, 1px gray-.5
+    border, pad 7 12, full width, left-aligned; hover: bg cyan .08,
+    border+text cyan.
+  - `MODULE MAP` header: Orbitron 700 11px ls .14em cyan with a 3px cyan
+    left bar (padding-left 9); course title under it Fira 10px gray mt 8
+    pl 12.
+  - Module rows (list pad 6 12 20): row = flex gap 11 align-start pad 11 12,
+    cursor pointer, mb 4; ACTIVE row has border cyan .4 + bg cyan .07 (else
+    transparent border). Dot 11px (mt 3): done = solid green + 8px glow;
+    in-progress = amber + 6px glow + `.ledblink`; else transparent with 1px
+    gray border. Title Rajdhani 600 14px ls .04em (cyan when active, white
+    otherwise, ellipsis); meta Fira 9.5px ls .08em gray mt 2 =
+    `CLR <n> // COMPLETE|IN PROGRESS|LOCKED-READY`.
+  - Sticky footer (border-top cyan .15, bg `rgba(8,18,36,0.96)`, pad
+    14 18 16): `SESSION` Orbitron 700 10px ls .18em gray + `STAGE n / total`
+    Fira 10px cyan; 3px progress bar (navy bg, cyan .2 border, cyan-to-green
+    fill, width = revealed/total%); `SAVE PROGRESS` button full width (bg
+    cyan .08, cyan border, Orbitron 700 11px ls .14em, shard icon 22x10.4
+    currentColor, hover: solid cyan bg + navy text) — records
+    `revealedBy[id] = max(revealedBy[id], revealed)` then ejects a shard;
+    caption `EJECTS A SHARD WITH YOUR CURRENT PLACE` Fira 9px `#54617f`
+    centred mt 8.
+- **Main** `main.player-main`: flex 1, overflow-y auto (this is the keyboard
+  scroll target). At 640px and below the rail becomes an off-canvas drawer
+  (`.player-rail.open` + `.rail-backdrop.open`, styles already in the global
+  responsive block) toggled by the sticky `.rail-toggle` button
+  (hamburger + `MODULE MAP`).
+
+SYSTEM_STATUS readout: `left` animates 18px to **306px** in the player view
+(rail width + margin); transition already specced.
+
+### Body (renderPlayer)
+Column `max-width:860px; margin:0 auto; padding:34px 40px 80px`.
+Header block (mb 26): breadcrumb `> MODULE <ID-UPPER> // CLEARANCE LEVEL <n>`
+Fira 11px ls .14em cyan mb 8; h1 = module title, NCD 400 34px ls .05em white
+margin 0 0 6px; subtitle Rajdhani 16px gray; module progress bar mt 14 —
+4px, navy bg, cyan .2 border, cyan-to-green fill, width = revealed/stages%,
+`transition: width .3s`.
+
+Then the revealed stages in order, each wrapped in a div with
+`id="stg-<moduleId>-<data.id>"` when the stage has data (txn jump target).
+Below them the CONTINUE button (`data-nosfx`, full width, Orbitron 700 13px
+ls .18em, pad 15, mt 4): enabled = bg cyan .08 + cyan border/text,
+`[ CONTINUE ]`; gated = transparent, gray .3 border, gray text, not-allowed,
+`[ RESPOND TO CONTINUE ]`. Hidden once the `complete` stage is revealed.
+
+### Stage model
+`buildStages(m)` = `[hook, objectives, ...chunks, lab?, ...quiz, scenario?,
+recap, complete]`. `revealed` counts visible stages (min 1);
+`revealedBy[moduleId]` records the furthest reveal per module (written on
+every advance). Resume = max(revealedBy, 1). `stageGated(stage)` =
+quiz/scenario not yet answered, which disables CONTINUE. `advance()` bumps
+revealed + revealedBy and re-sticks the scroll to bottom.
+`selectCourse()` (dashboard card/CTA click) enters the player at the first
+incomplete module (else the last); `selectModule(id)` from the rail. On
+entry `_jumpBottom()`: scroll main to bottom over two rAFs, then re-engage
+the stick-to-bottom follower (`_stick`; wheel/touch opt out, End re-engages,
+smoothing `scrollTop += diff * 0.16` per frame).
+
+### Stage primitives
+- `sectionLabel(txt, color)`: Orbitron 700 12px ls .18em coloured text +
+  1px gradient rule (colour at 55 alpha to transparent), flex gap 10, mb 16.
+- `card(children, accent)`: 1px border (default `rgba(0,240,255,0.18)`),
+  bg `rgba(17,34,64,0.55)`, blur 4, pad 22 24, mb 20.
+- `terminalBlock(lines)`: border cyan .25, bg `rgba(5,10,20,0.85)`, pad
+  16 18; each line Fira 13px lh 1.7 pre-wrap — lines starting `>` are cyan,
+  rest white (unescape `&gt;`).
+- `md(str)` markdown-lite: `**bold**` = white 700 strong; `*em*` = white em;
+  backtick code = Fira 0.88em cyan on cyan-.1 bg, 1px cyan-.2 border, pad
+  1 5; `[label](url)` = link (global link styles). No other syntax.
+- `sources(list)`: mt 12 flex wrap gap 8; `SOURCES:` Fira 9.5px ls .14em
+  gray; each source a Fira 10px link — kind `project` = amber with a lozenge
+  prefix + amber-.35 underline, else cyan with an arrow prefix.
+
+### Chunk types (renderChunk — heading optional: Orbitron 600 15px white mb 12)
+- `text`: p, gray 16px lh 1.65, md().
+- `code`: dark block (bg `rgba(5,10,20,0.9)`, cyan .2 border) with header
+  row (`<LANG>` + `// SNIPPET`, Fira 10px ls .12em gray, border-bottom cyan
+  .15) and pre Fira 13px lh 1.65 cyan, pad 14 16, overflow-x auto.
+- `table`: scroll wrapper (cyan .2 border), table min-width 420 collapse;
+  th left, pad 10 14, Fira 10.5px ls .12em cyan on cyan-.06 bg,
+  border-bottom cyan .25; td pad 10 14, 14px — first column white Fira,
+  others gray Rajdhani; row border-bottom gray .12. Optional `body` caption
+  under, gray 14px mt 10.
+- `callout`: 1px DASHED border in variant colour (info cyan / warning amber /
+  policy gray), bg `rgba(255,179,0,0.03)`, pad 14 16; label
+  `INFO|CAUTION|POLICY` with a warning glyph, Fira 10.5px ls .14em 600 mb 7;
+  body white 15px lh 1.6 md().
+- `terminal-log`: terminalBlock(lines).
+
+### Quizzes (renderQuiz; card accent: unanswered cyan .18; answered green .3
+or red .3 by correctness)
+Kind labels: mcq `KNOWLEDGE CHECK // SINGLE SELECT`, multi `// MULTI SELECT`,
+order `// SEQUENCE`, spot-wrong `// SPOT THE FALSE STATEMENT`.
+Prompt: white 17px 600 lh 1.4 mb 16.
+- `optionButton` states: idle (cyan-.3 border, white), selected (cyan
+  border/text, cyan-.08 bg), correct (green, green-.08), wrong (red,
+  red-.08), revealCorrect (green, green-.05). Leading mark Fira 13px:
+  `[ ]` / `[#]` filled / `[check]` / `[cross]`. Body Rajdhani 15px 500,
+  pad 12 14, flex gap 11. Feedback line under (when shown): `// <feedback>`
+  Fira 12px, red if wrong else green, pad 8 14 4.
+- mcq/spot-wrong: one click answers (locks, reveals correct via
+  revealCorrect on others); feedback shows for the selected + correct
+  options; `_recordAnswer` + `awardFrom`.
+- multi: options toggle selected; `[ SUBMIT SELECTION ]` (brkBtn) grades
+  exact-set match; answered: correct chosen = correct, correct unchosen =
+  revealCorrect, wrong chosen = wrong; all feedbacks shown.
+- order: rows shuffled on first render (Fisher-Yates into `order`).
+  Row: flex gap 10, 1px border (unanswered cyan-.3; answered green/red per
+  `stepIdx===pos`), pad 10 12, bg `rgba(17,34,64,0.4)`; grip handle (6-dot
+  SVG 12x18, gray, cyan when carried, `touch-action:none`; pointer-event
+  drag = lift-and-carry: dy as translateY + scale 1.035 + deep shadow,
+  siblings shift by one slot (row height + 8px gap) with `transform .16s
+  cubic-bezier(.2,.7,.3,1)`, drop commits the splice); index `1.` Fira 13px
+  cyan 22px col; text 15px; up/down arrow buttons (arrowBtn: 8px font, 1px
+  border cyan-.4, gray-.3 when disabled at ends) OR check/cross marks when
+  answered. A row that just moved gets `ncrowbump 0.42s` (keyframe already
+  in the global CSS). Hint `// DRAG ROWS OR USE ARROWS TO ORDER` Fira
+  10.5px gray mt 10; `[ SUBMIT SEQUENCE ]` grades `order[i]===i`. Result
+  line mt 12 Fira 12px: `// SEQUENCE CORRECT` green or `// SEQUENCE
+  INCORRECT — correct order shown by numbering` red.
+- brkBtn (submit style): mt 14, transparent, 1px cyan border, cyan,
+  Orbitron 700 12px ls .14em, pad 11 20.
+
+### Lab (renderLab)
+- sectionLabel `LAB // <TITLE|CONSOLE>` cyan.
+- SIMULATION banner: 1px amber border, amber-.08 bg, pad 8 12, mb 16;
+  8px amber `.ledblink` square + `SIMULATION MODE — RESPONSES ARE CANNED,
+  NO LIVE NETWORK` Fira 11px ls .14em amber 600.
+- briefing: gray 15px lh 1.6 md(), mb 14.
+- REQUEST block (cyan .25 border, bg `rgba(5,10,20,0.85)`, pad 14 16,
+  mb 14): `REQUEST` label Fira 11px gray; method green 600 + path cyan Fira
+  14px; `If-None-Match:` label + input (bg navy, cyan-.3 border, cyan Fira
+  12px, pad 8 10, flex 1 min 220px); `[ TRANSMIT ]` full-width SOLID cyan
+  button (Orbitron 700 13px ls .16em, navy text, pad 12).
+- Canned-response logic: default = the `when==='default'` entry (or first);
+  if a `when==='if-none-match-matches'` entry exists and the trimmed,
+  quote-stripped field equals the default response's quote-stripped ETag,
+  serve it (the 304). No live network ever.
+- Response block (border/status colour: under 300 green, under 400 amber,
+  else red): header row (9px glow dot + `HTTP <status> OK|NOT MODIFIED`
+  Fira 14px 600), `HEADERS OF INTEREST` label + `key: value` lines (key
+  amber, value white, Fira 12px lh 1.7 break-all), `BODY` label + pretty
+  JSON pre (Fira 12.5px cyan) or `(no body)` italic gray.
+- debrief (after transmit): 2px cyan left border, pl 12, gray 14px md().
+
+### Scenario (renderScenario — the war story)
+Amber themed: sectionLabel `WAR STORY // <TITLE|SCENARIO>` amber; card
+accent amber .25 (green/red .3 once answered). terminalBlock(situation);
+prompt white 17px 600 margin 18 0 14; options behave exactly like mcq
+(qState keyed by the scenario id). DEBRIEF after answering: 2px amber left
+border, pl 12; `DEBRIEF: ` prefix amber Fira 11px ls .12em; body gray 14px
+md().
+
+### Economy + ledger
+- Answer: `_recordAnswer` logs a txn {kind:'answer', moduleId/Title, qid,
+  qPrompt, correct, delta +-rightReward/wrongPenalty, balanceAfter} and
+  `awardFrom(e)` plays ok/err + spawns a flyer from the clicked element.
+- Flyer: `+€$ n` / `-€$ n` Fira 700 22px in green/red with 14px text glow,
+  fixed at the source centre; after 400ms it flies to the `#op-balance`
+  centre (`transform .74s cubic-bezier(.4,0,.25,1)`, scale to 0.65, opacity
+  to 0.75); at 1160ms it is removed, the balance animates to the new value
+  (count 650ms) and the balance box pulses (border+glow in the delta
+  colour, 560ms).
+- `completeModule` (`[ TRANSMIT FOR COMPLETION // +€$ <reward> ]`, gold
+  solid button, Orbitron 800 14px ls .16em): logs a module txn, then the
+  TRANSFER overlay — fixed inset dim `rgba(5,10,20,0.72)` blur 3; 480px
+  box. Phase 1 `transferring` (red): ledblink warning glyph +
+  `TRANSFERRING FUNDS...` Fira 600 16px ls .16em red; 12px red progress
+  bar +4% every 32ms after a 260ms delay, rising chatter tone
+  (`200 + p*5.4` Hz square 0.045s) every 8%; `CURRENT PROGRESS n %`
+  caption. Phase 2 `transfer` (gold, chime): `TRANSFER €$ <amt>` header,
+  2px gold rule, `ACCOUNT BALANCE` label + Fira 600 34px gold count-up
+  (900ms rAF) with gold glow; commits eddies + moduleDone, holds 1500ms,
+  closes.
+- Complete stage card (when done): accent green .35; `CERTIFIED` stamp with
+  a check — NCD 400 22px ls .08em green, 2px green border, pad 8 16,
+  rotate(-3deg), green glow; `[ SAVE TO SHARD ]` solid cyan;
+  `[ RETURN TO DASHBOARD ]` brkBtn. When not yet done, the copy reads
+  "All sections cleared. Transmit for completion..." (gray 15px).
+- Txn history modal exists (openTxns from the balance button; `jumpToTxn`
+  deep-links to `stg-<mod>-<qid>`, reveals it and pulses a cyan box-shadow
+  for 1.4s) — full modal spec to be extracted with the Service Record slice.
+
+### Radio panel (expanded pill; renderMusicPlayer)
+Pill (collapsed) already specced — addition: the border and freq/track text
+go gray (border gray-.4) when music is muted; hover forces a solid cyan
+border.
+Expanded: fixed right 22 bottom 22, 300px (max `calc(100vw - 44px)`), bg
+`rgba(8,18,34,0.97)`, 1px cyan border, shadow `0 0 40px
+rgba(0,240,255,0.22)`, blur 5, Fira base.
+- Titlebar: solid cyan, navy text, `NC RADIO` with a note glyph in NCD 400
+  13px ls .12em, pad 8 8 8 14; minimize button (en-dash, navy, 16px, 700).
+- Now-playing box (pad 13 15, cyan .25 border, cyan .04 bg): freq 26px 700
+  cyan with 12px glow (gray, no glow, when muted/paused); station name 11px
+  ls .12em white ellipsis; 10-bar EQ at 32px (same eqbar formula); track
+  title 13px 600 gold; status line 9px ls .13em gray — `PAUSED` /
+  `MUTED` / `<genre> - <bpm> BPM` with mode glyphs; track progress — 4px
+  bar (gray-.22 track, cyan fill + glow; gray when muted/paused) with m:ss
+  current/total (engine trackProgress polled every 400ms while open;
+  duration from the engine, default 240s).
+- Transport row (flex gap 8 mt 14): prev / `PLAY`|`PAUSE` (big variant:
+  flex 1, cyan .1 bg, cyan border) / next — 38px high, hover cyan.
+- `TRACK n / total - STEP TRACKS` caption 9px ls .16em gray centred mt 8.
+- Station chips (flex wrap gap 6 mt 14): freq labels Fira 10px pad 5 8 —
+  active solid cyan/navy 700; inactive transparent/gray with gray-.35
+  border, hover cyan.
+- AUTO-ROTATE toggle: full width 32px, `AUTO-ROTATE - ON|OFF` with a loop
+  glyph, 10px ls .16em 600 — on = cyan .12 bg + cyan; off = transparent +
+  gray.
+- Volume rows x2 (`MUSIC` default 0.4, `SYSTEM SOUNDS` default 0.8):
+  speaker mute button 24x22 (red with X lines when muted, waves otherwise),
+  label 10px ls .14em gray, right side `n%` cyan or `MUTED` red; range
+  input 0..1 step .01 `accent-color` cyan (dimmed when muted); right-click
+  anywhere on the row resets to the default (with a tick).
+- SFX on interactions: dial/track changes `drivehi`, play/pause `nav`,
+  cycle/minimize/volume-reset `tick`.
+
+### Certificate name prompt (renderNamePrompt — for the cert slice)
+Modal (z 9999, dim blur 4, click-outside cancels): 440px navy box, cyan
+border + 44px glow; titlebar solid cyan `OPERATOR IDENTIFICATION` NCD 400
+14px ls .1em; body prompt Fira 12px gray; same input styling as boot;
+`[ ISSUE CERTIFICATE ]` (solid cyan when a name is typed; dimmed
+`rgba(0,240,255,0.25)` + not-allowed when empty) + `[ CANCEL ]` outline
+gray. Enter confirms, Escape cancels.
