@@ -1,8 +1,7 @@
 // Shared app header chrome: brand, nav tabs, clearance + balance cluster.
 // Measured spec: docs/monolith-parity-spec.md — "App shell". The balance
 // button opens the transaction-history modal; the header GLOSSARY button is
-// the ≤640px opener (the FAB hides there). SERVICE RECORD routes to the
-// Service Record view when that slice lands. DASHBOARD is the active tab for
+// the ≤640px opener (the FAB hides there). DASHBOARD is the active tab for
 // both the dashboard and player views (the monolith's navTabStyle rule).
 import { useMemo } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -46,7 +45,13 @@ export function AppHeader({ course, moduleDone, eddies, balPulse, glossaryOpen, 
         >
           DASHBOARD
         </button>
-        <button className="hdr-nav-btn" type="button">SERVICE RECORD</button>
+        <button
+          className={`hdr-nav-btn${path === '/record' ? ' active' : ''}`}
+          type="button"
+          onClick={() => navigate('/record')}
+        >
+          SERVICE RECORD
+        </button>
       </nav>
       <div className="hdr-meta">
         <button

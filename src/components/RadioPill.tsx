@@ -29,10 +29,10 @@ export function RadioPill({ stationIdx, trackIdx, playing }: RadioPillProps) {
           <div
             key={i}
             className="radio-eq-bar"
+            // one shorthand (delay + play-state folded in): mixing it with
+            // longhand animation-* keys makes React warn on every rerender
             style={{
-              animation: `eqbar ${(beat * 0.5 * (1 + (i % 4) * 0.28)).toFixed(3)}s ease-in-out infinite alternate`,
-              animationDelay: `${i * 0.06}s`,
-              animationPlayState: playing ? 'running' : 'paused',
+              animation: `eqbar ${(beat * 0.5 * (1 + (i % 4) * 0.28)).toFixed(3)}s ease-in-out ${(i * 0.06).toFixed(2)}s infinite alternate ${playing ? 'running' : 'paused'}`,
               opacity: playing ? 1 : 0.25,
             }}
           />

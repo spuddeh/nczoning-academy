@@ -636,3 +636,188 @@ global pointer tick). Box 760px, gold border, glow
 - Txn shape (writer + reader agree, incl. 0.1.0 shards):
   `{ id, ts, kind:'answer'|'module', moduleId, moduleTitle, qid, qPrompt,
   correct, delta, balanceAfter }`.
+
+## Service Record view + shard I/O overlays (extracted 2026-07-09)
+
+Monolith source: `git archive f16bd4f public/` → index.html. Methods:
+`progressStats` (1852), `renderProgress` (1862), `exportRecord` (726),
+`renderEject` (762), `importRecord`/`slotShard`/`renderSlot` (804–907),
+`renderSlotConfirm` (937), `askPurge`/`confirmPurge`/`renderPurgeConfirm`
+(911–936), `setOperatorName` (642), `onImportPick` (956).
+
+### progressStats (certification rule)
+
+`mods` = modules sorted by order; `done` = completed; `capstone` = first
+module with `capstone === true`. `certified` = capstone done if a capstone
+exists, else "every module complete" (and at least one module). Clearance
+for the view = `max(1, ...done.map(clearance||1))` or 1 — same derivation
+as the header (reuse `clearanceAndRank`).
+
+### renderProgress (the view)
+
+Nav: header SERVICE RECORD tab (`goProgress()` — plain view switch, no
+extra sfx beyond the global pointer tick). Active tab styling identical to
+DASHBOARD's. Scrollable main, pad `48px 40px 60px`, inner max-width 960
+centred:
+
+- `> READING SERVICE RECORD SHARD...` Fira 12px ls .1em cyan, mb 8.
+- Title row (flex gap 16, mb 6): shard-icon.svg 68×32 + h1
+  `SERVICE RECORD SHARD` Night Corp Display 400 38px ls .05em white.
+- Lede gray 16px mb 28: "Standing, completed modules and earned
+  certifications, written to a datashard. Eject the shard to carry your
+  progress, or slot a saved one to restore it."
+- OPERATOR IDENTITY section (cyan label): box flex gap 14 align-end wrap,
+  1px `rgba(0,240,255,0.18)` border, bg `rgba(17,34,64,0.5)`, pad 18 20,
+  mb 34. Input block flex-1 min 240: label `OPERATOR NAME / CALLSIGN`
+  Fira 10px ls .14em cyan mb 7; input (value = LIVE state, maxLength 42,
+  onChange `_cleanNameInput` — strips control chars only, no trim while
+  typing — then debounced save) bg `#050a14`, 1px cyan-.4 border, white,
+  Orbitron 700 16px ls .08em, pad 12 14, placeholder `e.g. S. DORSETT`.
+  Caption right (max 280, pb 12) Fira 10.5px gray: "Prints on your field
+  certificate and is written to your Service Record Shard."
+- Stat row (flex gap 14 wrap, mb 34), cards `flex:1` min 150, 1px
+  `<color>55` border, bg `rgba(17,34,64,0.55)`, pad 16 18; label Fira
+  9.5px ls .16em gray mb 8; value Orbitron 700 22px (RANK card 15px)
+  `overflow-wrap:anywhere`: CLEARANCE `LVL n` cyan / RANK title cyan /
+  MODULES CLEAR `d / n` green / EDDIES BALANCE `€$ n` gold (red if
+  negative). Balance shows `s.eddies` (settled, not the count-up shown).
+- MODULE STATUS section (cyan): one row per module — flex gap 12, pad
+  12 14, mb 6; done → 1px `rgba(0,255,157,0.3)` border + bg green-.05,
+  else gray-.2 border. Dot 11×11: done = solid green + glow; else
+  transparent + 1px gray border. Title Rajdhani 600 15px (white done /
+  gray not); meta Fira 9.5px gray
+  `CLR n // [CAPSTONE // ]COMPLETE|NOT STARTED`. Right status Fira 10px
+  `✓ CERTIFIED` green / `— PENDING` gray. Empty course →
+  `> no modules in this course.`
+- EARNED CERTIFICATIONS section (green): stamps flex gap 16 wrap mb 34
+  align-start. Per done module: 2px green border, green text, pad 10 14,
+  Orbitron 700 11px, rotate(-2deg), bg green-.06 — `MODULE CLEAR` +
+  module id uppercase Fira 9px gray. If certified, a bigger stamp is
+  UNSHIFTED first: 3px border, pad 14 20, 800 16px ls .16em,
+  rotate(-4deg), bg green-.1, glow `0 0 22px rgba(0,255,157,0.25)` —
+  `CERTIFIED` / `FIELD OPERATOR` (green, .8). Empty → dashed gray box:
+  `> NO CERTIFICATIONS ON RECORD. Complete a module to earn your first
+  stamp.`
+- SERVICE RECORD SHARD // DATA TRANSFER section (cyan): button row flex
+  gap 12 wrap. Outline buttons (transparent bg, 1px accent border, accent
+  text, Orbitron 700 12px ls .14em, pad 13 20): `[ EJECT SHARD ]` cyan →
+  exportRecord; `[ SLOT SHARD ]` cyan = a `<label>` wrapping a hidden
+  file input (`.shard,.json,application/json`; input value reset after
+  pick so the same file re-fires); `[ VIEW CERTIFICATE ]` green,
+  disabled unless certified (disabled: gray-.3 border, gray text,
+  opacity .6, not-allowed cursor).
+- `importMsg` line (mt 14, Fira 12px, green ok / red fail): `> <text>`.
+  Set by eject/slot/purge/cancel flows; persists across view switches
+  (lives in app state; only a boot-screen shard login clears it).
+- If not certified: locked hint mt 12 Fira 11px gray: `> CERTIFICATE
+  LOCKED. Complete the capstone module to unlock the printable field
+  certificate.`
+- Danger zone: mt 30, pt 18, border-top 1px DASHED `rgba(255,51,85,0.35)`,
+  flex gap 16. `[ PURGE LOCAL CACHE ]` red outline (border red-.55,
+  11.5px, pad 11 18; hover = solid red bg + `#0a0f14` text) + caption
+  Fira 10.5px gray: "Wipes this terminal back to a clean record. Ejected
+  shards are unaffected."
+
+NOTE: no operator list in this view — `listUsers()` is progress-adapter
+API only (the boot screen owns operator selection). Plan's earlier
+"operator list" mention was wrong.
+
+### exportRecord + renderEject (eject overlay)
+
+Guard: no-op if an eject is already running. Play `whoosh`; fname
+`NCZA_<SLUG>_operator-shard.shard` (sanitized name uppercased,
+non-alphanumerics → `-`, trimmed, fallback `OPERATOR`). Progress 0→100
+over 820ms driven by rAF, plus a `setTimeout(dur+250)` guard so a
+backgrounded tab still finishes (download must never gate on rAF). At
+finish: build JSON (pretty, 2-space) → Blob → temp `<a download>` click;
+phase `ejected` (or `error` + message); `importMsg` set
+`SHARD EJECTED // <fname>` / `EJECT FAILED // <msg>`; overlay auto-clears
+after 2300ms.
+
+Overlay (z **9998** — UNDER the confirm dialogs at 9999 and the radio
+pill wins by DOM order): fixed inset-0 flex-centred, bg
+`rgba(5,10,20,0.78)` + blur(3px). Box 460px max 92%, 1px accent border,
+bg `rgba(5,10,20,0.97)`, glow `0 0 44px <accent-glow>`. Accent: cyan
+while writing (glow `rgba(0,240,255,0.28)`), green ejected (.3), red
+error (`rgba(255,51,85,0.32)`).
+
+- Header row (pad 14 22, bottom border gray-.2): 9px LED dot (ledblink
+  while writing; solid when done/err) + Fira 600 14px ls .16em accent
+  text `WRITING SERVICE RECORD SHARD...` / `SHARD EJECTED` /
+  `EJECT FAILED`.
+- Reader graphic (pad `36px 32px 22px`, centred; canvas 270×92):
+  reader body abs left 0 top 16, 152×60, 2px gray border, radius 6, bg
+  `linear-gradient(180deg,#0e1c30,#0a1424)`, inset shadow
+  `inset 0 0 12px rgba(0,0,0,0.6)`; slot lip right -2 top/bottom 11
+  width 8 bg `#050a12` with gray top/bottom borders; two 6px LEDs at
+  11,11 gap 5 (first accent, ledblink while active; second gold with
+  glow → gray no-glow when ejected). Shard chip abs left 106 top 24,
+  64×46, 1.5px accent border radius 4, bg
+  `linear-gradient(150deg,#0a2436,#061520)`, shard-icon.svg 48×23
+  centred inside (opacity .95); `transform: translateX(0→120px)` when
+  ejected (`transition: transform .78s cubic-bezier(.2,.85,.25,1),
+  opacity .6s ease`), glow `0 0 22px accent` when out (else
+  `0 0 8px rgba(0,240,255,0.3)`); error → chip opacity .35.
+- Footer (pad `0 32px 26px`): while writing — 8px bar (1px cyan border,
+  bg `#0a0f14`, fill cyan + glow `0 0 10px cyan`, `width .05s linear`)
+  + centred Fira 11px ls .14em gray `ENCODING RECORD  n %` (two
+  spaces); done — centred Fira 11.5px green `> <fname>` (break-all);
+  error — red `> <msg>`.
+
+### importRecord / slotShard / renderSlot (slot overlay)
+
+File read via FileReader text → `progress.import` (parse + migrate;
+reject → `importMsg` `SHARD REJECTED // <msg>`; read error →
+`SHARD READ FAILED // could not read file`). Then: at boot → boot login
+flow (already built); else if current progress non-empty
+(`moduleDone` non-empty OR eddies ≠ startingBalance) → set
+`pendingShard` (confirm dialog); else slot immediately.
+
+`slotShard`: guard if already running; `whoosh`; phase `reading`,
+progress 0→100 over 820ms (same rAF + guard-timeout pattern). At finish:
+commit the record (REPLACE op state — never merge; set operator +
+adapter user; schedule save), `chime`, phase `slotted`, auto-clear
+1700ms. Commit message: `SHARD SLOTTED // n MODULE(S) CERTIFIED
+[// m IN PROGRESS]` / `SHARD SLOTTED // PROGRESS RESTORED //
+m MODULE(S) IN PROGRESS` / `SHARD SLOTTED // CLEAN RECORD`
+(in-progress = revealedBy > 1 and not done).
+
+Overlay = mirror of eject: same shell, no error state; titles
+`READING SERVICE RECORD SHARD...` / `RECORD SLOTTED`; chip slides IN
+(`translateX(120px→0)`, opacity .95 when slotted); second LED gold →
+green (keeps glow); footer `DECODING RECORD  n %` → green
+`> RECORD RESTORED TO TERMINAL`.
+
+### renderSlotConfirm + renderPurgeConfirm (red confirm dialogs)
+
+Shared shell — z **9999**, scrim `rgba(5,10,20,0.9)` blur(4px) pad 32,
+click-outside cancels; box 460px max 100%, bg `#0a192f`, 1px red border,
+glow `0 0 44px rgba(255,51,85,0.28)`; SOLID RED title bar (`#0a0f14`
+text, pad 11 20, Night Corp Display 400 14px ls .1em); body pad
+`26px 26px 24px`: white Fira 13px lh 1.7 line (mb 10), gray 11.5px
+`> ...` detail (mb 22), then flex gap 12 buttons — solid red primary
+(flex 1, Orbitron 700 12px ls .12em pad 12 18, `#0a0f14` text) + gray
+outline `[ CANCEL ]`. NOT Escape-wired in the monolith (only
+glossary/txn are); keep that.
+
+- Slot confirm (pendingShard set): `⚠ OVERWRITE WARNING` / "SLOTTING
+  WILL OVERWRITE CURRENT PROGRESS." / `> Incoming shard: n module(s),
+  operator "<name|UNNAMED>". This replaces your current record and
+  cannot be undone.` / `[ OVERWRITE & SLOT ]`. Cancel → importMsg
+  `SLOT CANCELLED // CURRENT PROGRESS PRESERVED`.
+- Purge confirm: `⚠ PURGE LOCAL CACHE` / "THIS WIPES ALL PROGRESS ON
+  THIS TERMINAL." / `> Certifications, quiz results, eddies and session
+  place reset to a clean record. Any shard you have already ejected is
+  unaffected. This cannot be undone.` / `[ PURGE RECORD ]`. Confirm:
+  remove persisted profile for the CURRENT operator (persist mode only),
+  play `err`, reset moduleDone/quiz/revealedBy/eddies(→starting)/txns,
+  keep operator signed in; importMsg `LOCAL CACHE PURGED // RECORD RESET
+  TO CLEAN STATE`.
+
+### Rail SAVE PROGRESS routes through the eject overlay
+
+Monolith: rail SAVE PROGRESS = `revealedBy[id] = max(…, revealed)` then
+`exportRecord()`; the completion stage's `[ SAVE TO SHARD ]` is
+`exportRecord()` directly. Both show the full eject animation. The
+rebuild's slice-2 `saveProgress` (bare download + whoosh) predates the
+overlay — fix it to route through the shared eject flow.

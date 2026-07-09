@@ -7,7 +7,11 @@ import { Navigate, Route, Routes, useLocation, useNavigate, useParams } from 're
 import { Boot } from './views/Boot';
 import { Dashboard } from './views/Dashboard';
 import { Player } from './views/Player';
+import { ServiceRecord } from './views/ServiceRecord';
 import { AppHeader } from './components/AppHeader';
+import { ShardOverlay } from './components/ShardOverlay';
+import type { ShardIOState } from './components/ShardOverlay';
+import { ConfirmDialog } from './components/ConfirmDialog';
 import { SysReadout } from './components/SysReadout';
 import { GlossaryFab } from './components/GlossaryFab';
 import { RadioPill } from './components/RadioPill';
@@ -76,6 +80,11 @@ export function App() {
   const [glossaryQuery, setGlossaryQuery] = useState('');
   const [glossaryTier, setGlossaryTier] = useState<GlossaryTier>('all');
   const [txnOpen, setTxnOpen] = useState(false);
+  // Shard I/O: the eject/slot animation overlay, the slot-overwrite confirm,
+  // and the purge confirm (Service Record view).
+  const [shardIO, setShardIO] = useState<ShardIOState | null>(null);
+  const [pendingShard, setPendingShard] = useState<ProgressRecord | null>(null);
+  const [purgePrompt, setPurgePrompt] = useState(false);
 
   const sfx = useRef<Sfx>(null as unknown as Sfx);
   if (!sfx.current) sfx.current = new Sfx();
@@ -83,6 +92,13 @@ export function App() {
   const welcomeT = useRef<number | undefined>(undefined);
   const flyerId = useRef(0);
   const pulseT = useRef<number | undefined>(undefined);
+  // Shard animation bookkeeping: a running-IO guard the handlers can read
+  // synchronously, plus the rAF/timeout ids for unmount cleanup.
+  const ioRef = useRef<ShardIOState | null>(null);
+  ioRef.current = shardIO;
+  const ioRaf = useRef(0);
+  const ioGuard = useRef<number | undefined>(undefined);
+  const ioClear = useRef<number | undefined>(undefined);
 
   // Live-state ref so adapter/economy callbacks never capture a stale render.
   const live = useRef({ op, course });
@@ -178,6 +194,9 @@ export function App() {
       sfx.current.close();
       window.clearTimeout(welcomeT.current);
       window.clearTimeout(pulseT.current);
+      cancelAnimationFrame(ioRaf.current);
+      window.clearTimeout(ioGuard.current);
+      window.clearTimeout(ioClear.current);
     };
   }, []);
 
@@ -290,26 +309,170 @@ export function App() {
     window.setTimeout(step1, 260);
   }, [logTxn]);
 
-  // SAVE PROGRESS: record the furthest reveal, then eject a shard download.
-  const saveProgress = useCallback((moduleId: string, revealed: number) => {
+  // ---- record adoption (login + slot share it) ----
+  const applyAudio = useCallback((a: RecordAudio | null) => {
+    if (a) {
+      if (typeof a.muted === 'boolean') sfx.current.muted = a.muted;
+      if (typeof a.sfxVol === 'number') sfx.current.sfxVol = Math.max(0, Math.min(1, a.sfxVol));
+      radio.current?.restore({
+        stationIndex: typeof a.stationIdx === 'number' && a.stationIdx >= 0 ? a.stationIdx : undefined,
+        trackIndexByStation: a.stationTracks && typeof a.stationTracks === 'object' ? a.stationTracks : undefined,
+        cycle: typeof a.cycle === 'boolean' ? a.cycle : undefined,
+        musicVolume: typeof a.musicVol === 'number' ? a.musicVol : undefined,
+        musicMuted: typeof a.musicOn === 'boolean' ? !a.musicOn : undefined,
+      });
+    } else {
+      // fresh login → random station, first track
+      const n = stations().length;
+      if (n) radio.current?.restore({ stationIndex: Math.floor(Math.random() * n), trackIndexByStation: {} });
+    }
+  }, []);
+
+  const adoptRecord = useCallback((rec: ProgressRecord, name: string) => {
+    setOp({
+      operatorName: name, moduleDone: rec.moduleDone, quiz: rec.quiz as Record<string, QuizAnswerState>,
+      eddies: rec.eddies, revealedBy: rec.revealedBy, txns: rec.txns, audio: rec.audio,
+    });
+    setEddiesShown(rec.eddies);
+    applyAudio(rec.audio);
+  }, [applyAudio]);
+
+  // ---- shard I/O: eject (export), slot (import), purge ----
+  // EJECT: animated overlay 0→100 over 820ms, then the actual download. The
+  // rAF drives the bar; a guard timeout finishes anyway on backgrounded tabs
+  // (rAF pauses there — the download must never gate on it).
+  const exportRecord = useCallback(() => {
+    if (ioRef.current) return;
     sfx.current.play('whoosh');
-    setOp((o) => ({ ...o, revealedBy: { ...o.revealedBy, [moduleId]: Math.max(o.revealedBy[moduleId] ?? 0, revealed) } }));
-    window.setTimeout(() => {
+    const slug = (sanitizeName(live.current.op.operatorName) || 'OPERATOR').toUpperCase().replace(/[^A-Z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'OPERATOR';
+    const fname = `NCZA_${slug}_operator-shard.shard`;
+    setShardIO({ mode: 'eject', phase: 'writing', progress: 0, fname });
+    const start = performance.now();
+    const dur = 820;
+    let finished = false;
+    const finish = () => {
+      if (finished) return;
+      finished = true;
+      setShardIO((io) => (io ? { ...io, progress: 100 } : io));
+      let ok = true;
+      let emsg = '';
       try {
         const data = JSON.stringify(snapshot(), null, 2);
-        const slug = (sanitizeName(live.current.op.operatorName) || 'OPERATOR').toUpperCase().replace(/[^A-Z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'OPERATOR';
         const blob = new Blob([data], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `NCZA_${slug}_operator-shard.shard`;
+        a.download = fname;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
         window.setTimeout(() => URL.revokeObjectURL(url), 1000);
-      } catch { /* download blocked */ }
-    }, 50);
+      } catch (err) {
+        ok = false;
+        emsg = (err as Error)?.message || 'unknown';
+      }
+      setShardIO((io) => (io ? { ...io, phase: ok ? 'ejected' : 'error', err: emsg || undefined } : io));
+      setImportMsg(ok ? { ok: true, text: `SHARD EJECTED // ${fname}` } : { ok: false, text: `EJECT FAILED // ${emsg}` });
+      ioClear.current = window.setTimeout(() => setShardIO(null), 2300);
+    };
+    const frame = (t: number) => {
+      const k = Math.min(1, (t - start) / dur);
+      setShardIO((io) => (io ? { ...io, progress: Math.round(k * 100) } : io));
+      if (k < 1) { ioRaf.current = requestAnimationFrame(frame); return; }
+      finish();
+    };
+    ioRaf.current = requestAnimationFrame(frame);
+    ioGuard.current = window.setTimeout(finish, dur + 250);
   }, [snapshot]);
+
+  // SAVE PROGRESS (player rail + completion stage): record the furthest
+  // reveal, then run the full eject flow — same as the monolith.
+  const saveProgress = useCallback((moduleId: string, revealed: number) => {
+    setOp((o) => ({ ...o, revealedBy: { ...o.revealedBy, [moduleId]: Math.max(o.revealedBy[moduleId] ?? 0, revealed) } }));
+    exportRecord();
+  }, [exportRecord]);
+
+  // SLOT commit: REPLACE the current record (never merge) and report what
+  // the shard carried.
+  const commitImport = useCallback((rec: ProgressRecord) => {
+    const name = sanitizeName(rec.operatorName);
+    adoptRecord(rec, name);
+    if (name) { try { progress?.setUser(name); } catch { /* in-memory */ } }
+    const doneN = Object.keys(rec.moduleDone ?? {}).length;
+    const rb = rec.revealedBy ?? {};
+    const startedN = Object.keys(rb).filter((k) => !rec.moduleDone?.[k] && (rb[k] ?? 0) > 1).length;
+    const msg = doneN
+      ? `SHARD SLOTTED // ${doneN} MODULE(S) CERTIFIED${startedN ? ` // ${startedN} IN PROGRESS` : ''}`
+      : startedN
+        ? `SHARD SLOTTED // PROGRESS RESTORED // ${startedN} MODULE(S) IN PROGRESS`
+        : 'SHARD SLOTTED // CLEAN RECORD';
+    setPendingShard(null);
+    setImportMsg({ ok: true, text: msg });
+  }, [adoptRecord, progress]);
+
+  // Slot animation: mirror of eject — shard slides INTO the reader, decodes,
+  // commits at 100%.
+  const slotShard = useCallback((rec: ProgressRecord) => {
+    if (ioRef.current) return;
+    sfx.current.play('whoosh');
+    setShardIO({ mode: 'slot', phase: 'reading', progress: 0 });
+    const start = performance.now();
+    const dur = 820;
+    let finished = false;
+    const finish = () => {
+      if (finished) return;
+      finished = true;
+      setShardIO((io) => (io ? { ...io, progress: 100 } : io));
+      commitImport(rec);
+      sfx.current.play('chime');
+      setShardIO((io) => (io ? { ...io, phase: 'slotted' } : io));
+      ioClear.current = window.setTimeout(() => setShardIO(null), 1700);
+    };
+    const frame = (t: number) => {
+      const k = Math.min(1, (t - start) / dur);
+      setShardIO((io) => (io ? { ...io, progress: Math.round(k * 100) } : io));
+      if (k < 1) { ioRaf.current = requestAnimationFrame(frame); return; }
+      finish();
+    };
+    ioRaf.current = requestAnimationFrame(frame);
+    ioGuard.current = window.setTimeout(finish, dur + 250);
+  }, [commitImport]);
+
+  // Post-login slot: parse + migrate, then confirm before replacing a
+  // non-empty record (module certified OR balance moved off starting).
+  const slotFile = useCallback((file: File) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        if (!progress) throw new Error('invalid file');
+        const rec = progress.import(String(reader.result));
+        const o = live.current.op;
+        const nonEmpty = Object.keys(o.moduleDone).length > 0 || o.eddies !== econRef.current.startingBalance;
+        if (nonEmpty) setPendingShard(rec);
+        else slotShard(rec);
+      } catch (err) {
+        setImportMsg({ ok: false, text: `SHARD REJECTED // ${(err as Error)?.message || 'invalid file'}` });
+      }
+    };
+    reader.onerror = () => setImportMsg({ ok: false, text: 'SHARD READ FAILED // could not read file' });
+    reader.readAsText(file);
+  }, [progress, slotShard]);
+
+  // PURGE: wipe progress back to a clean record; the operator stays signed
+  // in. Removes the persisted profile (persist mode only).
+  const confirmPurge = useCallback(() => {
+    const bal = econRef.current.startingBalance;
+    try { if (cfg().persist) progress?.remove(live.current.op.operatorName); } catch { /* storage unavailable */ }
+    sfx.current.play('err');
+    setPurgePrompt(false);
+    setOp((o) => ({ ...o, moduleDone: {}, quiz: {}, revealedBy: {}, eddies: bal, txns: [] }));
+    setEddiesShown(bal);
+    setImportMsg({ ok: true, text: 'LOCAL CACHE PURGED // RECORD RESET TO CLEAN STATE' });
+  }, [progress]);
+
+  const setOperatorName = useCallback((v: string) => {
+    setOp((o) => ({ ...o, operatorName: cleanNameInput(v) }));
+  }, []);
 
   const advance = useCallback((moduleId: string, revealed: number) => {
     setOp((o) => ({ ...o, revealedBy: { ...o.revealedBy, [moduleId]: Math.max(o.revealedBy[moduleId] ?? 0, revealed) } }));
@@ -349,33 +512,6 @@ export function App() {
       navigate('/dashboard');
     }, 1700);
   }, [navigate]);
-
-  const applyAudio = useCallback((a: RecordAudio | null) => {
-    if (a) {
-      if (typeof a.muted === 'boolean') sfx.current.muted = a.muted;
-      if (typeof a.sfxVol === 'number') sfx.current.sfxVol = Math.max(0, Math.min(1, a.sfxVol));
-      radio.current?.restore({
-        stationIndex: typeof a.stationIdx === 'number' && a.stationIdx >= 0 ? a.stationIdx : undefined,
-        trackIndexByStation: a.stationTracks && typeof a.stationTracks === 'object' ? a.stationTracks : undefined,
-        cycle: typeof a.cycle === 'boolean' ? a.cycle : undefined,
-        musicVolume: typeof a.musicVol === 'number' ? a.musicVol : undefined,
-        musicMuted: typeof a.musicOn === 'boolean' ? !a.musicOn : undefined,
-      });
-    } else {
-      // fresh login → random station, first track
-      const n = stations().length;
-      if (n) radio.current?.restore({ stationIndex: Math.floor(Math.random() * n), trackIndexByStation: {} });
-    }
-  }, []);
-
-  const adoptRecord = useCallback((rec: ProgressRecord, name: string) => {
-    setOp({
-      operatorName: name, moduleDone: rec.moduleDone, quiz: rec.quiz as Record<string, QuizAnswerState>,
-      eddies: rec.eddies, revealedBy: rec.revealedBy, txns: rec.txns, audio: rec.audio,
-    });
-    setEddiesShown(rec.eddies);
-    applyAudio(rec.audio);
-  }, [applyAudio]);
 
   const submitAuth = useCallback((rawName: string) => {
     if (courseLoading) return;
@@ -474,6 +610,27 @@ export function App() {
           onClose={() => setTxnOpen(false)}
         />
       )}
+      {shardIO && <ShardOverlay io={shardIO} />}
+      {pendingShard && (
+        <ConfirmDialog
+          title="OVERWRITE WARNING"
+          lead="SLOTTING WILL OVERWRITE CURRENT PROGRESS."
+          detail={`Incoming shard: ${Object.keys(pendingShard.moduleDone ?? {}).length} module(s), operator "${sanitizeName(pendingShard.operatorName) || 'UNNAMED'}". This replaces your current record and cannot be undone.`}
+          primaryLabel="OVERWRITE & SLOT"
+          onPrimary={() => { const rec = pendingShard; setPendingShard(null); slotShard(rec); }}
+          onCancel={() => { setPendingShard(null); setImportMsg({ ok: false, text: 'SLOT CANCELLED // CURRENT PROGRESS PRESERVED' }); }}
+        />
+      )}
+      {purgePrompt && (
+        <ConfirmDialog
+          title="PURGE LOCAL CACHE"
+          lead="THIS WIPES ALL PROGRESS ON THIS TERMINAL."
+          detail="Certifications, quiz results, eddies and session place reset to a clean record. Any shard you have already ejected is unaffected. This cannot be undone."
+          primaryLabel="PURGE RECORD"
+          onPrimary={confirmPurge}
+          onCancel={() => setPurgePrompt(false)}
+        />
+      )}
       {/* last, like the monolith: same z as the modal scrim, wins by DOM order */}
       <RadioPill stationIdx={radioIdx.station} trackIdx={radioIdx.track} playing={radioIdx.playing} />
     </div>
@@ -486,6 +643,20 @@ export function App() {
       <Route path="/" element={boot} />
       <Route path="/dashboard" element={shell(
         <Dashboard course={course} moduleDone={op.moduleDone} revealedBy={op.revealedBy} onOpenCourse={openCourse} />,
+      )} />
+      <Route path="/record" element={shell(
+        <ServiceRecord
+          course={course}
+          moduleDone={op.moduleDone}
+          eddies={op.eddies}
+          operatorName={op.operatorName}
+          importMsg={importMsg}
+          onNameChange={setOperatorName}
+          onEject={exportRecord}
+          onSlotFile={slotFile}
+          onViewCert={() => { /* certificate slice (next) wires this */ }}
+          onPurge={() => setPurgePrompt(true)}
+        />,
       )} />
       <Route path="/module/:moduleId" element={shell(
         <PlayerRoute

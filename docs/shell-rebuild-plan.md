@@ -249,8 +249,22 @@ In priority order:
    the rebuild only): `resumeRevealed` now matches the monolith — a
    completed module reveals ALL stages (was resuming at the recorded
    reveal, so re-entering a certified module hid its tail).
-4. **Service Record** view (shard eject/slot animations, operator list,
-   purge; the txn-history modal shipped with slice 3).
+4. ~~Service Record~~ **DONE (2026-07-09).** View + full shard I/O extracted
+   to the parity spec and built: operator identity (live name edit), stat
+   cards, module status rows, certification stamps, eject/slot/purge. One
+   `ShardOverlay` component covers both reader animations (eject slides the
+   chip out, slot slides it in; rAF bar + background-tab guard timeout);
+   `ConfirmDialog` covers the red overwrite/purge confirms (deliberately not
+   Escape-wired, like the monolith). Rail SAVE PROGRESS and the completion
+   stage now route through the same eject overlay (the slice-2 bare download
+   predated it). No operator list here — that was a plan error; `listUsers()`
+   is adapter API only and the boot screen owns operator selection.
+   Harness-verified end-to-end with a seeded record: view stats, eject
+   (mid + settled + filename message), purge (confirm → wiped stats), slot
+   (clean record → straight to animation → restored stats), slot-again
+   (overwrite confirm → cancel message) — all probes identical, pairs
+   pixel-matched. VIEW CERTIFICATE gating (disabled unless certified) is in;
+   its onClick lands with slice 5.
 5. **Certificate** view (name-gated, stamped; print CSS comes with it).
 6. **Radio panel** in React (the pill + engine wiring are done; the expanded
    panel with dial, transport, volume and the MUSIC/SFX toggles remains).

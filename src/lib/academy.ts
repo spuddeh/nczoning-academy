@@ -134,6 +134,18 @@ export function sortedModules(course: Course): CourseModule[] {
   return (course.modules ?? []).slice().sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
 }
 
+// Certification: capstone done if the course declares one; otherwise every
+// module complete (a course with no modules never certifies).
+export function progressStats(course: Course, moduleDone: Record<string, unknown>): {
+  mods: CourseModule[]; done: CourseModule[]; capstone: CourseModule | undefined; certified: boolean;
+} {
+  const mods = sortedModules(course);
+  const done = mods.filter((m) => moduleDone[m.id]);
+  const capstone = mods.find((m) => m.capstone === true);
+  const certified = capstone ? !!moduleDone[capstone.id] : (mods.length > 0 && done.length === mods.length);
+  return { mods, done, capstone, certified };
+}
+
 // Clearance = highest clearance among completed modules (1 when fresh);
 // rank = the highest course rank at or below that clearance.
 export function clearanceAndRank(course: Course, moduleDone: Record<string, unknown>): { clearance: number; rankTitle: string } {
