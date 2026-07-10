@@ -16,10 +16,16 @@ interface LockProps {
   onLogin: () => void;
 }
 
-type Level = 'update' | 'info' | 'alert';
+type Level = 'update' | 'info' | 'alert' | 'resolved';
+
+// messages.schema.json requires EVERY field. They stay optional here on purpose:
+// this type describes what arrives over the wire, and KV values are written
+// straight to the live feed without runtime validation. So the renderer treats a
+// missing field as a bug it must survive, not as a shape it can rely on.
 interface SysMessage {
   id: string;
   level?: Level;
+  /** `YYYY-MM-DD` or a full ISO datetime; only the first 10 chars render. */
   date?: string;
   title?: string;
   body?: string;
@@ -33,8 +39,19 @@ const LORE_YEAR = 2077;
 
 // Evergreen fallback if /messages.json can't be fetched (offline, 404, etc).
 const FALLBACK: SysMessage[] = [
-  { id: 'welcome', level: 'info', title: 'ACADEMY ONLINE', body: 'New training tracks are added as the NC Zoning modding toolset grows.' },
+  { id: 'welcome', level: 'info', date: '2026-07-10', title: 'ACADEMY STANDING BY', body: 'New training tracks are added as the NC Zoning modding toolset grows.' },
 ];
+
+// An unresolved incident outranks every other message. Pinning by LEVEL rather
+// than date means the panel's 4-item cap can never discard the one message that
+// matters, and an ops writer cannot bury its own alert with a bad timestamp.
+// `resolved` deliberately does NOT pin: it falls back to date order and ages out.
+const pinned = (m: SysMessage) => (m.level === 'alert' ? 0 : 1);
+
+// ISO strings compare lexicographically in chronological order, so a bare
+// `YYYY-MM-DD` and a full timestamp sort correctly against each other.
+const byDateDesc = (a: SysMessage, b: SysMessage) =>
+  String(b.date ?? '').localeCompare(String(a.date ?? ''));
 
 const norm = (raw: unknown): SysMessage[] => {
   const list = Array.isArray(raw)
@@ -44,7 +61,7 @@ const norm = (raw: unknown): SysMessage[] => {
       : [];
   return list
     .slice()
-    .sort((a, b) => String(b.date ?? '').localeCompare(String(a.date ?? '')))
+    .sort((a, b) => pinned(a) - pinned(b) || byDateDesc(a, b))
     .slice(0, 4);
 };
 
@@ -52,6 +69,7 @@ const LEVELS: Record<Level, { tag: string; className: string }> = {
   update: { tag: 'UPDATE', className: 'update' },
   info: { tag: 'INFO', className: 'info' },
   alert: { tag: 'ALERT', className: 'alert' },
+  resolved: { tag: 'RESOLVED', className: 'resolved' },
 };
 
 export function Lock({ sfx, onLogin }: LockProps) {
@@ -132,7 +150,7 @@ export function Lock({ sfx, onLogin }: LockProps) {
                       <div className="lock-msg-head">
                         <span className="lock-msg-tag">{lvl.tag}</span>
                         <span className="lock-msg-title">{m.title}</span>
-                        <span className="lock-msg-date">{m.date}</span>
+                        <span className="lock-msg-date">{m.date?.slice(0, 10)}</span>
                       </div>
                       <div className="lock-msg-text">{m.body}</div>
                     </div>

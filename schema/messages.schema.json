@@ -1,0 +1,41 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://nczoning.net/schema/messages.schema.json",
+  "title": "academy-messages/v1",
+  "description": "The lock screen's SYSTEM BROADCAST feed. Serves public/messages.json (the committed baseline) and the KV values overlaid on it by functions/messages.json.ts.",
+  "type": "object",
+  "required": ["messages"],
+  "additionalProperties": false,
+  "properties": {
+    "messages": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/message" }
+    }
+  },
+  "definitions": {
+    "message": {
+      "type": "object",
+      "$comment": "Every field is required. There is no message worth broadcasting that lacks any one of them, and an omitted field only ever means the author forgot.",
+      "required": ["id", "level", "date", "title", "body"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Stable and unique. Reuse a baseline id from KV to shadow that entry."
+        },
+        "level": {
+          "enum": ["update", "info", "alert", "resolved"],
+          "description": "Drives the dot and tag colour: update=cyan, info=gray, alert=amber, resolved=green. `alert` also PINS the message to the top of the panel, above every other level, regardless of date. `resolved` does not pin — it falls back to date order, so a resolved incident ages out naturally."
+        },
+        "date": {
+          "type": "string",
+          "description": "REQUIRED. `YYYY-MM-DD`, or a full ISO 8601 datetime when the writer has one (a health check does). ISO strings compare lexicographically in chronological order, so a timestamp orders correctly against a bare date on the same day. Only the first 10 characters are rendered.",
+          "anyOf": [{ "format": "date" }, { "format": "date-time" }]
+        },
+        "title": { "type": "string", "minLength": 1, "maxLength": 60 },
+        "body": { "type": "string", "minLength": 1, "maxLength": 240 }
+      }
+    }
+  }
+}

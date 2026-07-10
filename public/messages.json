@@ -8,16 +8,18 @@
       "body": "TRANSMISSION PROTOCOLS is live: nine modules on the NC Zoning Data API, ending in field certification."
     },
     {
-      "id": "labs-are-live",
-      "level": "info",
-      "title": "LIVE LABS HIT THE REAL API",
-      "body": "Lab exercises send real requests to api.nczoning.net, capped at 100 requests per 10 seconds per IP."
-    },
-    {
       "id": "record-is-local",
       "level": "info",
+      "date": "2026-07-08",
       "title": "NO ACCOUNT REQUIRED",
       "body": "Your service record stays in this browser. Eject it to a shard file to carry your progress between terminals."
+    },
+    {
+      "id": "labs-are-live",
+      "level": "info",
+      "date": "2026-07-06",
+      "title": "LIVE LABS HIT THE REAL API",
+      "body": "Lab exercises send real requests to api.nczoning.net, capped at 100 requests per 10 seconds per IP."
     }
   ]
 }
