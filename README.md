@@ -23,7 +23,7 @@ src/
 public/                    static passthrough — served as-is, never bundled
   assets/css/              theme.css (tokens) + one stylesheet per view
   config.js                ACADEMY_CONFIG (hosted profile: live + persist)
-  messages.json            SYSTEM BROADCAST feed on the lock screen
+  messages.json            SYSTEM BROADCAST baseline (KV overlays this)
   courses/
     index.json             course registry the shell loads
     data-api.json          the POC course (9 modules)
@@ -31,7 +31,11 @@ public/                    static passthrough — served as-is, never bundled
   radio-engine.js          procedural Web Audio synth (no audio files)
   progress.js              localStorage adapter (ncza:v1:*)
   _redirects               SPA fallback so deep links resolve
-schema/                    course + radio-station JSON Schemas — the content contracts
+  _routes.json             only /messages.json invokes a Function
+functions/
+  messages.json.ts         GET /messages.json — merges KV over the baseline
+  tsconfig.json            Workers runtime types (separate from the app's)
+schema/                    course, radio-station + messages JSON Schemas — the content contracts
 scripts/                   ajv validators, freshness check, parity harness
 docs/                      plan, app-shell overview, authoring guide, decisions/
 dist/                      Vite build output (gitignored; Cloudflare builds it)
@@ -83,24 +87,44 @@ the full shape.
 
 ## Announcements
 
-The lock screen's SYSTEM BROADCAST panel reads `public/messages.json`, fetched
-at runtime with `cache: 'no-store'`. Editing it needs no code change, but it is
-a committed file, so a post still goes live via commit → push → Pages deploy.
+The lock screen's SYSTEM BROADCAST panel fetches `/messages.json`. That path is
+served by a Pages Function ([`functions/messages.json.ts`](functions/messages.json.ts)),
+which merges three sources — later ones are shadowed by earlier ones sharing an
+`id`:
+
+| Source | Where | Goes live |
+| --- | --- | --- |
+| `messages:ops` | Workers KV | immediately (for a health check to write) |
+| `messages:manual` | Workers KV | immediately (hand-written posts) |
+| baseline | `public/messages.json` | on deploy (committed, reviewed) |
+
+Delete a KV key and the site reverts to the committed baseline, no deploy. The
+Function never throws: unreachable KV, malformed KV JSON, or a missing baseline
+each degrade to whatever else is available, and an empty result hides the panel.
+
+A message:
 
 ```json
-{ "messages": [
-  { "id": "b-2026-07-09", "level": "update", "date": "2026-07-09",
-    "title": "ACADEMY ONLINE", "body": "…" }
-] }
+{ "id": "b-2026-07-09", "level": "update", "date": "2026-07-09",
+  "title": "ACADEMY ONLINE", "body": "…" }
 ```
 
-`level` is `update` (cyan) · `info` (gray) · `alert` (amber). Sorted
-newest-first by `date`, capped at four; undated entries sort last, which suits
-evergreen items. An empty array hides the panel; a failed fetch renders the
-evergreen fallback inlined in `src/views/Lock.tsx`.
+`level` is `update` (cyan) · `info` (gray) · `alert` (amber). The client sorts
+newest-first by `date` and caps at four. **Undated entries sort last**, which
+suits evergreen items but means an ops alert needs a `date` to surface.
 
-Nothing validates this file, and it is the first thing a visitor reads. Post
-only claims you can point at in the code.
+Posting to KV (namespace bound as `MESSAGES` on the Pages project):
+
+```bash
+npm run validate:messages -- payload.json          # check it BEFORE it goes live
+npx wrangler kv key put --namespace-id=<id> messages:manual --path=payload.json
+npx wrangler kv key delete --namespace-id=<id> messages:ops    # revert to baseline
+```
+
+`validate:messages` accepts a bare `[...]` array or `{ "messages": [...] }`, and
+runs in CI against the committed baseline. KV values are **not** validated by
+anything at runtime, so validate before you put. This panel is the first thing a
+visitor reads: post only claims you can point at in the code.
 
 ## Accuracy mandate
 

@@ -1,0 +1,41 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://nczoning.net/schema/messages.schema.json",
+  "title": "academy-messages/v1",
+  "description": "The lock screen's SYSTEM BROADCAST feed. Serves public/messages.json (the committed baseline) and the KV values overlaid on it by functions/messages.json.ts.",
+  "type": "object",
+  "required": ["messages"],
+  "additionalProperties": false,
+  "properties": {
+    "messages": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/message" }
+    }
+  },
+  "definitions": {
+    "message": {
+      "type": "object",
+      "required": ["id", "title", "body"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Stable and unique. Reuse a baseline id from KV to shadow that entry."
+        },
+        "level": {
+          "enum": ["update", "info", "alert"],
+          "default": "info",
+          "description": "Drives the dot and tag colour: update=cyan, info=gray, alert=amber."
+        },
+        "date": {
+          "type": "string",
+          "format": "date",
+          "description": "YYYY-MM-DD. Sorted newest-first; undated entries sort LAST, which suits evergreen items. An ops alert needs a date to surface above them."
+        },
+        "title": { "type": "string", "minLength": 1, "maxLength": 60 },
+        "body": { "type": "string", "minLength": 1, "maxLength": 240 }
+      }
+    }
+  }
+}

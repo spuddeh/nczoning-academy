@@ -8,12 +8,14 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "tsc --noEmit && tsc --noEmit -p functions/tsconfig.json",
     "validate": "node scripts/validate-courses.mjs",
     "validate:radio": "node scripts/validate-radio.mjs",
-    "freshness": "node scripts/check-freshness.mjs"
+    "freshness": "node scripts/check-freshness.mjs",
+    "validate:messages": "node scripts/validate-messages.mjs"
   },
   "devDependencies": {
+    "@cloudflare/workers-types": "^5.20260710.1",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.3",

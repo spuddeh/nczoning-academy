@@ -5,6 +5,7 @@ on:
     paths:
       - "public/courses/**"
       - "public/radio/**"
+      - "public/messages.json"
       - "schema/**"
       - "scripts/**"
       - "package.json"
@@ -14,6 +15,7 @@ on:
     paths:
       - "public/courses/**"
       - "public/radio/**"
+      - "public/messages.json"
       - "schema/**"
       - "scripts/**"
       - "package.json"
@@ -32,3 +34,4 @@ jobs:
       - run: npm ci
       - run: npm run validate
       - run: npm run validate:radio
+      - run: npm run validate:messages
