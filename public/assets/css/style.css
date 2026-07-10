@@ -198,14 +198,14 @@ input::placeholder {
   font-family: var(--font-identity);
   font-weight: 400;
   font-size: var(--fs-heading);
-  letter-spacing: 0.11em;
+  letter-spacing: var(--tracking-mid);
   color: var(--text);
   line-height: 1;
 }
 .hdr-sub {
   font-family: var(--font-mono);
   font-size: var(--fs-micro);
-  letter-spacing: 0.14em;
+  letter-spacing: var(--tracking-mid);
   color: var(--muted);
   margin-top: 3px;
   white-space: nowrap;
@@ -216,7 +216,7 @@ input::placeholder {
   font-family: var(--font-display);
   font-size: var(--fs-label);
   font-weight: 700;
-  letter-spacing: 0.14em;
+  letter-spacing: var(--tracking-mid);
   padding: 8px 15px;
   cursor: pointer;
   background: transparent;
@@ -235,14 +235,14 @@ input::placeholder {
 .hdr-clearance-label {
   font-family: var(--font-mono);
   font-size: var(--fs-micro);
-  letter-spacing: 0.14em;
+  letter-spacing: var(--tracking-mid);
   color: var(--muted);
 }
 .hdr-clearance-val {
   font-family: var(--font-display);
   font-size: var(--fs-label);
   font-weight: 700;
-  letter-spacing: 0.1em;
+  letter-spacing: var(--tracking-mid);
   color: var(--primary);
 }
 
@@ -267,7 +267,7 @@ input::placeholder {
 .hdr-balance-label {
   font-family: var(--font-mono);
   font-size: var(--fs-micro);
-  letter-spacing: 0.14em;
+  letter-spacing: var(--tracking-mid);
   color: var(--muted);
 }
 .hdr-balance-icon { display: block; flex: none; opacity: 0.85; }
@@ -275,7 +275,7 @@ input::placeholder {
   font-family: var(--font-mono);
   font-weight: 600;
   font-size: var(--fs-ui);
-  letter-spacing: 0.06em;
+  letter-spacing: var(--tracking-label);
   color: var(--tertiary);
 
   &.negative { color: var(--danger); }
@@ -291,7 +291,7 @@ input::placeholder {
   font-family: var(--font-display);
   font-weight: 700;
   font-size: var(--fs-label);
-  letter-spacing: 0.14em;
+  letter-spacing: var(--tracking-mid);
   cursor: pointer;
   background: transparent;
   border: 1px solid rgb(from var(--primary) r g b / 0.55);
@@ -354,7 +354,7 @@ input::placeholder {
 .sys-readout.critical .sys-led { background: var(--danger); box-shadow: 0 0 8px var(--danger); }
 .sys-offset {
   font-family: var(--font-mono);
-  letter-spacing: 0.08em;
+  letter-spacing: var(--tracking-label);
   color: var(--primary);
   opacity: 0.75;
   font-variant-numeric: tabular-nums;
@@ -374,7 +374,7 @@ input::placeholder {
   font-family: var(--font-display);
   font-weight: 700;
   font-size: var(--fs-label);
-  letter-spacing: 0.14em;
+  letter-spacing: var(--tracking-mid);
   cursor: pointer;
   background: rgb(from var(--bg) r g b / 0.92);
   border: 1px solid rgb(from var(--primary) r g b / 0.55);

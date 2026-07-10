@@ -32,7 +32,7 @@
 .dash-terminal {
   font-family: var(--font-mono);
   font-size: var(--fs-code);
-  letter-spacing: 0.1em;
+  letter-spacing: var(--tracking-mid);
   color: var(--primary);
   margin-bottom: 8px;
 }
@@ -40,14 +40,14 @@
   font-family: var(--font-identity);
   font-weight: 400; /* Night Corp Display has no 700 — bold renders faux */
   font-size: var(--fs-title);
-  letter-spacing: 0.06em;
+  letter-spacing: var(--tracking-label);
   color: var(--text);
   margin: 0 0 6px;
 }
 .dash-lead {
   font-family: var(--font-body);
   font-size: var(--fs-body);
-  letter-spacing: 0.02em;
+  letter-spacing: var(--tracking-tight);
   color: var(--muted);
   margin: 0 0 38px;
 }
@@ -56,7 +56,7 @@
 .dash-section-hdr {
   font-family: var(--font-mono);
   font-size: var(--fs-label);
-  letter-spacing: 0.16em;
+  letter-spacing: var(--tracking-caps);
   color: var(--muted);
   border-bottom: 1px solid rgb(from var(--muted) r g b / 0.25);
   padding-bottom: 10px;
@@ -92,7 +92,7 @@
   font-family: var(--font-display);
   font-weight: 700;
   font-size: var(--fs-label);
-  letter-spacing: 0.16em;
+  letter-spacing: var(--tracking-caps);
   color: var(--primary);
   margin-bottom: 7px;
 }
@@ -100,7 +100,7 @@
   font-family: var(--font-mono);
   font-size: var(--fs-body);
   line-height: 1.75;
-  letter-spacing: 0.02em;
+  letter-spacing: var(--tracking-tight);
   color: var(--text-soft);
 }
 .orient-body b { color: var(--primary); font-weight: 400; }
@@ -165,7 +165,7 @@
   font-family: var(--font-mono);
   font-size: var(--fs-micro);
   font-weight: 600;
-  letter-spacing: 0.12em;
+  letter-spacing: var(--tracking-mid);
   padding: 4px 10px;
 }
 .course-watermark {
@@ -174,7 +174,7 @@
   font-weight: 900;
   /* a translucent decorative numeral behind the card, not text — no type role */
   font-size: 26px;
-  letter-spacing: 0.12em;
+  letter-spacing: var(--tracking-mid);
   color: rgb(from var(--primary) r g b / 0.18);
 }
 
@@ -183,7 +183,7 @@
   font-family: var(--font-identity);
   font-weight: 400;
   font-size: var(--fs-heading);
-  letter-spacing: 0.04em;
+  letter-spacing: var(--tracking-tight);
   color: var(--text);
 }
 .course-title-bar {
@@ -205,7 +205,7 @@
   color: var(--muted);
   font-family: var(--font-mono);
   font-size: var(--fs-micro);
-  letter-spacing: 0.08em;
+  letter-spacing: var(--tracking-label);
   padding: 4px 9px;
 }
 
@@ -214,7 +214,7 @@
   justify-content: space-between;
   font-family: var(--font-mono);
   font-size: var(--fs-micro);
-  letter-spacing: 0.1em;
+  letter-spacing: var(--tracking-mid);
   color: var(--muted);
   margin-bottom: 6px;
 }
@@ -238,7 +238,7 @@
   font-family: var(--font-display);
   font-weight: 700;
   font-size: var(--fs-ui);
-  letter-spacing: 0.16em;
+  letter-spacing: var(--tracking-caps);
   padding: 12px;
   cursor: pointer;
 
@@ -254,7 +254,7 @@
   text-decoration: none;
   font-family: var(--font-mono);
   font-size: var(--fs-ui);
-  letter-spacing: 0.1em;
+  letter-spacing: var(--tracking-mid);
   padding: 11px 16px;
 
   /* colour variants; hover inverts to the solid colour */

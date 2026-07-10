@@ -120,10 +120,17 @@ html.theme-night-corp {
      measure and this can come back down. */
   --lh-body:  1.7;  /* reading prose */
   --lh-tight: 1.4;  /* headings, single-line UI */
-  /* Zero uses today, and kept on purpose: #19 adopts it. 158 letter-spacing
-     literals exist and six values cover most of them, so the scale is already
-     there, unnamed. Deleting this and reintroducing it there would be churn. */
-  --tracking-caps: 0.16em; /* letter-spacing for uppercase labels */
+  /* Letter-spacing scale. 158 uses sat on 17 values; tracking is in `em`, so the
+     same rendered spacing came from many value/size pairs — the numbers were not
+     a real scale. Five rungs, chosen at the rendered result (not the grep): some
+     values deliberately collapse (0.14 → 0.12, 0.06 → 0.08), which is a visual
+     change, signed off on the render. Uppercase mono/display labels at --fs-micro
+     need more tracking than prose, so the rung is not independent of the size. */
+  --tracking-tight: 0.04em; /* subtle — larger display text, mixed-case */
+  --tracking-label: 0.08em; /* default label tracking */
+  --tracking-mid:   0.12em; /* the dense cluster — nav, section labels */
+  --tracking-caps:  0.16em; /* uppercase display labels, small caps */
+  --tracking-wide:  0.20em; /* widest — rare, hero eyebrows */
 
   /* measure: width of the prose itself. Containers add their own padding on
      top (see .player-body, .modal-box.cyan), so prose fills its card rather
