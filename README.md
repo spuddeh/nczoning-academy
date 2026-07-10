@@ -8,7 +8,7 @@ Night Corp branded throughout. Free, static, hosted on Cloudflare Pages. Course
 content is authored as JSON; the app shell renders it. Future courses are new
 JSON files, not a redesign.
 
-> Status: **0.2.0.** The shell is a React + TypeScript + Vite app, rebuilt from
+> Status: **0.3.0.** The shell is a React + TypeScript + Vite app, rebuilt from
 > the Claude Design monolith at verified parity. See [`CHANGELOG.md`](CHANGELOG.md).
 
 ## Repo layout

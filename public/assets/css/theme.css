@@ -82,7 +82,8 @@ html.theme-night-corp {
      Sizes are not comparable across families: Orbitron at 15px and Rajdhani at
      18px have the SAME cap height (11px). That is why --fs-heading has to sit
      this far above --fs-body to read as a heading at all. Re-check cap heights
-     if --font-display or --font-body ever change. */
+     if --font-display or --font-body ever change.
+
      These are the BASE ladder, tuned for the module player. Three rules:
 
        1. A call site names a role, never a pixel size. The only exception is a
