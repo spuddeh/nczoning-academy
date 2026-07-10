@@ -12,6 +12,7 @@
     "validate": "node scripts/validate-courses.mjs",
     "validate:radio": "node scripts/validate-radio.mjs",
     "harness:selftest": "node scripts/parity/selftest.mjs",
+    "harness:clean": "node -e \"require('fs').rmSync('scripts/parity/out',{recursive:true,force:true});console.log('removed scripts/parity/out')\"",
     "freshness": "node scripts/check-freshness.mjs",
     "validate:messages": "node scripts/validate-messages.mjs"
   },

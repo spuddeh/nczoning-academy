@@ -6,10 +6,10 @@
 // See scripts/parity/README.md.
 import fs from 'node:fs';
 import path from 'node:path';
-import { launchBrowser, targets, outDir, sleep, signIn, openApp, clickByText, leafText } from './lib/drive.mjs';
+import { withBrowser, targets, outDir, sleep, signIn, openApp, clickByText, leafText } from './lib/drive.mjs';
 import { NAME, RECORD_M01 as RECORD } from './lib/fixtures.mjs';
 
-const OUT = outDir();
+const OUT = outDir('record', { clean: true });
 
 // The .shard the SLOT step uploads — the same record the app just ejected.
 const SHARD_FILE = path.join(OUT, 'seed.shard');
@@ -100,7 +100,7 @@ async function capture(browser, name, base) {
   await page.close();
 }
 
-const browser = await launchBrowser();
-for (const t of targets()) await capture(browser, t.name, t.url);
-await browser.disconnect();
+await withBrowser(async (browser) => {
+  for (const t of targets()) await capture(browser, t.name, t.url);
+});
 console.log(`done → ${OUT}`);

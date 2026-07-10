@@ -2,10 +2,10 @@
 // same headless Chrome at the same viewport and input sequence.
 // See scripts/parity/README.md.
 import path from 'node:path';
-import { launchBrowser, targets, outDir, signIn, openApp } from './lib/drive.mjs';
+import { withBrowser, targets, outDir, signIn, openApp } from './lib/drive.mjs';
 import { NAME } from './lib/fixtures.mjs';
 
-const OUT = outDir();
+const OUT = outDir('boot', { clean: true });
 
 async function capture(browser, { name, url }) {
   // record: null — this capture seeds nothing and must start from an empty record
@@ -22,7 +22,7 @@ async function capture(browser, { name, url }) {
   await page.close();
 }
 
-const browser = await launchBrowser();
-for (const t of targets()) await capture(browser, t);
-await browser.disconnect();
+await withBrowser(async (browser) => {
+  for (const t of targets()) await capture(browser, t);
+});
 console.log(`done → ${OUT}`);

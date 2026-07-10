@@ -33,15 +33,40 @@ needs no server.
 
 ```bash
 npm run dev                              # rebuild on :5173
-node scripts/parity/capture.mjs          # boot states + dashboard
-node scripts/parity/capture-modals.mjs   # glossary + txn ledger
-node scripts/parity/capture-record.mjs   # Service Record + eject/slot/purge
-node scripts/parity/capture-cert.mjs     # certificate + name prompt + print CSS
-node scripts/parity/capture-radio.mjs    # radio pill + panel + persisted audio
-node scripts/parity/selftest.mjs         # driver refuses unrecognised pages
+node scripts/parity/capture.mjs          # boot states + dashboard   → out/boot/
+node scripts/parity/capture-modals.mjs   # glossary + txn ledger     → out/modals/
+node scripts/parity/capture-record.mjs   # Service Record + shard IO → out/record/
+node scripts/parity/capture-cert.mjs     # certificate + print CSS   → out/cert/
+node scripts/parity/capture-radio.mjs    # radio pill + panel        → out/radio/
+npm run harness:selftest                 # driver refuses unrecognised pages
+npm run harness:clean                    # delete out/ entirely (incl. chrome-profile)
 ```
 
-Screenshots and probe output land in `out/` (gitignored).
+Each script wipes its own bucket on the way in, so a rerun **replaces** its
+artefacts rather than accumulating them. That bounds `out/`, and it means a PNG
+in `out/record/` is always from the last `capture-record` run. A stale screenshot
+is indistinguishable from a fresh one — the same trap as everything else here.
+
+`out/` is gitignored. `out/chrome-profile` is the reused browser profile; only
+`harness:clean` removes it.
+
+## Cleanup
+
+Scripts run through `withBrowser(fn)`, which tears the browser down in a
+`finally`. This is not tidiness. A throw mid-drive is the **expected** outcome
+when the app has moved — that is what the assertions are for — so teardown
+cannot live on the happy path.
+
+`browser.disconnect()` is not enough for a Chrome we spawned: it detaches the
+client and leaves Chrome running with every page open. Each failed run leaked
+one, and the app starts a radio station on the LOGIN click, so the leak was
+audible: a dozen headless browsers playing NC Radio with no window to close.
+`closeBrowser` calls `browser.close()` when we spawned it, and when we merely
+attached to someone else's debug Chrome it closes only the pages we opened and
+leaves their tabs alone. `SIGINT`/`SIGTERM` kill a spawned browser too.
+
+The browser also launches with `--mute-audio`, because headless Chrome still
+routes `AudioContext` output to the system audio device.
 
 | Env var | Default | Notes |
 | --- | --- | --- |

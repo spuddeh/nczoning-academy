@@ -4,10 +4,10 @@
 // EDIT NAME → clear (ISSUE disabled) → new name → Enter (reissued) → CLOSE.
 // See scripts/parity/README.md.
 import path from 'node:path';
-import { launchBrowser, targets, outDir, sleep, signIn, openApp, clickByText } from './lib/drive.mjs';
+import { withBrowser, targets, outDir, sleep, signIn, openApp, clickByText } from './lib/drive.mjs';
 import { NAME, RECORD_CERTIFIED as RECORD } from './lib/fixtures.mjs';
 
-const OUT = outDir();
+const OUT = outDir('cert', { clean: true });
 
 const certProbe = (page) => page.evaluate(() => {
   const cert = document.getElementById('cert-print');
@@ -100,7 +100,7 @@ async function capture(browser, name, base) {
   await page.close();
 }
 
-const browser = await launchBrowser();
-for (const t of targets()) await capture(browser, t.name, t.url);
-await browser.disconnect();
+await withBrowser(async (browser) => {
+  for (const t of targets()) await capture(browser, t.name, t.url);
+});
 console.log(`done → ${OUT}`);

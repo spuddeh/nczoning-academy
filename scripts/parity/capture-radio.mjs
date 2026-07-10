@@ -5,10 +5,10 @@
 // probe (localStorage record after the debounced save).
 // See scripts/parity/README.md.
 import path from 'node:path';
-import { launchBrowser, targets, outDir, sleep, signIn, openApp } from './lib/drive.mjs';
+import { withBrowser, targets, outDir, sleep, signIn, openApp } from './lib/drive.mjs';
 import { NAME, RECORD_RADIO as RECORD } from './lib/fixtures.mjs';
 
-const OUT = outDir();
+const OUT = outDir('radio', { clean: true });
 
 const clickByTitle = (page, title) => page.evaluate((t) => {
   const el = document.querySelector(`button[title="${t}"]`);
@@ -205,7 +205,7 @@ async function capture(browser, name, base) {
   await page.close();
 }
 
-const browser = await launchBrowser();
-for (const t of targets()) await capture(browser, t.name, t.url);
-await browser.disconnect();
+await withBrowser(async (browser) => {
+  for (const t of targets()) await capture(browser, t.name, t.url);
+});
 console.log(`done → ${OUT}`);

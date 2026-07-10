@@ -31,9 +31,27 @@ export const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const CHROME = process.env.CHROME_BIN ?? 'C:/Program Files/Google/Chrome/Application/chrome.exe';
 const PORT = Number(process.env.CHROME_DEBUG_PORT ?? 9224);
 
-/** `scripts/parity/out`, created if absent. Gitignored. */
-export function outDir() {
-  const dir = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'out');
+/**
+ * `scripts/parity/out/<bucket>`, created if absent. Gitignored.
+ *
+ * Each script writes into its own bucket and wipes it on the way in, so a rerun
+ * REPLACES its artefacts instead of accumulating them. Two reasons, and the
+ * second is the important one:
+ *
+ *   1. Screenshots are ~150KB each and five scripts × two targets × many states
+ *      adds up fast.
+ *   2. A leftover PNG from an older run is indistinguishable from one this run
+ *      produced. That is the same trap as everything else in #22 — an artefact
+ *      that looks like evidence and isn't.
+ *
+ * Called with no bucket it returns the root (for `chrome-profile`), which is
+ * never cleaned.
+ */
+export function outDir(bucket, { clean = false } = {}) {
+  const root = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'out');
+  if (clean && !bucket) throw new Error('refusing to clean the out/ root — it holds chrome-profile');
+  const dir = bucket ? path.join(root, bucket) : root;
+  if (clean) fs.rmSync(dir, { recursive: true, force: true });
   fs.mkdirSync(dir, { recursive: true });
   return dir;
 }
@@ -57,6 +75,19 @@ export function targets() {
   return list;
 }
 
+/** Did WE spawn the Chrome we are attached to? Decides close vs disconnect. */
+let weSpawnedChrome = false;
+
+/** Pages this harness opened. Only these are ours to close. */
+const ourPages = new Set();
+
+/** A page tracked for teardown. Use instead of `browser.newPage()`. */
+export async function newPage(browser) {
+  const page = await browser.newPage();
+  ourPages.add(page);
+  return page;
+}
+
 /** Reuse a debug Chrome on PORT if one is up, else launch our own headless. */
 async function wsEndpoint() {
   try {
@@ -67,7 +98,12 @@ async function wsEndpoint() {
     '--headless=new', `--remote-debugging-port=${PORT}`,
     `--user-data-dir=${path.join(outDir(), 'chrome-profile')}`,
     '--window-size=1440,900', '--no-first-run',
+    // The app builds an AudioContext on the LOGIN click and starts the radio.
+    // Headless Chrome still routes that to the system audio device, so a leaked
+    // browser is a radio station playing forever with no window to close.
+    '--mute-audio',
   ], { detached: true, stdio: 'ignore' }).unref();
+  weSpawnedChrome = true;
   for (let i = 0; i < 20; i++) {
     await sleep(300);
     try {
@@ -79,10 +115,60 @@ async function wsEndpoint() {
 }
 
 export async function launchBrowser({ width = 1440, height = 900 } = {}) {
-  return puppeteer.connect({
+  const browser = await puppeteer.connect({
     browserWSEndpoint: await wsEndpoint(),
     defaultViewport: { width, height },
   });
+  // Last line of defence: Ctrl-C, or a throw that escapes even the finally.
+  if (weSpawnedChrome) {
+    const panic = () => { try { browser.process()?.kill(); } catch { /* already gone */ } };
+    process.once('SIGINT', () => { panic(); process.exit(130); });
+    process.once('SIGTERM', () => { panic(); process.exit(143); });
+  }
+  return browser;
+}
+
+/**
+ * Release the browser.
+ *
+ * `disconnect()` is NOT enough for one we spawned: it detaches the client and
+ * leaves Chrome running with every page open. Each failed capture run leaked a
+ * browser that way, and with it a radio station.
+ *
+ * A Chrome we merely attached to belongs to someone else — disconnect, never
+ * close.
+ */
+export async function closeBrowser(browser) {
+  if (!browser) return;
+  try {
+    if (weSpawnedChrome) {
+      await browser.close();
+    } else {
+      // Someone else's debug Chrome. Close only the pages WE opened — never
+      // their tabs — then let go of the browser itself.
+      for (const page of ourPages) {
+        try { if (!page.isClosed()) await page.close(); } catch { /* already gone */ }
+      }
+      await browser.disconnect();
+    }
+  } catch { /* already gone */ }
+  ourPages.clear();
+}
+
+/**
+ * Run `fn(browser)` and tear the browser down however it ends.
+ *
+ * Use this rather than launch/close by hand. A throw mid-drive is now the
+ * EXPECTED behaviour when the app has moved (that is the whole point of the
+ * assertions), so the teardown cannot live on the happy path.
+ */
+export async function withBrowser(fn, opts) {
+  const browser = await launchBrowser(opts);
+  try {
+    return await fn(browser);
+  } finally {
+    await closeBrowser(browser);
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -267,7 +353,7 @@ export async function signIn(page, name, { onState = async () => {} } = {}) {
  * things like a CDP session (see capture-record.mjs denying downloads).
  */
 export async function openApp(browser, { url, label, record = null, name, beforeGoto }) {
-  const page = await browser.newPage();
+  const page = await newPage(browser);
   page.on('console', (m) => {
     if (m.type() === 'error') console.log(`[${label}] console error: ${m.text().slice(0, 300)}`);
   });
