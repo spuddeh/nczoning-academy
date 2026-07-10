@@ -164,6 +164,226 @@ input::placeholder {
   .cursor { animation: none !important; }
 }
 
+/* ---- app header (shared chrome — renders on every view) ---- */
+.app-header {
+  /* Dense chrome in a 62px bar, not a reading surface: the ladder steps down.
+     Re-binding the ROLE here means every rule below still says var(--fs-label)
+     and needs no knowledge of the context it lands in. */
+  --fs-heading: 20px; /* wordmark */
+  --fs-ui:      14px; /* balance figure */
+  --fs-label:   11px; /* nav tabs, clearance, glossary */
+  --fs-micro:    9px; /* the caps above each figure */
+
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: var(--header-h);
+  padding: 0 22px;
+  background: rgba(10, 25, 47, 0.9);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid rgba(0, 240, 255, 0.2);
+}
+.hdr-brand { display: flex; align-items: center; gap: 16px; flex: none; }
+.hdr-logo {
+  height: 40px;
+  width: auto;
+  display: block;
+  filter: brightness(0) invert(1) drop-shadow(0 0 6px rgba(0, 240, 255, 0.35));
+}
+.hdr-brand-title {
+  font-family: var(--font-identity);
+  font-weight: 400;
+  font-size: var(--fs-heading);
+  letter-spacing: 0.11em;
+  color: var(--text);
+  line-height: 1;
+}
+.hdr-sub {
+  font-family: var(--font-mono);
+  font-size: var(--fs-micro);
+  letter-spacing: 0.14em;
+  color: var(--muted);
+  margin-top: 3px;
+  white-space: nowrap;
+}
+
+.hdr-nav { display: flex; align-items: center; gap: 6px; }
+.hdr-nav-btn {
+  font-family: var(--font-display);
+  font-size: var(--fs-label);
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  padding: 8px 15px;
+  cursor: pointer;
+  background: transparent;
+  border: 1px solid transparent; /* inactive tabs are borderless text */
+  color: var(--muted);
+
+  &.active {
+    background: rgba(0, 240, 255, 0.1);
+    border-color: var(--primary);
+    color: var(--primary);
+  }
+}
+
+.hdr-meta { display: flex; align-items: center; gap: 18px; flex: none; }
+.hdr-clearance { text-align: right; }
+.hdr-clearance-label {
+  font-family: var(--font-mono);
+  font-size: var(--fs-micro);
+  letter-spacing: 0.14em;
+  color: var(--muted);
+}
+.hdr-clearance-val {
+  font-family: var(--font-display);
+  font-size: var(--fs-label);
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--primary);
+}
+
+/* balance is a button (opens transaction history) */
+.hdr-balance {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  background: rgba(255, 212, 0, 0.05);
+  border: 1px solid rgba(255, 212, 0, 0.5);
+  padding: 6px 12px;
+  cursor: pointer;
+  transition: box-shadow 0.3s, border-color 0.3s, background 0.15s;
+
+  &:hover {
+    background: rgba(255, 212, 0, 0.12);
+    border-color: rgba(255, 212, 0, 0.85);
+  }
+}
+.hdr-balance-row { display: flex; align-items: center; gap: 6px; }
+.hdr-balance-label {
+  font-family: var(--font-mono);
+  font-size: var(--fs-micro);
+  letter-spacing: 0.14em;
+  color: var(--muted);
+}
+.hdr-balance-icon { display: block; flex: none; opacity: 0.85; }
+.hdr-balance-val {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  font-size: var(--fs-ui);
+  letter-spacing: 0.06em;
+  color: var(--tertiary);
+
+  &.negative { color: var(--danger); }
+}
+
+/* header glossary button — desktop hides it (the FAB shows instead);
+   the ≤640px block in style.css swaps them */
+.gloss-hdr {
+  display: none;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 13px;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: var(--fs-label);
+  letter-spacing: 0.14em;
+  cursor: pointer;
+  background: transparent;
+  border: 1px solid rgba(0, 240, 255, 0.55);
+  color: var(--primary);
+
+  &:hover { background: rgba(0, 240, 255, 0.12); border-color: var(--primary); }
+}
+
+/* ---- fixed satellites (shared chrome — render on every view) ---- */
+
+/* Both are position:fixed and mount at App root, so they inherit from :root,
+   NOT from .app-header. They need their own binding to match its chrome ladder. */
+.sys-readout,
+.gloss-fab {
+  --fs-label: 11px;
+  --fs-micro: 10px;
+}
+
+/* bottom-left telemetry readout — one line: status text, LED, offset */
+.sys-readout {
+  position: fixed;
+  left: 18px;
+  bottom: 14px;
+  z-index: 9100;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 7px 4px;
+  pointer-events: none;
+  font-family: var(--font-display);
+  font-size: var(--fs-micro);
+  opacity: 0.9;
+  transition: left 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+
+  /* the player rail occupies the left edge; the readout slides beside it */
+  &.player { left: 306px; }
+}
+.sys-status {
+  letter-spacing: 1px;
+  transition: color 0.5s ease;
+  display: inline-block;
+  white-space: nowrap;
+  flex-shrink: 0;
+  color: var(--primary);
+}
+.sys-led {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+  flex-shrink: 0;
+  background: var(--success);
+  box-shadow: 0 0 8px var(--success);
+  transition: background 0.5s ease, box-shadow 0.5s ease;
+}
+/* ELEVATED / CRITICAL escalation (85/10/5 telemetry roll) */
+.sys-readout.elevated .sys-status { color: var(--secondary); }
+.sys-readout.elevated .sys-led { background: var(--secondary); box-shadow: 0 0 8px var(--secondary); }
+.sys-readout.critical .sys-status { color: var(--danger); }
+.sys-readout.critical .sys-led { background: var(--danger); box-shadow: 0 0 8px var(--danger); }
+.sys-offset {
+  font-family: var(--font-mono);
+  letter-spacing: 0.08em;
+  color: var(--primary);
+  opacity: 0.75;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* glossary floating button (desktop) */
+.gloss-fab {
+  position: fixed;
+  top: 76px;
+  right: 22px;
+  z-index: 9200;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 14px;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: var(--fs-label);
+  letter-spacing: 0.14em;
+  cursor: pointer;
+  background: rgba(10, 25, 47, 0.92);
+  border: 1px solid rgba(0, 240, 255, 0.55);
+  color: var(--primary);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+
+  &:hover { background: rgba(0, 240, 255, 0.14); border-color: var(--primary); }
+}
+.gloss-fab svg { display: block; flex: none; }
+
+
 /* ---- responsive (values measured from the monolith's media blocks) ---- */
 /* Tablet (≤1024px): drop the clearance cluster, tighten the dash padding */
 @media (max-width: 1024px) {
@@ -182,7 +402,8 @@ input::placeholder {
   .sys-readout { display: none !important; }
   .hdr-sub { display: none !important; }
   .hdr-clearance { display: none !important; }
-  .hdr-brand-title { font-size: 15px !important; }
+  /* re-bind the role, don't !important the call site */
+  .app-header { --fs-heading: 15px; }
   .hdr-brand { width: 100%; }
   .hdr-nav {
     order: 2;
@@ -199,9 +420,11 @@ input::placeholder {
   .gloss-fab { display: none !important; }
   .gloss-hdr { display: inline-flex !important; padding: 7px 11px !important; min-height: 40px; }
 
-  .dash-scroll { padding: 22px 15px 46px !important; }
-  .dash-h1 { font-size: 25px !important; }
-  .dash-lead { font-size: 14px !important; }
+  .dash-scroll {
+    padding: 22px 15px 46px !important;
+    --fs-title: 25px;
+    --fs-body:  14px;
+  }
   .course-grid { grid-template-columns: 1fr !important; }
 
   button { min-height: 44px; }

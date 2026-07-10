@@ -4,6 +4,16 @@
  */
 
 .lock-screen {
+  /* A landing page: one paragraph of prose and a broadcast feed. Body runs
+     smaller than a lesson because nobody reads this for twenty minutes. */
+  --fs-title:     34px;   /* wordmark */
+  --fs-heading:   20px;   /* clock */
+  --fs-body:      15px;   /* the lede under the wordmark */
+  --fs-secondary: 13.5px; /* broadcast message bodies */
+  --fs-ui:        15px;   /* [ LOGIN ] */
+  --fs-label:     12px;   /* panel + message titles */
+  --fs-micro:     10px;   /* tags, dates, hints */
+
   position: fixed;
   inset: 0;
   display: grid;
@@ -55,7 +65,7 @@
   margin: 0;
   font-family: var(--font-identity);
   font-weight: 400;
-  font-size: 34px;
+  font-size: var(--fs-title);
   letter-spacing: 0.14em;
   line-height: 1;
   color: var(--text);
@@ -64,7 +74,7 @@
 .lock-sub {
   margin-top: 10px;
   font-family: var(--font-mono);
-  font-size: 10.5px;
+  font-size: var(--fs-micro);
   letter-spacing: 0.22em;
   color: var(--muted);
 }
@@ -74,7 +84,7 @@
   max-width: 440px;
   margin: 18px 0 0;
   font-family: var(--font-body);
-  font-size: 15px;
+  font-size: var(--fs-body);
   line-height: 1.5;
   color: var(--text-soft);
   text-wrap: pretty;
@@ -111,14 +121,14 @@
 .lock-status-title {
   font-family: var(--font-display);
   font-weight: 700;
-  font-size: 12px;
+  font-size: var(--fs-label);
   letter-spacing: 0.16em;
   color: var(--secondary);
 }
 .lock-status-note {
   margin-top: 3px;
   font-family: var(--font-mono);
-  font-size: 9px;
+  font-size: var(--fs-micro);
   letter-spacing: 0.16em;
   color: var(--placeholder);
 }
@@ -126,7 +136,7 @@
 .lock-clock-time {
   font-family: var(--font-mono);
   font-weight: 600;
-  font-size: 20px;
+  font-size: var(--fs-heading);
   letter-spacing: 0.08em;
   line-height: 1;
   color: var(--primary);
@@ -135,7 +145,7 @@
 .lock-clock-date {
   margin-top: 4px;
   font-family: var(--font-mono);
-  font-size: 9px;
+  font-size: var(--fs-micro);
   letter-spacing: 0.16em;
   color: var(--muted);
 }
@@ -167,7 +177,7 @@
 .lock-broadcast-title {
   font-family: var(--font-display);
   font-weight: 700;
-  font-size: 11px;
+  font-size: var(--fs-label);
   letter-spacing: 0.18em;
   color: var(--primary);
 }
@@ -213,28 +223,28 @@
 .lock-msg-tag {
   font-family: var(--font-display);
   font-weight: 700;
-  font-size: 9px;
+  font-size: var(--fs-micro);
   letter-spacing: 0.16em;
   color: var(--lvl);
 }
 .lock-msg-title {
   font-family: var(--font-display);
   font-weight: 700;
-  font-size: 12px;
+  font-size: var(--fs-label);
   letter-spacing: 0.08em;
   color: var(--text);
 }
 .lock-msg-date {
   margin-left: auto;
   font-family: var(--font-mono);
-  font-size: 9px;
+  font-size: var(--fs-micro);
   letter-spacing: 0.1em;
   color: var(--placeholder);
 }
 .lock-msg-text {
   margin-top: 4px;
   font-family: var(--font-body);
-  font-size: 13.5px;
+  font-size: var(--fs-secondary);
   line-height: 1.45;
   color: var(--muted);
 }
@@ -245,7 +255,7 @@
   text-align: center;
   font-family: var(--font-display);
   font-weight: 700;
-  font-size: 15px;
+  font-size: var(--fs-ui);
   letter-spacing: 0.2em;
   padding: 17px;
   cursor: pointer;
@@ -268,12 +278,12 @@
   margin-top: 18px;
   color: var(--placeholder);
   font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: var(--fs-micro);
   letter-spacing: 0.12em;
 }
 
 @media (max-width: 640px) {
-  .lock-wordmark { font-size: 26px; }
+  .lock-screen { --fs-title: 26px; } /* re-bind the role, not the call site */
   .lock-status { flex-direction: column; align-items: flex-start; gap: 12px; }
   .lock-clock { text-align: left; }
   .lock-login { min-height: 52px; }
