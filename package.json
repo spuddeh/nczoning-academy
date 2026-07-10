@@ -11,6 +11,7 @@
     "typecheck": "tsc --noEmit && tsc --noEmit -p functions/tsconfig.json",
     "validate": "node scripts/validate-courses.mjs",
     "validate:radio": "node scripts/validate-radio.mjs",
+    "validate:css": "node scripts/validate-css.mjs",
     "harness:selftest": "node scripts/parity/selftest.mjs",
     "harness:snapshot": "node scripts/parity/snapshot-styles.mjs",
     "harness:compare": "node scripts/parity/compare-styles.mjs",
