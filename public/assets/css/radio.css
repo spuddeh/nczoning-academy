@@ -28,16 +28,16 @@
   align-items: center;
   gap: 10px;
   padding: 10px 14px;
-  background: rgba(10, 25, 47, 0.94);
-  border: 1px solid rgba(0, 240, 255, 0.5);
-  box-shadow: 0 0 22px rgba(0, 240, 255, 0.14);
+  background: rgb(from var(--bg) r g b / 0.94);
+  border: 1px solid rgb(from var(--primary) r g b / 0.5);
+  box-shadow: 0 0 22px rgb(from var(--primary) r g b / 0.14);
   cursor: pointer;
   backdrop-filter: blur(4px);
 
   &:hover { border-color: var(--primary); }
-  &.muted { border-color: rgba(136, 146, 176, 0.4); }
+  &.muted { border-color: rgb(from var(--muted) r g b / 0.4); }
   &.muted:hover { border-color: var(--primary); }
-  &.muted .radio-freq, &.muted .radio-track { color: var(--gray); }
+  &.muted .radio-freq, &.muted .radio-track { color: var(--muted); }
 }
 .radio-eq { display: flex; align-items: flex-end; gap: 2px; }
 .radio-eq-bar {
@@ -80,7 +80,7 @@
   max-width: calc(100vw - 44px);
   background: rgba(8, 18, 34, 0.97);
   border: 1px solid var(--primary);
-  box-shadow: 0 0 40px rgba(0, 240, 255, 0.22);
+  box-shadow: 0 0 40px rgb(from var(--primary) r g b / 0.22);
   backdrop-filter: blur(5px);
   font-family: var(--font-mono);
 }
@@ -90,7 +90,7 @@
   align-items: center;
   justify-content: space-between;
   background: var(--primary);
-  color: var(--navy);
+  color: var(--bg);
   padding: 8px 8px 8px 14px;
 
   > span {
@@ -103,7 +103,7 @@
 .radio-minimize {
   background: transparent;
   border: none;
-  color: var(--navy);
+  color: var(--bg);
   font-size: var(--fs-ui);
   line-height: 1;
   cursor: pointer;
@@ -116,8 +116,8 @@
 /* now-playing box — .dim marks muted-or-paused text/fill */
 .radio-now {
   padding: 13px 15px;
-  border: 1px solid rgba(0, 240, 255, 0.25);
-  background: rgba(0, 240, 255, 0.04);
+  border: 1px solid rgb(from var(--primary) r g b / 0.25);
+  background: rgb(from var(--primary) r g b / 0.04);
 }
 .radio-now-top {
   display: flex;
@@ -133,20 +133,20 @@
   color: var(--primary);
   letter-spacing: 0.02em;
   line-height: 1;
-  text-shadow: 0 0 12px rgba(0, 240, 255, 0.4);
+  text-shadow: 0 0 12px rgb(from var(--primary) r g b / 0.4);
 
-  &.dim { color: var(--gray); text-shadow: none; }
+  &.dim { color: var(--muted); text-shadow: none; }
 }
 .radio-now-station {
   font-size: var(--fs-label);
   letter-spacing: 0.12em;
-  color: var(--white);
+  color: var(--text);
   margin-top: 5px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 
-  &.dim { color: var(--gray); }
+  &.dim { color: var(--muted); }
 }
 .radio-now-title {
   font-size: var(--fs-body);
@@ -158,12 +158,12 @@
   overflow: hidden;
   text-overflow: ellipsis;
 
-  &.dim { color: var(--gray); }
+  &.dim { color: var(--muted); }
 }
 .radio-now-status {
   font-size: var(--fs-micro);
   letter-spacing: 0.13em;
-  color: var(--gray);
+  color: var(--muted);
   margin-top: 3px;
   white-space: nowrap;
   overflow: hidden;
@@ -171,7 +171,7 @@
 }
 
 .radio-prog { margin-top: 12px; }
-.radio-prog-bar { position: relative; height: 4px; background: rgba(136, 146, 176, 0.22); }
+.radio-prog-bar { position: relative; height: 4px; background: rgb(from var(--muted) r g b / 0.22); }
 .radio-prog-fill {
   position: absolute;
   left: 0;
@@ -180,7 +180,7 @@
   background: var(--primary);
   box-shadow: 0 0 8px var(--primary);
 
-  &.dim { background: var(--gray); box-shadow: none; }
+  &.dim { background: var(--muted); box-shadow: none; }
 }
 .radio-prog-times {
   display: flex;
@@ -188,7 +188,7 @@
   margin-top: 5px;
   font-size: var(--fs-micro);
   letter-spacing: 0.08em;
-  color: var(--gray);
+  color: var(--muted);
 }
 
 /* transport */
@@ -202,8 +202,8 @@
   height: 38px;
   padding: 0 12px;
   background: transparent;
-  border: 1px solid rgba(136, 146, 176, 0.45);
-  color: var(--white);
+  border: 1px solid rgb(from var(--muted) r g b / 0.45);
+  color: var(--text);
   font-family: var(--font-mono);
   font-size: var(--fs-secondary);
   cursor: pointer;
@@ -213,7 +213,7 @@
   &.big {
     flex: 1;
     min-width: auto;
-    background: rgba(0, 240, 255, 0.1);
+    background: rgb(from var(--primary) r g b / 0.1);
     border-color: var(--primary);
     color: var(--primary);
   }
@@ -223,7 +223,7 @@
   text-align: center;
   font-size: var(--fs-micro);
   letter-spacing: 0.16em;
-  color: var(--gray);
+  color: var(--muted);
 }
 
 /* station chips */
@@ -235,14 +235,14 @@
   letter-spacing: 0.06em;
   cursor: pointer;
   background: transparent;
-  color: var(--gray);
-  border: 1px solid rgba(136, 146, 176, 0.35);
+  color: var(--muted);
+  border: 1px solid rgb(from var(--muted) r g b / 0.35);
   font-weight: 400;
 
   &:hover { border-color: var(--primary); color: var(--primary); }
   &.on {
     background: var(--primary);
-    color: var(--navy);
+    color: var(--bg);
     border-color: var(--primary);
     font-weight: 700;
   }
@@ -263,13 +263,13 @@
   letter-spacing: 0.16em;
   font-weight: 600;
   background: transparent;
-  border: 1px solid rgba(136, 146, 176, 0.4);
-  color: var(--gray);
+  border: 1px solid rgb(from var(--muted) r g b / 0.4);
+  color: var(--muted);
 
   > span { font-size: var(--fs-body); }
   &:hover { border-color: var(--primary); }
   &.on {
-    background: rgba(0, 240, 255, 0.12);
+    background: rgb(from var(--primary) r g b / 0.12);
     border-color: var(--primary);
     color: var(--primary);
   }
@@ -292,7 +292,7 @@
   align-items: center;
   justify-content: center;
   background: transparent;
-  border: 1px solid rgba(0, 240, 255, 0.5);
+  border: 1px solid rgb(from var(--primary) r g b / 0.5);
   color: var(--primary);
   cursor: pointer;
   padding: 0;
@@ -302,7 +302,7 @@
 .radio-vollabel {
   font-size: var(--fs-micro);
   letter-spacing: 0.14em;
-  color: var(--gray);
+  color: var(--muted);
 }
 .radio-volval {
   font-size: var(--fs-micro);

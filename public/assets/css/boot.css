@@ -30,7 +30,7 @@
 .boot-backdrop {
   position: absolute;
   inset: 0;
-  background: radial-gradient(circle at 50% 0%, rgba(0, 240, 255, 0.06), transparent 60%);
+  background: radial-gradient(circle at 50% 0%, rgb(from var(--primary) r g b / 0.06), transparent 60%);
 }
 
 .boot-card {
@@ -49,7 +49,7 @@
   align-items: center;
   gap: 14px;
   background: var(--primary);
-  color: var(--navy);
+  color: var(--bg);
   font-family: var(--font-identity);
   font-weight: 400;
   font-size: var(--fs-label);
@@ -129,7 +129,7 @@
   letter-spacing: 0.08em;
   padding: 12px 14px;
   margin: 0 0 18px;
-  border: 1px solid rgba(0, 240, 255, 0.4);
+  border: 1px solid rgb(from var(--primary) r g b / 0.4);
   border-radius: var(--radius);
   outline: none;
 
@@ -153,14 +153,14 @@
   padding: 15px;
   border-radius: var(--radius);
   background: transparent;
-  border: 1px solid rgba(0, 240, 255, 0.35);
+  border: 1px solid rgb(from var(--primary) r g b / 0.35);
   color: var(--primary-dim);
   cursor: not-allowed;
 
   &.ready {
     background: var(--primary);
     border-color: var(--primary);
-    color: var(--navy);
+    color: var(--bg);
     cursor: pointer;
   }
 }
@@ -205,7 +205,7 @@
   transition: background 0.15s, border-color 0.15s, color 0.15s;
 
   &:hover {
-    background: rgba(0, 240, 255, 0.08);
+    background: rgb(from var(--primary) r g b / 0.08);
     border-color: var(--primary);
     color: var(--primary);
   }

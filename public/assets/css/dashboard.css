@@ -58,7 +58,7 @@
   font-size: var(--fs-label);
   letter-spacing: 0.16em;
   color: var(--muted);
-  border-bottom: 1px solid rgba(136, 146, 176, 0.25);
+  border-bottom: 1px solid rgb(from var(--muted) r g b / 0.25);
   padding-bottom: 10px;
   margin-bottom: 24px;
 }
@@ -69,8 +69,8 @@
 /* ---- orientation card (session-dismissible) ---- */
 .orient-card {
   position: relative;
-  border: 1px solid rgba(0, 240, 255, 0.3);
-  background: rgba(0, 240, 255, 0.04);
+  border: 1px solid rgb(from var(--primary) r g b / 0.3);
+  background: rgb(from var(--primary) r g b / 0.04);
   padding: 18px 20px 18px 18px;
   margin-bottom: 34px;
   display: flex;
@@ -107,7 +107,7 @@
 .orient-dismiss {
   flex: none;
   background: transparent;
-  border: 1px solid rgba(136, 146, 176, 0.4);
+  border: 1px solid rgb(from var(--muted) r g b / 0.4);
   color: var(--muted);
   font-family: var(--font-mono);
   font-size: var(--fs-label);
@@ -127,8 +127,8 @@
 
 /* the whole card is clickable (opens the course) */
 .course-card {
-  border: 1px solid rgba(0, 240, 255, 0.25);
-  background: rgba(17, 34, 64, 0.5);
+  border: 1px solid rgb(from var(--primary) r g b / 0.25);
+  background: rgb(from var(--surface) r g b / 0.5);
   backdrop-filter: blur(6px);
   cursor: pointer;
   text-align: left;
@@ -141,7 +141,7 @@
 .course-hero {
   height: 132px;
   background: linear-gradient(135deg, var(--hero-a), var(--hero-b));
-  border-bottom: 1px solid rgba(0, 240, 255, 0.25);
+  border-bottom: 1px solid rgb(from var(--primary) r g b / 0.25);
   position: relative;
   overflow: hidden;
   display: flex;
@@ -152,8 +152,8 @@
   position: absolute;
   inset: 0;
   background-image:
-    linear-gradient(rgba(0, 240, 255, 0.06) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0, 240, 255, 0.06) 1px, transparent 1px);
+    linear-gradient(rgb(from var(--primary) r g b / 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(from var(--primary) r g b / 0.06) 1px, transparent 1px);
   background-size: 22px 22px;
 }
 .course-tag {
@@ -161,7 +161,7 @@
   top: 0;
   left: 0;
   background: var(--primary);
-  color: var(--navy);
+  color: var(--bg);
   font-family: var(--font-mono);
   font-size: var(--fs-micro);
   font-weight: 600;
@@ -175,7 +175,7 @@
   /* a translucent decorative numeral behind the card, not text — no type role */
   font-size: 26px;
   letter-spacing: 0.12em;
-  color: rgba(0, 240, 255, 0.18);
+  color: rgb(from var(--primary) r g b / 0.18);
 }
 
 .course-body { padding: 18px 18px 20px; }
@@ -201,7 +201,7 @@
 
 .course-chips { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
 .course-chip {
-  border: 1px solid rgba(136, 146, 176, 0.4);
+  border: 1px solid rgb(from var(--muted) r g b / 0.4);
   color: var(--muted);
   font-family: var(--font-mono);
   font-size: var(--fs-micro);
@@ -221,12 +221,12 @@
 .course-progress-count { color: var(--primary); }
 .course-bar {
   height: 5px;
-  background: var(--navy);
-  border: 1px solid rgba(0, 240, 255, 0.2);
+  background: var(--bg);
+  border: 1px solid rgb(from var(--primary) r g b / 0.2);
 }
 .course-bar-fill {
   height: 100%;
-  background: linear-gradient(90deg, var(--cyan), var(--green));
+  background: linear-gradient(90deg, var(--primary), var(--success));
 }
 
 .course-cta {
@@ -242,7 +242,7 @@
   padding: 12px;
   cursor: pointer;
 
-  &:hover { background: var(--primary); color: var(--navy); }
+  &:hover { background: var(--primary); color: var(--bg); }
 }
 
 /* ---- transmission relays (external links) ---- */
@@ -259,22 +259,22 @@
 
   /* colour variants; hover inverts to the solid colour */
   &.cyan {
-    border: 1px solid rgba(0, 240, 255, 0.4);
-    color: var(--cyan);
-    background: rgba(0, 240, 255, 0.04);
-    &:hover { background: var(--cyan); color: var(--navy); border-color: var(--cyan); }
+    border: 1px solid rgb(from var(--primary) r g b / 0.4);
+    color: var(--primary);
+    background: rgb(from var(--primary) r g b / 0.04);
+    &:hover { background: var(--primary); color: var(--bg); border-color: var(--primary); }
   }
   &.gold {
-    border: 1px solid rgba(255, 212, 0, 0.4);
-    color: var(--gold);
-    background: rgba(255, 212, 0, 0.04);
-    &:hover { background: var(--gold); color: var(--navy); border-color: var(--gold); }
+    border: 1px solid rgb(from var(--tertiary) r g b / 0.4);
+    color: var(--tertiary);
+    background: rgb(from var(--tertiary) r g b / 0.04);
+    &:hover { background: var(--tertiary); color: var(--bg); border-color: var(--tertiary); }
   }
   &.gray {
-    border: 1px solid rgba(136, 146, 176, 0.4);
-    color: var(--gray);
-    background: rgba(136, 146, 176, 0.04);
-    &:hover { background: var(--gray); color: var(--navy); border-color: var(--gray); }
+    border: 1px solid rgb(from var(--muted) r g b / 0.4);
+    color: var(--muted);
+    background: rgb(from var(--muted) r g b / 0.04);
+    &:hover { background: var(--muted); color: var(--bg); border-color: var(--muted); }
   }
 }
 .dash-link-icon { display: inline-flex; line-height: 0; }
