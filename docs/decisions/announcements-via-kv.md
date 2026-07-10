@@ -1,6 +1,6 @@
 # Decision: announcements from Workers KV, merged over a committed baseline
 
-Status: accepted (2026-07-10); shipped in PR #4
+Status: accepted (2026-07-10); shipped in PR #7
 
 ## Context
 
