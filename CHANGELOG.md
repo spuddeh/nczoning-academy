@@ -11,6 +11,14 @@ file records what a visitor receives.
 
 ## [Unreleased]
 
+## 0.3.1 - 2026-07-10
+
+### Fixed
+
+- A stray `*/` in `theme.css` ended the type-roles comment early, and CSS
+  bad-declaration recovery swallowed `--fs-title` with it. The module title and
+  the eddies balance rendered at the inherited 16px instead of 34px.
+
 ## 0.3.0 - 2026-07-10
 
 ### Added
@@ -37,9 +45,6 @@ file records what a visitor receives.
 
 ### Fixed
 
-- A stray `*/` in `theme.css` ended the type-roles comment early, and CSS
-  bad-declaration recovery swallowed `--fs-title` with it. The module title and
-  the eddies balance rendered at the inherited 16px instead of 34px.
 - No autoplay warning on load: the radio engine (and its `AudioContext`) now
   builds on the LOGIN gesture rather than at app mount.
 - The lock's `access` cue no longer races `AudioContext.resume()`, which
