@@ -6,6 +6,7 @@ on:
       - "public/courses/**"
       - "public/radio/**"
       - "public/messages.json"
+      - "public/assets/css/**"
       - "schema/**"
       - "scripts/**"
       - "package.json"
@@ -16,6 +17,7 @@ on:
       - "public/courses/**"
       - "public/radio/**"
       - "public/messages.json"
+      - "public/assets/css/**"
       - "schema/**"
       - "scripts/**"
       - "package.json"
@@ -35,3 +37,4 @@ jobs:
       - run: npm run validate
       - run: npm run validate:radio
       - run: npm run validate:messages
+      - run: npm run validate:css
