@@ -520,14 +520,14 @@
   user-select: none;
   background: rgb(from var(--surface) r g b / 0.4);
   transition: transform 0.16s cubic-bezier(0.2, 0.7, 0.3, 1), border-color 0.12s, background 0.12s;
-  z-index: 1;
+  z-index: var(--z-order-row);
 
   &.picked {
     background: rgb(from var(--primary) r g b / 0.14);
     border-color: var(--primary);
     transition: none;
     box-shadow: 0 14px 30px rgba(0, 0, 0, 0.55), 0 0 0 1px var(--primary);
-    z-index: 30;
+    z-index: var(--z-order-picked);
   }
   &.right { border-color: var(--success); }
   &.wrong-pos { border-color: var(--danger); }
@@ -765,7 +765,7 @@
   position: fixed;
   left: 0;
   top: 0;
-  z-index: 9997;
+  z-index: var(--z-flyer);
   pointer-events: none;
   font-family: var(--font-mono);
   font-weight: 700;
@@ -777,7 +777,7 @@
 .transfer-overlay {
   position: fixed;
   inset: 0;
-  z-index: 9996;
+  z-index: var(--z-transfer);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -851,7 +851,7 @@
     display: flex !important;
     position: sticky;
     top: 0;
-    z-index: 40;
+    z-index: var(--z-rail-toggle);
     align-items: center;
     gap: 10px;
     width: 100%;
@@ -874,7 +874,7 @@
     left: 0;
     width: 82vw !important;
     max-width: 340px;
-    z-index: 60;
+    z-index: var(--z-rail);
     background: rgba(8, 18, 36, 0.99) !important;
     box-shadow: 6px 0 30px rgba(0, 0, 0, 0.5);
     transform: translateX(-100%);
@@ -887,7 +887,7 @@
     position: fixed;
     inset: 0;
     background: rgb(from var(--field-bg) r g b / 0.62);
-    z-index: 55;
+    z-index: var(--z-rail-backdrop);
   }
   .player-main { width: 100%; }
 }

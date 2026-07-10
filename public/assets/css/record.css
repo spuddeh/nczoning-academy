@@ -355,7 +355,7 @@
 
   position: fixed;
   inset: 0;
-  z-index: 9998;
+  z-index: var(--z-scrim);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -526,7 +526,7 @@
 
   position: fixed;
   inset: 0;
-  z-index: 9999;
+  z-index: var(--z-dialog);
   background: rgb(from var(--field-bg) r g b / 0.9);
   backdrop-filter: blur(4px);
   display: flex;

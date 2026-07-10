@@ -21,7 +21,7 @@
   align-items: center;
   justify-content: center;
   background: var(--bg);
-  z-index: 50;
+  z-index: var(--z-view);
   padding: 24px;
   overflow: hidden;
 }

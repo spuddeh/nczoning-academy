@@ -23,7 +23,7 @@
   position: fixed;
   right: 22px;
   bottom: 22px;
-  z-index: 9995;
+  z-index: var(--z-overlay);
   display: flex;
   align-items: center;
   gap: 10px;
@@ -75,7 +75,7 @@
   position: fixed;
   right: 22px;
   bottom: 22px;
-  z-index: 9995;
+  z-index: var(--z-overlay);
   width: 300px;
   max-width: calc(100vw - 44px);
   background: rgba(8, 18, 34, 0.97);

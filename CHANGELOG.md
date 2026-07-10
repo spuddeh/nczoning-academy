@@ -11,6 +11,16 @@ file records what a visitor receives.
 
 ## [Unreleased]
 
+## 0.4.1 - 2026-07-11
+
+### Changed
+
+- The 15-value z-index ladder is now a named token set in `theme.css`
+  (`--z-view`, `--z-overlay`, `--z-dialog`, …) instead of magic numbers scattered
+  across eight stylesheets. Values preserved exactly; the deliberate 9995 tie
+  between the radio pill/panel and a modal scrim is one shared token, documented.
+  Pure refactor: computed z-index is identical on every element.
+
 ## 0.4.0 - 2026-07-11
 
 ### Changed
