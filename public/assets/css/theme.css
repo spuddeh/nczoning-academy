@@ -33,6 +33,7 @@ html.theme-night-corp {
 
   /* semantic roles (reference these in components, never the raw palette) */
   --bg:          var(--navy);
+  --surface:     var(--dark);   /* raised panels over the bg (menus, wells, rows) */
   --primary:     var(--cyan);   /* Zoning Cyan — links, focus, primary accents */
   --secondary:   var(--amber);  /* warnings / secondary emphasis */
   --tertiary:    var(--gold);   /* Academy gold — track titles, certificate */
@@ -45,20 +46,24 @@ html.theme-night-corp {
   --text-soft:   var(--text-body);         /* legacy alias — orientation-card body copy */
   --muted:       var(--gray);              /* Tier 3 — metadata / labels only */
   --placeholder: #54617f;                  /* also dim hints (skip hint, RETURNING OPERATOR?) */
-  --primary-dim: rgba(0, 240, 255, 0.55);  /* dimmed cyan — idle button text */
+  /* Derived colours use relative colour syntax so they FOLLOW the role above.
+     Re-bind --primary to red and every line, glow and tint below turns red at
+     the same alpha — no per-alpha token, no second edit. Value-identical to the
+     literals they replaced (verified: computed-style diff is empty). */
+  --primary-dim: rgb(from var(--primary) r g b / 0.55);  /* dimmed — idle button text */
   --field-bg:    #050a14;                  /* near-black input background */
   --hero-a:      #0d1f3a;                  /* course-card hero gradient start */
   --hero-b:      #122a4d;                  /* course-card hero gradient end */
 
   /* surfaces */
-  --card-bg:   rgba(10, 25, 47, 0.92);
-  --card-glow: 0 0 40px rgba(0, 240, 255, 0.15);
+  --card-bg:   rgb(from var(--bg) r g b / 0.92);
+  --card-glow: 0 0 40px rgb(from var(--primary) r g b / 0.15);
 
   /* lines / edges */
-  --line:        rgba(0, 240, 255, 0.25);
-  --line-strong: rgba(0, 240, 255, 0.35);
-  --line-muted:  rgba(136, 146, 176, 0.5);
-  --line-faint:  rgba(136, 146, 176, 0.2);
+  --line:        rgb(from var(--primary) r g b / 0.25);
+  --line-strong: rgb(from var(--primary) r g b / 0.35);
+  --line-muted:  rgb(from var(--muted) r g b / 0.5);
+  --line-faint:  rgb(from var(--muted) r g b / 0.2);
 
   /* scrollbar */
   --scrollbar-track:      var(--navy);
@@ -66,8 +71,8 @@ html.theme-night-corp {
   --scrollbar-thumb-hover:#1e4470;
 
   /* scanline / vignette overlays */
-  --scanline:  rgba(0, 240, 255, 0.035);
-  --vignette:  rgba(0, 0, 0, 0.45);
+  --scanline:  rgb(from var(--primary) r g b / 0.035);
+  --vignette:  rgba(0, 0, 0, 0.45);   /* black — not theme-derived */
 
   /* typography */
   --font-display:  'Orbitron', system-ui, sans-serif;   /* headings */

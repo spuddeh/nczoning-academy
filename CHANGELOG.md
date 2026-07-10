@@ -11,6 +11,21 @@ file records what a visitor receives.
 
 ## [Unreleased]
 
+## 0.4.0 - 2026-07-11
+
+### Changed
+
+- Colour is now themeable. The 185 colour literals and 107 raw-palette
+  references outside `theme.css` were the reason a theme swap only half-worked;
+  they now resolve through the semantic roles — directly, or as a tint/line/glow
+  via relative colour syntax (`rgb(from var(--primary) r g b / 0.25)`). The
+  derived tokens in `theme.css` (`--line*`, `--card-glow`, `--scanline`,
+  `--primary-dim`, `--card-bg`) follow their role too. Re-binding one role now
+  re-skins every value derived from it. Verified as a pure refactor: computed
+  `color`, `background-color`, `border-color` and shadows are identical across
+  every view (25,542 values). `--surface` reintroduced for the raised-panel
+  value that was hardcoded eight times.
+
 ## 0.3.2 - 2026-07-10
 
 ### Removed

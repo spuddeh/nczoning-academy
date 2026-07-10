@@ -29,7 +29,7 @@
 .lock-backdrop {
   position: absolute;
   inset: 0;
-  background: radial-gradient(circle at 50% 12%, rgba(0, 240, 255, 0.08), transparent 62%);
+  background: radial-gradient(circle at 50% 12%, rgb(from var(--primary) r g b / 0.08), transparent 62%);
 }
 
 /* thin scan line across the very top of the frame */
@@ -58,7 +58,7 @@
   width: auto;
   display: block;
   margin: 0 0 22px;
-  filter: brightness(0) invert(1) drop-shadow(0 0 14px rgba(0, 240, 255, 0.45));
+  filter: brightness(0) invert(1) drop-shadow(0 0 14px rgb(from var(--primary) r g b / 0.45));
 }
 
 .lock-wordmark {
@@ -101,8 +101,8 @@
   justify-content: space-between;
   gap: 16px;
   padding: 14px 20px;
-  border: 1px solid rgba(0, 240, 255, 0.28);
-  background: rgba(10, 25, 47, 0.6);
+  border: 1px solid rgb(from var(--primary) r g b / 0.28);
+  background: rgb(from var(--bg) r g b / 0.6);
 }
 .lock-status-left {
   display: flex;
@@ -155,16 +155,16 @@
   width: 100%;
   margin: 0 0 26px;
   text-align: left;
-  border: 1px solid rgba(0, 240, 255, 0.28);
-  background: rgba(10, 25, 47, 0.6);
+  border: 1px solid rgb(from var(--primary) r g b / 0.28);
+  background: rgb(from var(--bg) r g b / 0.6);
 }
 .lock-broadcast-head {
   display: flex;
   align-items: center;
   gap: 9px;
   padding: 11px 18px;
-  border-bottom: 1px solid rgba(0, 240, 255, 0.18);
-  background: rgba(0, 240, 255, 0.04);
+  border-bottom: 1px solid rgb(from var(--primary) r g b / 0.18);
+  background: rgb(from var(--primary) r g b / 0.04);
 }
 .lock-broadcast-led {
   width: 7px;
@@ -191,7 +191,7 @@
   align-items: flex-start;
   gap: 11px;
   padding: 13px 18px;
-  border-bottom: 1px solid rgba(136, 146, 176, 0.12);
+  border-bottom: 1px solid rgb(from var(--muted) r g b / 0.12);
 
   &:last-child { border-bottom: 0; }
 }
@@ -262,12 +262,12 @@
   background: var(--primary);
   border: 1px solid var(--primary);
   border-radius: var(--radius);
-  color: var(--navy);
-  box-shadow: 0 0 22px rgba(0, 240, 255, 0.25);
+  color: var(--bg);
+  box-shadow: 0 0 22px rgb(from var(--primary) r g b / 0.25);
   transition: box-shadow 0.2s;
 
   &:hover {
-    box-shadow: 0 0 34px rgba(0, 240, 255, 0.55);
+    box-shadow: 0 0 34px rgb(from var(--primary) r g b / 0.55);
   }
 }
 

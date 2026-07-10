@@ -1,8 +1,11 @@
 /* NC Zoning Academy — base + shared primitives.
  *
  * Layout and component styles. Uses native CSS nesting (like the map).
- * Everything references the semantic custom properties in theme.css — no
- * hardcoded colour here, so a theme swap re-skins the whole app.
+ * Colour comes from the semantic roles in theme.css — either directly
+ * (var(--primary)) or as a tint/line/glow via relative colour syntax
+ * (rgb(from var(--primary) r g b / 0.25)). Re-binding a role re-skins every
+ * derived value. A few non-theme colours remain literal on purpose: pure-black
+ * shadows and two one-off near-black wells that match no role.
  *
  * View-specific styles (dashboard, module player, radio panel, certificate)
  * live in their own files under assets/css/ and are added as views are rebuilt.
@@ -180,16 +183,16 @@ input::placeholder {
   justify-content: space-between;
   height: var(--header-h);
   padding: 0 22px;
-  background: rgba(10, 25, 47, 0.9);
+  background: rgb(from var(--bg) r g b / 0.9);
   backdrop-filter: blur(8px);
-  border-bottom: 1px solid rgba(0, 240, 255, 0.2);
+  border-bottom: 1px solid rgb(from var(--primary) r g b / 0.2);
 }
 .hdr-brand { display: flex; align-items: center; gap: 16px; flex: none; }
 .hdr-logo {
   height: 40px;
   width: auto;
   display: block;
-  filter: brightness(0) invert(1) drop-shadow(0 0 6px rgba(0, 240, 255, 0.35));
+  filter: brightness(0) invert(1) drop-shadow(0 0 6px rgb(from var(--primary) r g b / 0.35));
 }
 .hdr-brand-title {
   font-family: var(--font-identity);
@@ -221,7 +224,7 @@ input::placeholder {
   color: var(--muted);
 
   &.active {
-    background: rgba(0, 240, 255, 0.1);
+    background: rgb(from var(--primary) r g b / 0.1);
     border-color: var(--primary);
     color: var(--primary);
   }
@@ -249,15 +252,15 @@ input::placeholder {
   flex-direction: column;
   align-items: flex-end;
   gap: 2px;
-  background: rgba(255, 212, 0, 0.05);
-  border: 1px solid rgba(255, 212, 0, 0.5);
+  background: rgb(from var(--tertiary) r g b / 0.05);
+  border: 1px solid rgb(from var(--tertiary) r g b / 0.5);
   padding: 6px 12px;
   cursor: pointer;
   transition: box-shadow 0.3s, border-color 0.3s, background 0.15s;
 
   &:hover {
-    background: rgba(255, 212, 0, 0.12);
-    border-color: rgba(255, 212, 0, 0.85);
+    background: rgb(from var(--tertiary) r g b / 0.12);
+    border-color: rgb(from var(--tertiary) r g b / 0.85);
   }
 }
 .hdr-balance-row { display: flex; align-items: center; gap: 6px; }
@@ -291,10 +294,10 @@ input::placeholder {
   letter-spacing: 0.14em;
   cursor: pointer;
   background: transparent;
-  border: 1px solid rgba(0, 240, 255, 0.55);
+  border: 1px solid rgb(from var(--primary) r g b / 0.55);
   color: var(--primary);
 
-  &:hover { background: rgba(0, 240, 255, 0.12); border-color: var(--primary); }
+  &:hover { background: rgb(from var(--primary) r g b / 0.12); border-color: var(--primary); }
 }
 
 /* ---- fixed satellites (shared chrome — render on every view) ---- */
@@ -373,13 +376,13 @@ input::placeholder {
   font-size: var(--fs-label);
   letter-spacing: 0.14em;
   cursor: pointer;
-  background: rgba(10, 25, 47, 0.92);
-  border: 1px solid rgba(0, 240, 255, 0.55);
+  background: rgb(from var(--bg) r g b / 0.92);
+  border: 1px solid rgb(from var(--primary) r g b / 0.55);
   color: var(--primary);
   backdrop-filter: blur(8px);
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
 
-  &:hover { background: rgba(0, 240, 255, 0.14); border-color: var(--primary); }
+  &:hover { background: rgb(from var(--primary) r g b / 0.14); border-color: var(--primary); }
 }
 .gloss-fab svg { display: block; flex: none; }
 
