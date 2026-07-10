@@ -11,6 +11,14 @@ file records what a visitor receives.
 
 ## [Unreleased]
 
+## 0.3.1 - 2026-07-10
+
+### Fixed
+
+- A stray `*/` in `theme.css` ended the type-roles comment early, and CSS
+  bad-declaration recovery swallowed `--fs-title` with it. The module title and
+  the eddies balance rendered at the inherited 16px instead of 34px.
+
 ## 0.3.0 - 2026-07-10
 
 ### Added
