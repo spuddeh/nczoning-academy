@@ -6,7 +6,7 @@
 .modal-scrim {
   position: fixed;
   inset: 0;
-  z-index: 9995;
+  z-index: var(--z-overlay);
   background: rgb(from var(--field-bg) r g b / 0.86);
   backdrop-filter: blur(4px);
   display: flex;

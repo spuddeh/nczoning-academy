@@ -137,6 +137,29 @@ html.theme-night-corp {
 
   /* layout */
   --header-h: 62px; /* measured; monolith header is 62, not 64 */
+
+  /* z-index ladder — the whole stacking order in one place, bottom to top.
+     Values are preserved exactly (this is a pure refactor); where two selectors
+     share a token, they share a tier ON PURPOSE. The big jump from 60 to 9100
+     is the monolith's: in-flow chrome lives below 100, fixed/portalled overlays
+     live near 9999. Keep it. */
+  --z-order-row:      1;    /* quiz order rows, in flow */
+  --z-order-picked:  30;    /* a row lifted while being dragged */
+  --z-rail-toggle:   40;    /* the ☰ module-map toggle */
+  --z-view:          50;    /* full-screen views: boot, lock */
+  --z-rail-backdrop: 55;    /* scrim behind the open module-map drawer */
+  --z-rail:          60;    /* the module-map rail, above its own backdrop */
+  --z-sys-readout: 9100;    /* fixed telemetry satellite (bottom-left) */
+  --z-gloss-fab:   9200;    /* glossary FAB, sits above the readout */
+  --z-vignette:    9989;    /* CRT vignette overlay */
+  --z-scanlines:   9990;    /* CRT scanlines, just above the vignette */
+  --z-overlay:     9995;    /* modal scrim + radio pill/panel share this tier;
+                               the radio wins the tie on DOM order (MusicPlayer
+                               renders last in App.tsx) — do NOT split them */
+  --z-transfer:    9996;    /* eddies transfer overlay */
+  --z-flyer:       9997;    /* eddies flyer animation */
+  --z-scrim:       9998;    /* cert + shard overlays, under the confirms */
+  --z-dialog:      9999;    /* name-prompt + confirm dialogs sit on top */
 }
 
 /* Deliberately NOT here: a spacing scale.

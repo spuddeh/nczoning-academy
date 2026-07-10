@@ -25,11 +25,12 @@ if (!label) {
 const OUT = outDir('styles');
 const URL = process.env.REBUILD_URL ?? 'http://localhost:5173/';
 
-/** The four properties a colour refactor can move, plus their longhands. */
+/** Properties a token refactor can move: colour (+ longhands) and stacking. */
 const PROPS = [
   'color', 'background-color',
   'border-top-color', 'border-right-color', 'border-bottom-color', 'border-left-color',
   'box-shadow', 'text-shadow', 'outline-color', 'fill', 'stroke',
+  'z-index', // #18: computed z-index on every positioned element must be identical
 ];
 
 /**
