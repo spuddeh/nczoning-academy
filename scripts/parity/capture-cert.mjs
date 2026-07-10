@@ -2,78 +2,12 @@
 // CERTIFIED record (all 9 modules incl. the m09 capstone), signs in, then
 // drives: SERVICE RECORD → VIEW CERTIFICATE → print-media emulation probe →
 // EDIT NAME → clear (ISSUE disabled) → new name → Enter (reissued) → CLOSE.
-// Servers + Chrome as per scripts/parity/README.md.
-import { spawn } from 'node:child_process';
-import fs from 'node:fs';
+// See scripts/parity/README.md.
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
-import puppeteer from 'puppeteer-core';
+import { withBrowser, targets, outDir, sleep, signIn, openApp, clickByText } from './lib/drive.mjs';
+import { NAME, RECORD_CERTIFIED as RECORD } from './lib/fixtures.mjs';
 
-const MONOLITH_URL = process.env.MONOLITH_URL ?? 'http://localhost:4173/';
-const REBUILD_URL = process.env.REBUILD_URL ?? 'http://localhost:5173/';
-const CHROME = process.env.CHROME_BIN ?? 'C:/Program Files/Google/Chrome/Application/chrome.exe';
-const PORT = Number(process.env.CHROME_DEBUG_PORT ?? 9224);
-const OUT = path.join(path.dirname(fileURLToPath(import.meta.url)), 'out');
-fs.mkdirSync(OUT, { recursive: true });
-
-const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
-
-const NAME = 'S. DORSETT';
-const T0 = 1751947800000;
-const MODS = ['m01', 'm02', 'm03', 'm04', 'm05', 'm06', 'm07', 'm08', 'm09'];
-const RECORD = {
-  schema: 'ncza-record/v1',
-  course: 'data-api',
-  exportedAt: new Date(T0 + 9_000_000).toISOString(),
-  moduleDone: Object.fromEntries(MODS.map((id) => [id, true])),
-  quiz: {},
-  eddies: 11000, // 500 start + 8×1000 + 2500 capstone
-  revealedBy: Object.fromEntries(MODS.map((id) => [id, 20])),
-  txns: MODS.map((id, i) => ({
-    id: `t${i + 1}`, ts: T0 + i * 600_000, kind: 'module', moduleId: id,
-    moduleTitle: id.toUpperCase(), qid: null, qPrompt: '', correct: true,
-    delta: id === 'm09' ? 2500 : 1000,
-    balanceAfter: 500 + Math.min(i + 1, 8) * 1000 + (id === 'm09' ? 2500 : 0),
-  })),
-  operatorName: NAME,
-  audio: null,
-};
-
-async function wsEndpoint() {
-  try {
-    const r = await fetch(`http://localhost:${PORT}/json/version`);
-    return (await r.json()).webSocketDebuggerUrl;
-  } catch { /* not running */ }
-  const profile = path.join(OUT, 'chrome-profile');
-  spawn(CHROME, [
-    '--headless=new', `--remote-debugging-port=${PORT}`,
-    `--user-data-dir=${profile}`, '--window-size=1440,900', '--no-first-run',
-  ], { detached: true, stdio: 'ignore' }).unref();
-  for (let i = 0; i < 20; i++) {
-    await sleep(300);
-    try {
-      const r = await fetch(`http://localhost:${PORT}/json/version`);
-      return (await r.json()).webSocketDebuggerUrl;
-    } catch { /* retry */ }
-  }
-  throw new Error('headless Chrome did not come up');
-}
-
-async function clickByText(page, selector, txt) {
-  return page.evaluate((sel, t) => {
-    const el = [...document.querySelectorAll(sel)].find((x) => x.textContent.trim().includes(t));
-    if (el) { el.click(); return true; }
-    return false;
-  }, selector, txt);
-}
-
-const leafText = (page, reSrc) => page.evaluate((src) => {
-  const re = new RegExp(src);
-  const el = [...document.querySelectorAll('div,span')].find(
-    (d) => d.childElementCount === 0 && re.test(d.textContent.trim()),
-  );
-  return el?.textContent.replace(/\s+/g, ' ').trim() ?? null;
-}, reSrc);
+const OUT = outDir('cert', { clean: true });
 
 const certProbe = (page) => page.evaluate(() => {
   const cert = document.getElementById('cert-print');
@@ -93,25 +27,8 @@ const certProbe = (page) => page.evaluate(() => {
 });
 
 async function capture(browser, name, base) {
-  const page = await browser.newPage();
-  page.on('console', (m) => { if (m.type() === 'error') console.log(`[${name}] console error: ${m.text().slice(0, 300)}`); });
-  await page.goto(base, { waitUntil: 'networkidle2', timeout: 30000 });
-  await sleep(500);
-  await page.evaluate((rec, nm) => {
-    localStorage.clear();
-    localStorage.setItem(`ncza:v1:progress:${nm}`, JSON.stringify(rec));
-    localStorage.setItem('ncza:v1:lastUser', nm);
-  }, RECORD, NAME);
-  await page.keyboard.press('Space');
-  await sleep(1000);
-  await page.evaluate(() => {
-    const i = [...document.querySelectorAll('input')].find((x) => (x.type || 'text') === 'text');
-    if (i) i.focus();
-  });
-  await page.keyboard.down('Control'); await page.keyboard.press('a'); await page.keyboard.up('Control');
-  await page.keyboard.type(NAME);
-  await page.keyboard.press('Enter');
-  await sleep(2600);
+  const page = await openApp(browser, { url: base, label: name, record: RECORD, name: NAME });
+  await signIn(page, NAME);
 
   // ---- certified Service Record view ----
   await clickByText(page, 'button', 'SERVICE RECORD');
@@ -183,11 +100,7 @@ async function capture(browser, name, base) {
   await page.close();
 }
 
-const browser = await puppeteer.connect({
-  browserWSEndpoint: await wsEndpoint(),
-  defaultViewport: { width: 1440, height: 900 },
+await withBrowser(async (browser) => {
+  for (const t of targets()) await capture(browser, t.name, t.url);
 });
-await capture(browser, 'monolith', MONOLITH_URL);
-await capture(browser, 'rebuild', REBUILD_URL);
-await browser.disconnect();
 console.log(`done → ${OUT}`);
