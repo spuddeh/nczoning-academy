@@ -50,6 +50,47 @@ is indistinguishable from a fresh one — the same trap as everything else here.
 `out/` is gitignored. `out/chrome-profile` is the reused browser profile; only
 `harness:clean` removes it.
 
+## Proving a CSS refactor changed nothing
+
+Screenshots cannot settle "pure refactor, zero visual change" — you cannot eyeball
+25,000 property values, and a modal nobody opened is not in the picture.
+
+```bash
+node scripts/parity/snapshot-styles.mjs before   # on main
+# ...change the CSS...
+node scripts/parity/snapshot-styles.mjs after
+node scripts/parity/compare-styles.mjs before after   # exit 0 = identical
+```
+
+`snapshot-styles.mjs` drives 14 view states (lock, boot, dashboard, glossary,
+ledger, service record, certificate, name prompt, confirm scrim, radio panel,
+player, and the three `.sys-readout` telemetry tiers) and records `color`,
+`background-color`, all four `border-*-color`, `box-shadow`, `text-shadow`,
+`outline-color`, `fill` and `stroke` for every element.
+
+**Normalisation is the whole point.** Relative colour syntax computes as
+`color(srgb 0 0.9412 1 / 0.25)`; the literal it replaces computes as
+`rgba(0, 240, 255, 0.25)`. Same colour, different string. A string diff
+false-positives on every touched line and buries the one line that actually
+moved. `compare-styles.mjs` parses both to numeric RGBA and compares within half
+a channel step.
+
+**Two things had to be pinned before the snapshot was reproducible**, and both
+were found by running it against unchanged CSS twice:
+
+- **Transitions and animations.** A `.player` span read `rgb(0,240,255)` on one
+  run and `rgb(239,183,16)` on the next — a colour caught mid-transition.
+  Computed colour is a function of *when* you look. The snapshot injects
+  `transition: none; animation: none` into `<head>`.
+- **`.sys-readout`.** It rolls `Math.random()` every 2s and swaps its tier class,
+  giving three different colours. It is pinned to NOMINAL for the ordinary
+  views, and the ELEVATED and CRITICAL tiers get their own snapshots — so those
+  colours are covered deliberately rather than by whatever the dice rolled.
+
+Always run the control first (`before` vs a second `before`, expecting zero
+differences) **and** a negative control (change one token, expect it to scream).
+"No differences" is also what a blind tool reports.
+
 ## Cleanup
 
 Scripts run through `withBrowser(fn)`, which tears the browser down in a
