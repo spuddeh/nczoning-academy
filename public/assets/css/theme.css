@@ -83,6 +83,22 @@ html.theme-night-corp {
      18px have the SAME cap height (11px). That is why --fs-heading has to sit
      this far above --fs-body to read as a heading at all. Re-check cap heights
      if --font-display or --font-body ever change. */
+     These are the BASE ladder, tuned for the module player. Three rules:
+
+       1. A call site names a role, never a pixel size. The only exception is a
+          glyph sized as an icon (.order-arrow, .course-watermark), which must
+          say so in a comment.
+       2. A view re-binds roles on its own ROOT element, with a reason. Because
+          --fs-* are inherited, one declaration re-tunes the whole subtree and
+          every rule inside keeps saying var(--fs-label). See .radio-pill,
+          .boot-screen, .cert-scrim, .app-header.
+       3. Nobody invents a role name. If a context wants a size no role names,
+          the role set is wrong — do not add --fs-heading-radio. That escape
+          hatch is how this became 24 ad-hoc sizes the first time.
+
+     A fixed/portalled element inherits from :root, not from the view that
+     opens it. Overlays therefore need their own binding (.confirm-scrim,
+     .shard-scrim, .sys-readout) or they silently get the base ladder. */
   --fs-title:     34px;  /* page titles, hero numerics */
   --fs-heading:   22px;  /* card headings, quiz prompts, glossary terms */
   --fs-body:      18px;  /* reading prose — see --measure */

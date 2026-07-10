@@ -4,6 +4,19 @@
    the radio wins by DOM order). EQ bar animation values are inline per bar
    (duration from the track bpm). */
 
+/* Docked chrome, never a reading surface — the whole ladder steps down.
+   Both the collapsed pill and the open panel are position:fixed at App root,
+   so each needs the binding; neither inherits from the other. */
+.radio-pill,
+.radio-panel {
+  --fs-heading:   26px; /* the big frequency readout */
+  --fs-ui:        16px; /* minimise control */
+  --fs-secondary: 15px; /* transport buttons */
+  --fs-body:      13px; /* station + track names */
+  --fs-label:     11px; /* frequency, track counter */
+  --fs-micro:     10px; /* status, times, chips, volume */
+}
+
 /* ---- collapsed pill ---- */
 
 .radio-pill {
@@ -38,7 +51,7 @@
 }
 .radio-freq {
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: var(--fs-label);
   letter-spacing: 0.12em;
   font-weight: 600;
   color: var(--primary);
@@ -47,7 +60,7 @@
 .radio-track-window { overflow: hidden; width: 96px; flex: none; }
 .radio-track {
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: var(--fs-label);
   letter-spacing: 0.12em;
   font-weight: 600;
   color: var(--tertiary);
@@ -83,7 +96,7 @@
   > span {
     font-family: var(--font-identity);
     font-weight: 400;
-    font-size: 13px;
+    font-size: var(--fs-body);
     letter-spacing: 0.12em;
   }
 }
@@ -91,7 +104,7 @@
   background: transparent;
   border: none;
   color: var(--navy);
-  font-size: 16px;
+  font-size: var(--fs-ui);
   line-height: 1;
   cursor: pointer;
   padding: 0 4px;
@@ -115,7 +128,7 @@
   > div:first-child { min-width: 0; flex: 1; }
 }
 .radio-now-freq {
-  font-size: 26px;
+  font-size: var(--fs-heading);
   font-weight: 700;
   color: var(--primary);
   letter-spacing: 0.02em;
@@ -125,7 +138,7 @@
   &.dim { color: var(--gray); text-shadow: none; }
 }
 .radio-now-station {
-  font-size: 11px;
+  font-size: var(--fs-label);
   letter-spacing: 0.12em;
   color: var(--white);
   margin-top: 5px;
@@ -136,7 +149,7 @@
   &.dim { color: var(--gray); }
 }
 .radio-now-title {
-  font-size: 13px;
+  font-size: var(--fs-body);
   font-weight: 600;
   letter-spacing: 0.03em;
   color: var(--tertiary);
@@ -148,7 +161,7 @@
   &.dim { color: var(--gray); }
 }
 .radio-now-status {
-  font-size: 9px;
+  font-size: var(--fs-micro);
   letter-spacing: 0.13em;
   color: var(--gray);
   margin-top: 3px;
@@ -173,7 +186,7 @@
   display: flex;
   justify-content: space-between;
   margin-top: 5px;
-  font-size: 9px;
+  font-size: var(--fs-micro);
   letter-spacing: 0.08em;
   color: var(--gray);
 }
@@ -192,7 +205,7 @@
   border: 1px solid rgba(136, 146, 176, 0.45);
   color: var(--white);
   font-family: var(--font-mono);
-  font-size: 15px;
+  font-size: var(--fs-secondary);
   cursor: pointer;
   letter-spacing: 0.04em;
 
@@ -208,7 +221,7 @@
 .radio-caption {
   margin-top: 8px;
   text-align: center;
-  font-size: 9px;
+  font-size: var(--fs-micro);
   letter-spacing: 0.16em;
   color: var(--gray);
 }
@@ -218,7 +231,7 @@
 .radio-chip {
   padding: 5px 8px;
   font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: var(--fs-micro);
   letter-spacing: 0.06em;
   cursor: pointer;
   background: transparent;
@@ -246,14 +259,14 @@
   height: 32px;
   cursor: pointer;
   font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: var(--fs-micro);
   letter-spacing: 0.16em;
   font-weight: 600;
   background: transparent;
   border: 1px solid rgba(136, 146, 176, 0.4);
   color: var(--gray);
 
-  > span { font-size: 13px; }
+  > span { font-size: var(--fs-body); }
   &:hover { border-color: var(--primary); }
   &.on {
     background: rgba(0, 240, 255, 0.12);
@@ -287,12 +300,12 @@
   &.muted { border-color: var(--danger); color: var(--danger); }
 }
 .radio-vollabel {
-  font-size: 10px;
+  font-size: var(--fs-micro);
   letter-spacing: 0.14em;
   color: var(--gray);
 }
 .radio-volval {
-  font-size: 10px;
+  font-size: var(--fs-micro);
   color: var(--primary);
 
   &.muted { color: var(--danger); }

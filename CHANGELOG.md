@@ -21,8 +21,11 @@ GitHub Releases, matching the map repo's convention).
 - Body text moved off the metadata grey onto `--text-body` (`#c3cfe2`, AAA) at
   18px/1.7, applied to every prose block a learner reads.
 - Type is now driven by eight semantic `--fs-*` roles in `theme.css`, replacing
-  24 ad-hoc pixel sizes across the player and modals. Card headings out-rank
-  body text again.
+  every ad-hoc pixel size across all nine stylesheets. Card headings out-rank
+  body text again. Views re-bind roles on their own root rather than overriding
+  call sites — see `docs/type-system.md`.
+- The app header and fixed satellites moved from `dashboard.css` to `style.css`.
+  They render on every view, not just the dashboard.
 
 ### Fixed
 

@@ -1,10 +1,20 @@
 /* NC Zoning Academy — boot / login view.
- * Every value measured from the 0.1.0 monolith (docs/monolith-parity-spec.md).
+ * Geometry and colour are measured from the 0.1.0 monolith
+ * (docs/monolith-parity-spec.md). Type comes from the --fs-* roles, re-bound
+ * for this view on .boot-screen below — see docs/type-system.md.
  * The whole screen is click-to-skip during the typewriter animation; the form
  * appears only once the boot log completes (or is skipped).
  */
 
 .boot-screen {
+  /* A terminal, not a document: the log IS the content, so `code` carries the
+     weight and no prose role is in play at all. */
+  --fs-secondary: 16px;   /* the callsign field */
+  --fs-ui:        14px;   /* [ ACCESS TERMINAL ] */
+  --fs-code:      13.5px; /* boot log + welcome block */
+  --fs-label:     11px;   /* titlebar, prompts, slot button */
+  --fs-micro:     10px;   /* field caption, returning-operator hint */
+
   position: fixed;
   inset: 0;
   display: flex;
@@ -42,7 +52,7 @@
   color: var(--navy);
   font-family: var(--font-identity);
   font-weight: 400;
-  font-size: 12px;
+  font-size: var(--fs-label);
   letter-spacing: 0.05em;
   padding: 11px 20px;
   white-space: nowrap;
@@ -63,7 +73,7 @@
 .boot-log {
   margin: 0;
   font-family: var(--font-mono);
-  font-size: 13.5px;
+  font-size: var(--fs-code);
   line-height: 1.85; /* measured: 24.975px / 13.5px */
   color: var(--primary);
   white-space: pre-wrap;
@@ -75,7 +85,7 @@
 .boot-welcome {
   margin: 0;
   font-family: var(--font-mono);
-  font-size: 13.5px;
+  font-size: var(--fs-code);
   line-height: 1.85;
   color: var(--success);
   white-space: pre-wrap;
@@ -93,7 +103,7 @@
 
 .boot-prompt {
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: var(--fs-label);
   letter-spacing: 0.14em;
   color: var(--muted);
   margin: 0 0 9px;
@@ -102,7 +112,7 @@
 .boot-field-label {
   display: block;
   font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: var(--fs-micro);
   letter-spacing: 0.16em;
   color: var(--primary);
   margin: 0 0 7px;
@@ -114,7 +124,7 @@
   background: var(--field-bg);
   color: var(--text);
   font-family: var(--font-display);
-  font-size: 16px;
+  font-size: var(--fs-secondary);
   font-weight: 700;
   letter-spacing: 0.08em;
   padding: 12px 14px;
@@ -137,7 +147,7 @@
   width: 100%;
   text-align: center;
   font-family: var(--font-display);
-  font-size: 14px;
+  font-size: var(--fs-ui);
   font-weight: 700;
   letter-spacing: 0.18em;
   padding: 15px;
@@ -169,7 +179,7 @@
 }
 .boot-returning-text {
   font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: var(--fs-micro);
   letter-spacing: 0.14em;
   color: var(--placeholder);
   white-space: nowrap;
@@ -186,7 +196,7 @@
   background: transparent;
   color: var(--muted);
   font-family: var(--font-display);
-  font-size: 12px;
+  font-size: var(--fs-label);
   font-weight: 700;
   letter-spacing: 0.14em;
   padding: 12px;
@@ -215,7 +225,7 @@
 .boot-import-msg {
   margin: 14px 0 0;
   font-family: var(--font-mono);
-  font-size: 12px;
+  font-size: var(--fs-label);
   letter-spacing: 0.06em;
   color: var(--danger);
 
@@ -228,6 +238,6 @@
   text-align: center;
   color: var(--placeholder);
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: var(--fs-label);
   letter-spacing: 0.1em;
 }
