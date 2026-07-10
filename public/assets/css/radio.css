@@ -52,7 +52,7 @@
 .radio-freq {
   font-family: var(--font-mono);
   font-size: var(--fs-label);
-  letter-spacing: 0.12em;
+  letter-spacing: var(--tracking-mid);
   font-weight: 600;
   color: var(--primary);
   flex: none;
@@ -61,7 +61,7 @@
 .radio-track {
   font-family: var(--font-mono);
   font-size: var(--fs-label);
-  letter-spacing: 0.12em;
+  letter-spacing: var(--tracking-mid);
   font-weight: 600;
   color: var(--tertiary);
   white-space: nowrap;
@@ -97,7 +97,7 @@
     font-family: var(--font-identity);
     font-weight: 400;
     font-size: var(--fs-body);
-    letter-spacing: 0.12em;
+    letter-spacing: var(--tracking-mid);
   }
 }
 .radio-minimize {
@@ -131,7 +131,7 @@
   font-size: var(--fs-heading);
   font-weight: 700;
   color: var(--primary);
-  letter-spacing: 0.02em;
+  letter-spacing: var(--tracking-tight);
   line-height: 1;
   text-shadow: 0 0 12px rgb(from var(--primary) r g b / 0.4);
 
@@ -139,7 +139,7 @@
 }
 .radio-now-station {
   font-size: var(--fs-label);
-  letter-spacing: 0.12em;
+  letter-spacing: var(--tracking-mid);
   color: var(--text);
   margin-top: 5px;
   white-space: nowrap;
@@ -151,7 +151,7 @@
 .radio-now-title {
   font-size: var(--fs-body);
   font-weight: 600;
-  letter-spacing: 0.03em;
+  letter-spacing: var(--tracking-tight);
   color: var(--tertiary);
   margin-top: 9px;
   white-space: nowrap;
@@ -162,7 +162,7 @@
 }
 .radio-now-status {
   font-size: var(--fs-micro);
-  letter-spacing: 0.13em;
+  letter-spacing: var(--tracking-mid);
   color: var(--muted);
   margin-top: 3px;
   white-space: nowrap;
@@ -187,7 +187,7 @@
   justify-content: space-between;
   margin-top: 5px;
   font-size: var(--fs-micro);
-  letter-spacing: 0.08em;
+  letter-spacing: var(--tracking-label);
   color: var(--muted);
 }
 
@@ -207,7 +207,7 @@
   font-family: var(--font-mono);
   font-size: var(--fs-secondary);
   cursor: pointer;
-  letter-spacing: 0.04em;
+  letter-spacing: var(--tracking-tight);
 
   &:hover { border-color: var(--primary); color: var(--primary); }
   &.big {
@@ -222,7 +222,7 @@
   margin-top: 8px;
   text-align: center;
   font-size: var(--fs-micro);
-  letter-spacing: 0.16em;
+  letter-spacing: var(--tracking-caps);
   color: var(--muted);
 }
 
@@ -232,7 +232,7 @@
   padding: 5px 8px;
   font-family: var(--font-mono);
   font-size: var(--fs-micro);
-  letter-spacing: 0.06em;
+  letter-spacing: var(--tracking-label);
   cursor: pointer;
   background: transparent;
   color: var(--muted);
@@ -260,7 +260,7 @@
   cursor: pointer;
   font-family: var(--font-mono);
   font-size: var(--fs-micro);
-  letter-spacing: 0.16em;
+  letter-spacing: var(--tracking-caps);
   font-weight: 600;
   background: transparent;
   border: 1px solid rgb(from var(--muted) r g b / 0.4);
@@ -301,7 +301,7 @@
 }
 .radio-vollabel {
   font-size: var(--fs-micro);
-  letter-spacing: 0.14em;
+  letter-spacing: var(--tracking-mid);
   color: var(--muted);
 }
 .radio-volval {

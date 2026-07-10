@@ -31,6 +31,7 @@ const PROPS = [
   'border-top-color', 'border-right-color', 'border-bottom-color', 'border-left-color',
   'box-shadow', 'text-shadow', 'outline-color', 'fill', 'stroke',
   'z-index', // #18: computed z-index on every positioned element must be identical
+  'letter-spacing', // #19: tracking scale — diff must contain ONLY intended collapses
 ];
 
 /**

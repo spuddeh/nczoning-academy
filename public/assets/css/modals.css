@@ -56,7 +56,7 @@
   font-family: var(--font-identity);
   font-weight: 400; /* Night Corp Display has no 700 — bold renders faux */
   font-size: var(--fs-secondary);
-  letter-spacing: 0.1em;
+  letter-spacing: var(--tracking-mid);
 }
 
 .modal-title-sub {
@@ -75,7 +75,7 @@
   font-family: var(--font-display);
   font-weight: 700;
   font-size: var(--fs-label);
-  letter-spacing: 0.1em;
+  letter-spacing: var(--tracking-mid);
   padding: 6px 12px;
   cursor: pointer;
   line-height: 1;
@@ -87,7 +87,7 @@
   text-align: center;
   font-family: var(--font-mono);
   font-size: var(--fs-code);
-  letter-spacing: 0.08em;
+  letter-spacing: var(--tracking-label);
   color: var(--muted);
 }
 
@@ -98,7 +98,7 @@
 .gloss-index-line {
   font-family: var(--font-mono);
   font-size: var(--fs-label);
-  letter-spacing: 0.1em;
+  letter-spacing: var(--tracking-mid);
   color: var(--primary);
   margin-bottom: 8px;
 }
@@ -134,7 +134,7 @@
     color: var(--text);
     font-family: var(--font-mono);
     font-size: var(--fs-label);
-    letter-spacing: 0.06em;
+    letter-spacing: var(--tracking-label);
     padding: 11px 12px 11px 28px;
     outline: none;
   }
@@ -145,7 +145,7 @@
 .gloss-tier {
   font-family: var(--font-mono);
   font-size: var(--fs-micro);
-  letter-spacing: 0.12em;
+  letter-spacing: var(--tracking-mid);
   padding: 7px 14px;
   cursor: pointer;
   border: 1px solid rgb(from var(--muted) r g b / 0.4);
@@ -163,7 +163,7 @@
 .gloss-count {
   font-family: var(--font-mono);
   font-size: var(--fs-label);
-  letter-spacing: 0.14em;
+  letter-spacing: var(--tracking-mid);
   color: var(--muted);
   border-bottom: 1px solid rgb(from var(--muted) r g b / 0.25);
   padding-bottom: 10px;
@@ -192,14 +192,14 @@
   font-family: var(--font-display);
   font-weight: 700;
   font-size: var(--fs-heading);
-  letter-spacing: 0.06em;
+  letter-spacing: var(--tracking-label);
   color: var(--primary);
 }
 
 .gloss-badge {
   font-family: var(--font-mono);
   font-size: var(--fs-micro);
-  letter-spacing: 0.14em;
+  letter-spacing: var(--tracking-mid);
   padding: 3px 8px;
   flex-shrink: 0;
   border: 1px solid rgb(from var(--primary) r g b / 0.5);
@@ -227,7 +227,7 @@
 .txn-access-line {
   font-family: var(--font-mono);
   font-size: var(--fs-label);
-  letter-spacing: 0.1em;
+  letter-spacing: var(--tracking-mid);
   color: var(--tertiary);
   margin-bottom: 16px;
 }
@@ -245,7 +245,7 @@
 .txn-cell-label {
   font-family: var(--font-mono);
   font-size: var(--fs-micro);
-  letter-spacing: 0.14em;
+  letter-spacing: var(--tracking-mid);
   color: var(--muted);
   margin-bottom: 6px;
 }
@@ -254,13 +254,13 @@
   font-family: var(--font-mono);
   font-weight: 600;
   font-size: var(--fs-secondary);
-  letter-spacing: 0.04em;
+  letter-spacing: var(--tracking-tight);
 }
 
 .txn-ledger-line {
   font-family: var(--font-mono);
   font-size: var(--fs-label);
-  letter-spacing: 0.14em;
+  letter-spacing: var(--tracking-mid);
   color: var(--muted);
   border-bottom: 1px solid rgb(from var(--muted) r g b / 0.25);
   padding-bottom: 10px;
@@ -286,7 +286,7 @@
     font-family: var(--font-display);
     font-weight: 700;
     font-size: var(--fs-label);
-    letter-spacing: 0.1em;
+    letter-spacing: var(--tracking-mid);
     color: var(--primary);
     min-width: 0;
     overflow: hidden;
@@ -296,7 +296,7 @@
   > .count {
     font-family: var(--font-mono);
     font-size: var(--fs-micro);
-    letter-spacing: 0.12em;
+    letter-spacing: var(--tracking-mid);
     color: var(--muted);
     flex-shrink: 0;
   }
@@ -305,7 +305,7 @@
     font-family: var(--font-mono);
     font-weight: 600;
     font-size: var(--fs-label);
-    letter-spacing: 0.04em;
+    letter-spacing: var(--tracking-tight);
     flex-shrink: 0;
   }
 }
@@ -335,7 +335,7 @@
 .txn-time {
   font-family: var(--font-mono);
   font-size: var(--fs-micro);
-  letter-spacing: 0.06em;
+  letter-spacing: var(--tracking-label);
   color: var(--muted);
   width: 92px;
   flex-shrink: 0;
@@ -346,7 +346,7 @@
   font-family: var(--font-display);
   font-weight: 700;
   font-size: var(--fs-micro);
-  letter-spacing: 0.12em;
+  letter-spacing: var(--tracking-mid);
   padding: 4px 8px;
   flex-shrink: 0;
   width: 118px;
@@ -373,7 +373,7 @@
   display: block;
   font-family: var(--font-mono);
   font-size: var(--fs-micro);
-  letter-spacing: 0.08em;
+  letter-spacing: var(--tracking-label);
   color: var(--muted);
   margin-top: 3px;
 }
@@ -382,7 +382,7 @@
   font-family: var(--font-mono);
   font-weight: 600;
   font-size: var(--fs-secondary);
-  letter-spacing: 0.03em;
+  letter-spacing: var(--tracking-tight);
   flex-shrink: 0;
   text-align: right;
   width: 96px;
@@ -391,7 +391,7 @@
 .txn-bal {
   font-family: var(--font-mono);
   font-size: var(--fs-label);
-  letter-spacing: 0.03em;
+  letter-spacing: var(--tracking-tight);
   color: var(--muted);
   flex-shrink: 0;
   text-align: right;

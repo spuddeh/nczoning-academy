@@ -66,7 +66,7 @@
   font-family: var(--font-identity);
   font-weight: 400;
   font-size: var(--fs-title);
-  letter-spacing: 0.14em;
+  letter-spacing: var(--tracking-mid);
   line-height: 1;
   color: var(--text);
 }
@@ -75,7 +75,7 @@
   margin-top: 10px;
   font-family: var(--font-mono);
   font-size: var(--fs-micro);
-  letter-spacing: 0.22em;
+  letter-spacing: var(--tracking-wide);
   color: var(--muted);
 }
 
@@ -122,14 +122,14 @@
   font-family: var(--font-display);
   font-weight: 700;
   font-size: var(--fs-label);
-  letter-spacing: 0.16em;
+  letter-spacing: var(--tracking-caps);
   color: var(--secondary);
 }
 .lock-status-note {
   margin-top: 3px;
   font-family: var(--font-mono);
   font-size: var(--fs-micro);
-  letter-spacing: 0.16em;
+  letter-spacing: var(--tracking-caps);
   color: var(--placeholder);
 }
 .lock-clock { text-align: right; }
@@ -137,7 +137,7 @@
   font-family: var(--font-mono);
   font-weight: 600;
   font-size: var(--fs-heading);
-  letter-spacing: 0.08em;
+  letter-spacing: var(--tracking-label);
   line-height: 1;
   color: var(--primary);
   font-variant-numeric: tabular-nums;
@@ -146,7 +146,7 @@
   margin-top: 4px;
   font-family: var(--font-mono);
   font-size: var(--fs-micro);
-  letter-spacing: 0.16em;
+  letter-spacing: var(--tracking-caps);
   color: var(--muted);
 }
 
@@ -178,7 +178,7 @@
   font-family: var(--font-display);
   font-weight: 700;
   font-size: var(--fs-label);
-  letter-spacing: 0.18em;
+  letter-spacing: var(--tracking-caps);
   color: var(--primary);
 }
 .lock-broadcast-list {
@@ -224,21 +224,21 @@
   font-family: var(--font-display);
   font-weight: 700;
   font-size: var(--fs-micro);
-  letter-spacing: 0.16em;
+  letter-spacing: var(--tracking-caps);
   color: var(--lvl);
 }
 .lock-msg-title {
   font-family: var(--font-display);
   font-weight: 700;
   font-size: var(--fs-label);
-  letter-spacing: 0.08em;
+  letter-spacing: var(--tracking-label);
   color: var(--text);
 }
 .lock-msg-date {
   margin-left: auto;
   font-family: var(--font-mono);
   font-size: var(--fs-micro);
-  letter-spacing: 0.1em;
+  letter-spacing: var(--tracking-mid);
   color: var(--placeholder);
 }
 .lock-msg-text {
@@ -256,7 +256,7 @@
   font-family: var(--font-display);
   font-weight: 700;
   font-size: var(--fs-ui);
-  letter-spacing: 0.2em;
+  letter-spacing: var(--tracking-wide);
   padding: 17px;
   cursor: pointer;
   background: var(--primary);
@@ -279,7 +279,7 @@
   color: var(--placeholder);
   font-family: var(--font-mono);
   font-size: var(--fs-micro);
-  letter-spacing: 0.12em;
+  letter-spacing: var(--tracking-mid);
 }
 
 @media (max-width: 640px) {

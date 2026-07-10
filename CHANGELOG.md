@@ -11,6 +11,17 @@ file records what a visitor receives.
 
 ## [Unreleased]
 
+## 0.4.2 - 2026-07-11
+
+### Changed
+
+- Letter-spacing now comes from a five-rung scale in `theme.css`
+  (`--tracking-tight` … `--tracking-wide`) instead of 158 literals on 17 values.
+  Because tracking is in `em` it scales with size, so many of those values were
+  the same rendered spacing written differently; the near-duplicates collapse
+  (e.g. `0.14em` → `0.12em`). Chosen at the rendered result, not the grep. Only
+  letter-spacing moves — colour, stacking and layout are byte-identical.
+
 ## 0.4.1 - 2026-07-11
 
 ### Changed
