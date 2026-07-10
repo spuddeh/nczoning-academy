@@ -3,7 +3,15 @@
 Version headings in this file are the release record (no git tags or
 GitHub Releases, matching the map repo's convention).
 
+**A merged PR is a release.** `main` deploys straight to Cloudflare Pages, so
+there is no window in which "unreleased" is true. Every PR that changes what the
+deployed site does adds its own version heading — nothing merged sits under
+`[Unreleased]`. Developer tooling (`scripts/`, CI, harnesses) gets no entry: this
+file records what a visitor receives.
+
 ## [Unreleased]
+
+## 0.3.0 - 2026-07-10
 
 ### Added
 
