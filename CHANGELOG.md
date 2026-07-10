@@ -29,6 +29,9 @@ GitHub Releases, matching the map repo's convention).
 
 ### Fixed
 
+- A stray `*/` in `theme.css` ended the type-roles comment early, and CSS
+  bad-declaration recovery swallowed `--fs-title` with it. The module title and
+  the eddies balance rendered at the inherited 16px instead of 34px.
 - No autoplay warning on load: the radio engine (and its `AudioContext`) now
   builds on the LOGIN gesture rather than at app mount.
 - The lock's `access` cue no longer races `AudioContext.resume()`, which
