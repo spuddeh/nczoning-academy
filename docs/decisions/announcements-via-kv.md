@@ -1,6 +1,12 @@
 # Decision: announcements from Workers KV, merged over a committed baseline
 
-Status: accepted (2026-07-10); shipped in PR #7
+Status: accepted (2026-07-10); shipped in PR #7.
+**Partly superseded (2026-07-10) by issue #8**: the committed baseline is
+retired as a runtime source once the `/admin` surface lands. An administrator
+should manage announcements in one place, not keep two datapoints in sync. The
+"evergreen vs timely" split below was a developer's model, not an operator's.
+`public/messages.json` becomes a one-time seed, and the Function must then stop
+conflating a KV read *failure* with an *empty* feed — see the issue.
 
 ## Context
 
