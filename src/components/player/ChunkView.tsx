@@ -34,7 +34,7 @@ export function ChunkView({ chunk }: { chunk: Chunk }) {
             </tbody>
           </table>
         </div>
-        {chunk.body && <div className="chunk-table-caption"><Md text={chunk.body} /></div>}
+        {chunk.body && <div className="chunk-table-body"><Md text={chunk.body} /></div>}
       </div>
     );
   } else if (chunk.type === 'callout') {

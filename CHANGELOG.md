@@ -16,12 +16,22 @@ GitHub Releases, matching the map repo's convention).
   level stands them down. `messages.schema.json` + `validate:messages` (in CI)
   require every field, and accept an ISO timestamp for `date`.
 
+### Changed
+
+- Body text moved off the metadata grey onto `--text-body` (`#c3cfe2`, AAA) at
+  18px/1.7, applied to every prose block a learner reads.
+- Type is now driven by eight semantic `--fs-*` roles in `theme.css`, replacing
+  24 ad-hoc pixel sizes across the player and modals. Card headings out-rank
+  body text again.
+
 ### Fixed
 
 - No autoplay warning on load: the radio engine (and its `AudioContext`) now
   builds on the LOGIN gesture rather than at app mount.
 - The lock's `access` cue no longer races `AudioContext.resume()`, which
   dropped it silently on keyboard activation.
+- `.chunk-table-caption` renamed `.chunk-table-body` — it renders the table
+  chunk's teaching paragraph, and was styled as grey metadata.
 
 ## 0.2.0 - 2026-07-09
 

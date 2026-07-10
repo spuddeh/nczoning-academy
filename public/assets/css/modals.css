@@ -23,8 +23,10 @@
   flex-direction: column;
   max-height: calc(100vh - 112px);
 
+  /* glossary — a reading surface, so it takes the same measure as a lesson:
+     + 64px .gloss-body padding + 40px .gloss-card padding */
   &.cyan {
-    width: 900px;
+    width: calc(var(--measure) + 104px);
     border: 1px solid var(--primary);
     box-shadow: 0 0 50px rgba(0, 240, 255, 0.18);
   }
@@ -53,7 +55,7 @@
   gap: 12px;
   font-family: var(--font-identity);
   font-weight: 400; /* Night Corp Display has no 700 — bold renders faux */
-  font-size: 15px;
+  font-size: var(--fs-secondary);
   letter-spacing: 0.1em;
 }
 
@@ -61,7 +63,7 @@
   opacity: 0.65;
   font-family: var(--font-mono);
   font-weight: 400;
-  font-size: 11px;
+  font-size: var(--fs-label);
 
   .modal-box.gold & { opacity: 0.7; }
 }
@@ -72,7 +74,7 @@
   color: var(--navy);
   font-family: var(--font-display);
   font-weight: 700;
-  font-size: 12px;
+  font-size: var(--fs-label);
   letter-spacing: 0.1em;
   padding: 6px 12px;
   cursor: pointer;
@@ -84,7 +86,7 @@
   padding: 34px;
   text-align: center;
   font-family: var(--font-mono);
-  font-size: 13px;
+  font-size: var(--fs-code);
   letter-spacing: 0.08em;
   color: var(--muted);
 }
@@ -95,13 +97,13 @@
 
 .gloss-index-line {
   font-family: var(--font-mono);
-  font-size: 12px;
+  font-size: var(--fs-label);
   letter-spacing: 0.1em;
   color: var(--primary);
   margin-bottom: 8px;
 }
 
-.gloss-intro { color: var(--muted); font-size: 15px; margin-bottom: 22px; }
+.gloss-intro { color: var(--text-body); font-size: var(--fs-body); line-height: var(--lh-body); margin-bottom: 22px; }
 
 .gloss-controls {
   display: flex;
@@ -123,7 +125,7 @@
     transform: translateY(-50%);
     color: var(--muted);
     font-family: var(--font-mono);
-    font-size: 13px;
+    font-size: var(--fs-label);
   }
   > input {
     width: 100%;
@@ -131,7 +133,7 @@
     border: 1px solid rgba(0, 240, 255, 0.3);
     color: var(--text);
     font-family: var(--font-mono);
-    font-size: 13px;
+    font-size: var(--fs-label);
     letter-spacing: 0.06em;
     padding: 11px 12px 11px 28px;
     outline: none;
@@ -142,7 +144,7 @@
 
 .gloss-tier {
   font-family: var(--font-mono);
-  font-size: 10.5px;
+  font-size: var(--fs-micro);
   letter-spacing: 0.12em;
   padding: 7px 14px;
   cursor: pointer;
@@ -160,7 +162,7 @@
 
 .gloss-count {
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: var(--fs-label);
   letter-spacing: 0.14em;
   color: var(--muted);
   border-bottom: 1px solid rgba(136, 146, 176, 0.25);
@@ -189,14 +191,14 @@
 .gloss-term {
   font-family: var(--font-display);
   font-weight: 700;
-  font-size: 16px;
+  font-size: var(--fs-heading);
   letter-spacing: 0.06em;
   color: var(--primary);
 }
 
 .gloss-badge {
   font-family: var(--font-mono);
-  font-size: 9px;
+  font-size: var(--fs-micro);
   letter-spacing: 0.14em;
   padding: 3px 8px;
   flex-shrink: 0;
@@ -206,7 +208,7 @@
   &.project { border-color: var(--secondary); color: var(--secondary); }
 }
 
-.gloss-def { color: var(--text); font-size: 15px; line-height: 1.65; }
+.gloss-def { color: var(--text-body); font-size: var(--fs-body); line-height: var(--lh-body); }
 
 /* open state of the glossary openers (FAB + header variant) */
 .gloss-fab.open,
@@ -224,7 +226,7 @@
 
 .txn-access-line {
   font-family: var(--font-mono);
-  font-size: 12px;
+  font-size: var(--fs-label);
   letter-spacing: 0.1em;
   color: var(--tertiary);
   margin-bottom: 16px;
@@ -242,7 +244,7 @@
 
 .txn-cell-label {
   font-family: var(--font-mono);
-  font-size: 9.5px;
+  font-size: var(--fs-micro);
   letter-spacing: 0.14em;
   color: var(--muted);
   margin-bottom: 6px;
@@ -251,13 +253,13 @@
 .txn-cell-val {
   font-family: var(--font-mono);
   font-weight: 600;
-  font-size: 17px;
+  font-size: var(--fs-secondary);
   letter-spacing: 0.04em;
 }
 
 .txn-ledger-line {
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: var(--fs-label);
   letter-spacing: 0.14em;
   color: var(--muted);
   border-bottom: 1px solid rgba(136, 146, 176, 0.25);
@@ -283,7 +285,7 @@
   > .title {
     font-family: var(--font-display);
     font-weight: 700;
-    font-size: 11px;
+    font-size: var(--fs-label);
     letter-spacing: 0.1em;
     color: var(--primary);
     min-width: 0;
@@ -293,7 +295,7 @@
   }
   > .count {
     font-family: var(--font-mono);
-    font-size: 9.5px;
+    font-size: var(--fs-micro);
     letter-spacing: 0.12em;
     color: var(--muted);
     flex-shrink: 0;
@@ -302,7 +304,7 @@
     margin-left: auto;
     font-family: var(--font-mono);
     font-weight: 600;
-    font-size: 12px;
+    font-size: var(--fs-label);
     letter-spacing: 0.04em;
     flex-shrink: 0;
   }
@@ -332,7 +334,7 @@
 
 .txn-time {
   font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: var(--fs-micro);
   letter-spacing: 0.06em;
   color: var(--muted);
   width: 92px;
@@ -343,7 +345,7 @@
 .txn-tag {
   font-family: var(--font-display);
   font-weight: 700;
-  font-size: 9px;
+  font-size: var(--fs-micro);
   letter-spacing: 0.12em;
   padding: 4px 8px;
   flex-shrink: 0;
@@ -360,7 +362,7 @@
 .txn-title {
   display: block;
   color: var(--text);
-  font-size: 13.5px;
+  font-size: var(--fs-ui);
   line-height: 1.4;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -370,7 +372,7 @@
 .txn-jump-hint {
   display: block;
   font-family: var(--font-mono);
-  font-size: 9.5px;
+  font-size: var(--fs-micro);
   letter-spacing: 0.08em;
   color: var(--muted);
   margin-top: 3px;
@@ -379,7 +381,7 @@
 .txn-delta {
   font-family: var(--font-mono);
   font-weight: 600;
-  font-size: 15px;
+  font-size: var(--fs-secondary);
   letter-spacing: 0.03em;
   flex-shrink: 0;
   text-align: right;
@@ -388,7 +390,7 @@
 
 .txn-bal {
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: var(--fs-label);
   letter-spacing: 0.03em;
   color: var(--muted);
   flex-shrink: 0;
@@ -405,7 +407,7 @@
   .modal-box.gold { max-height: calc(100vh - 40px); }
   .txn-body { padding: 16px 14px 22px; }
   .txn-cell { flex: 1 1 calc(50% - 6px); min-width: calc(50% - 6px); padding: 10px 12px; }
-  .txn-cell-val { font-size: 15px; }
+  .txn-cell-val { font-size: var(--fs-secondary); }
 
   .txn-row {
     flex-direction: column;
@@ -424,7 +426,7 @@
   .txn-title {
     white-space: normal;
     word-break: break-word;
-    font-size: 14px;
+    font-size: var(--fs-ui);
     line-height: 1.45;
   }
   .txn-jump-hint { margin: 0 0 0 auto; color: var(--tertiary); }

@@ -38,9 +38,12 @@ html.theme-night-corp {
   --tertiary:    var(--gold);   /* Academy gold — track titles, certificate */
   --success:     var(--green);
   --danger:      var(--red);
-  --text:        var(--white);
-  --text-soft:   #c3cfe2;                  /* orientation-card body copy */
-  --muted:       var(--gray);
+  /* Three text tiers. Grey is for things you glance at, not things you read.
+     Tier 1 headings/emphasis, Tier 2 reading copy (AAA, ~7:1+), Tier 3 metadata. */
+  --text:        var(--white);             /* Tier 1 — headings / emphasis */
+  --text-body:   #c3cfe2;                  /* Tier 2 — reading copy */
+  --text-soft:   var(--text-body);         /* legacy alias — orientation-card body copy */
+  --muted:       var(--gray);              /* Tier 3 — metadata / labels only */
   --placeholder: #54617f;                  /* also dim hints (skip hint, RETURNING OPERATOR?) */
   --primary-dim: rgba(0, 240, 255, 0.55);  /* dimmed cyan — idle button text */
   --field-bg:    #050a14;                  /* near-black input background */
@@ -72,14 +75,37 @@ html.theme-night-corp {
   --font-mono:     'Fira Code', ui-monospace, monospace; /* code / terminal */
   --font-identity: 'Night Corp Display', var(--font-display); /* Tier-0 wordmark, titlebars, cert */
 
-  /* type scale */
-  --fs-xs: 12px;
-  --fs-sm: 14px;
-  --fs-md: 15px;
-  --fs-lg: 18px;
-  --fs-xl: 25px;
-  --fs-2xl: 30px;
+  /* Type roles. Same discipline as the colour roles above: components name the
+     ROLE, never a pixel size. Eight roles replaced 24 ad-hoc sizes — adjusting
+     one here now moves every element that plays that part, which is the whole
+     reason the CSS is split by concern.
+     Sizes are not comparable across families: Orbitron at 15px and Rajdhani at
+     18px have the SAME cap height (11px). That is why --fs-heading has to sit
+     this far above --fs-body to read as a heading at all. Re-check cap heights
+     if --font-display or --font-body ever change. */
+  --fs-title:     34px;  /* page titles, hero numerics */
+  --fs-heading:   22px;  /* card headings, quiz prompts, glossary terms */
+  --fs-body:      18px;  /* reading prose — see --measure */
+  --fs-secondary: 16px;  /* supporting text: table cells, options, debriefs */
+  --fs-ui:        14px;  /* buttons, rail rows, status lines */
+  --fs-code:      13px;  /* monospace code, terminal, JSON */
+  --fs-label:     12px;  /* uppercase mono/display labels, field labels */
+  --fs-micro:     10px;  /* sources, badges, captions, meta */
+
+  /* 1.7, not 1.6: prose runs ~94 chars/line in the .player-body column, and a
+     long line fails on the return sweep — the eye loses its place hunting for
+     the next line's start. Extra leading is the standard mitigation. Narrow the
+     measure and this can come back down. */
+  --lh-body:  1.7;  /* reading prose */
+  --lh-tight: 1.4;  /* headings, single-line UI */
   --tracking-caps: 0.16em; /* letter-spacing for uppercase labels */
+
+  /* measure: width of the prose itself. Containers add their own padding on
+     top (see .player-body, .modal-box.cyan), so prose fills its card rather
+     than leaving a ragged gutter down the right.
+     Not expressed in `ch`: that unit is the width of `0`, and Rajdhani's
+     tabular zero is 27% wider than its average glyph — 68ch renders 81 chars. */
+  --measure: 732px;
 
   /* geometry — Night Corp is sharp: no rounded corners */
   --radius: 0;
