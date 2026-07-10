@@ -36,7 +36,7 @@ functions/
   messages.json.ts         GET /messages.json — merges KV over the baseline
   tsconfig.json            Workers runtime types (separate from the app's)
 schema/                    course, radio-station + messages JSON Schemas — the content contracts
-scripts/                   ajv validators, freshness check, parity harness
+scripts/                   ajv validators, freshness check, headless-browser harness
 docs/                      plan, app-shell overview, authoring guide, decisions/
 dist/                      Vite build output (gitignored; Cloudflare builds it)
 ```

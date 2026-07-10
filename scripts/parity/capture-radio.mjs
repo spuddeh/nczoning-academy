@@ -1,58 +1,14 @@
-// Parity capture — NC Radio pill + expanded panel. Seeds a record whose
-// audio prefs pin the station (login otherwise randomises it), signs in,
-// then drives: pill → open panel → pause/play → next track → station chip →
-// music mute → volume slider + right-click reset → SFX mute → muted pill →
-// persisted-audio probe (localStorage record after the debounced save).
-// Servers + Chrome as per scripts/parity/README.md.
-import { spawn } from 'node:child_process';
-import fs from 'node:fs';
+// Parity capture — NC Radio pill + expanded panel. Seeds a record whose audio
+// prefs pin the station (login otherwise randomises it), signs in, then drives:
+// pill → open panel → pause/play → next track → station chip → music mute →
+// volume slider + right-click reset → SFX mute → muted pill → persisted-audio
+// probe (localStorage record after the debounced save).
+// See scripts/parity/README.md.
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
-import puppeteer from 'puppeteer-core';
+import { launchBrowser, targets, outDir, sleep, signIn, openApp } from './lib/drive.mjs';
+import { NAME, RECORD_RADIO as RECORD } from './lib/fixtures.mjs';
 
-const MONOLITH_URL = process.env.MONOLITH_URL ?? 'http://localhost:4173/';
-const REBUILD_URL = process.env.REBUILD_URL ?? 'http://localhost:5173/';
-const CHROME = process.env.CHROME_BIN ?? 'C:/Program Files/Google/Chrome/Application/chrome.exe';
-const PORT = Number(process.env.CHROME_DEBUG_PORT ?? 9224);
-const OUT = path.join(path.dirname(fileURLToPath(import.meta.url)), 'out');
-fs.mkdirSync(OUT, { recursive: true });
-
-const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
-
-const NAME = 'S. DORSETT';
-const RECORD = {
-  schema: 'ncza-record/v1',
-  course: 'data-api',
-  exportedAt: new Date(1751947800000).toISOString(),
-  moduleDone: { m01: true },
-  quiz: {},
-  eddies: 1400,
-  revealedBy: { m01: 12 },
-  txns: [],
-  operatorName: NAME,
-  // Pins the radio so both apps land identically (fresh logins randomise).
-  audio: { muted: false, musicOn: true, musicVol: 0.4, sfxVol: 0.8, stationIdx: 1, trackIdx: 0, stationTracks: { 1: 0 }, cycle: true },
-};
-
-async function wsEndpoint() {
-  try {
-    const r = await fetch(`http://localhost:${PORT}/json/version`);
-    return (await r.json()).webSocketDebuggerUrl;
-  } catch { /* not running */ }
-  const profile = path.join(OUT, 'chrome-profile');
-  spawn(CHROME, [
-    '--headless=new', `--remote-debugging-port=${PORT}`,
-    `--user-data-dir=${profile}`, '--window-size=1440,900', '--no-first-run',
-  ], { detached: true, stdio: 'ignore' }).unref();
-  for (let i = 0; i < 20; i++) {
-    await sleep(300);
-    try {
-      const r = await fetch(`http://localhost:${PORT}/json/version`);
-      return (await r.json()).webSocketDebuggerUrl;
-    } catch { /* retry */ }
-  }
-  throw new Error('headless Chrome did not come up');
-}
+const OUT = outDir();
 
 const clickByTitle = (page, title) => page.evaluate((t) => {
   const el = document.querySelector(`button[title="${t}"]`);
@@ -162,25 +118,8 @@ const rightClickVolRow = (page, idx) => page.evaluate((i) => {
 }, idx);
 
 async function capture(browser, name, base) {
-  const page = await browser.newPage();
-  page.on('console', (m) => { if (m.type() === 'error') console.log(`[${name}] console error: ${m.text().slice(0, 300)}`); });
-  await page.goto(base, { waitUntil: 'networkidle2', timeout: 30000 });
-  await sleep(500);
-  await page.evaluate((rec, nm) => {
-    localStorage.clear();
-    localStorage.setItem(`ncza:v1:progress:${nm}`, JSON.stringify(rec));
-    localStorage.setItem('ncza:v1:lastUser', nm);
-  }, RECORD, NAME);
-  await page.keyboard.press('Space');
-  await sleep(1000);
-  await page.evaluate(() => {
-    const i = [...document.querySelectorAll('input')].find((x) => (x.type || 'text') === 'text');
-    if (i) i.focus();
-  });
-  await page.keyboard.down('Control'); await page.keyboard.press('a'); await page.keyboard.up('Control');
-  await page.keyboard.type(NAME);
-  await page.keyboard.press('Enter');
-  await sleep(2600);
+  const page = await openApp(browser, { url: base, label: name, record: RECORD, name: NAME });
+  await signIn(page, NAME);
 
   // ---- collapsed pill (dashboard) ----
   await page.screenshot({ path: path.join(OUT, `${name}-radio-pill.png`) });
@@ -266,11 +205,7 @@ async function capture(browser, name, base) {
   await page.close();
 }
 
-const browser = await puppeteer.connect({
-  browserWSEndpoint: await wsEndpoint(),
-  defaultViewport: { width: 1440, height: 900 },
-});
-await capture(browser, 'monolith', MONOLITH_URL);
-await capture(browser, 'rebuild', REBUILD_URL);
+const browser = await launchBrowser();
+for (const t of targets()) await capture(browser, t.name, t.url);
 await browser.disconnect();
 console.log(`done → ${OUT}`);

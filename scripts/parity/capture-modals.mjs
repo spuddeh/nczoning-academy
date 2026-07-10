@@ -1,98 +1,16 @@
-// Parity capture — glossary + transaction-history modals. Seeds an identical
-// ncza-record/v1 into localStorage (both apps have persist:true), signs in,
-// then drives: glossary open → search → tier filter → Escape, ledger open →
-// jump-to-answer. Numeric probes alongside the screenshots.
-// Servers + Chrome as per scripts/parity/README.md.
-import { spawn } from 'node:child_process';
-import fs from 'node:fs';
+// Parity capture — glossary + transaction-history modals. Seeds an m01 record,
+// signs in, then drives: glossary open → search → tier filter → Escape, ledger
+// open → jump-to-answer. Numeric probes alongside the screenshots.
+// See scripts/parity/README.md.
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
-import puppeteer from 'puppeteer-core';
+import { launchBrowser, targets, outDir, sleep, signIn, openApp, clickByText } from './lib/drive.mjs';
+import { NAME, RECORD_M01 as RECORD } from './lib/fixtures.mjs';
 
-const MONOLITH_URL = process.env.MONOLITH_URL ?? 'http://localhost:4173/';
-const REBUILD_URL = process.env.REBUILD_URL ?? 'http://localhost:5173/';
-const CHROME = process.env.CHROME_BIN ?? 'C:/Program Files/Google/Chrome/Application/chrome.exe';
-const PORT = Number(process.env.CHROME_DEBUG_PORT ?? 9224);
-const OUT = path.join(path.dirname(fileURLToPath(import.meta.url)), 'out');
-fs.mkdirSync(OUT, { recursive: true });
-
-const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
-
-// Seeded record: module m01 certified, three answers logged (one wrong),
-// fixed timestamps so both apps render identical times.
-const NAME = 'S. DORSETT';
-const T0 = 1751947800000; // fixed epoch base
-const RECORD = {
-  schema: 'ncza-record/v1',
-  course: 'data-api',
-  exportedAt: new Date(T0 + 4_000_000).toISOString(),
-  moduleDone: { m01: true },
-  quiz: {
-    'm01-q1': { answered: true, selected: 0 },
-    'm01-q3': { answered: true, selected: 1 },
-  },
-  eddies: 1400,
-  revealedBy: { m01: 12 },
-  txns: [
-    { id: 't1', ts: T0, kind: 'answer', moduleId: 'm01', moduleTitle: 'The Living Map', qid: 'm01-q1', qPrompt: 'A consumer wants to detect when the dataset has changed. Which response header should it read?', correct: true, delta: 150, balanceAfter: 650 },
-    { id: 't2', ts: T0 + 600_000, kind: 'answer', moduleId: 'm01', moduleTitle: 'The Living Map', qid: 'm01-q3', qPrompt: 'A new consumer is being written against /v1. Which assumption is WRONG?', correct: false, delta: -250, balanceAfter: 400 },
-    { id: 't3', ts: T0 + 1_200_000, kind: 'module', moduleId: 'm01', moduleTitle: 'The Living Map', qid: null, qPrompt: '', correct: true, delta: 1000, balanceAfter: 1400 },
-  ],
-  operatorName: NAME,
-  audio: null,
-};
-
-async function wsEndpoint() {
-  try {
-    const r = await fetch(`http://localhost:${PORT}/json/version`);
-    return (await r.json()).webSocketDebuggerUrl;
-  } catch { /* not running */ }
-  const profile = path.join(OUT, 'chrome-profile');
-  spawn(CHROME, [
-    '--headless=new', `--remote-debugging-port=${PORT}`,
-    `--user-data-dir=${profile}`, '--window-size=1440,900', '--no-first-run',
-  ], { detached: true, stdio: 'ignore' }).unref();
-  for (let i = 0; i < 20; i++) {
-    await sleep(300);
-    try {
-      const r = await fetch(`http://localhost:${PORT}/json/version`);
-      return (await r.json()).webSocketDebuggerUrl;
-    } catch { /* retry */ }
-  }
-  throw new Error('headless Chrome did not come up');
-}
-
-const text = (page, sel) => page.evaluate((s) => document.querySelector(s)?.textContent?.trim() ?? null, sel);
-
-async function clickByText(page, selector, txt) {
-  return page.evaluate((sel, t) => {
-    const el = [...document.querySelectorAll(sel)].find((x) => x.textContent.trim().includes(t));
-    if (el) { el.click(); return true; }
-    return false;
-  }, selector, txt);
-}
+const OUT = outDir();
 
 async function capture(browser, name, base) {
-  const page = await browser.newPage();
-  page.on('console', (m) => { if (m.type() === 'error') console.log(`[${name}] console error: ${m.text().slice(0, 300)}`); });
-  await page.goto(base, { waitUntil: 'networkidle2', timeout: 30000 });
-  await sleep(500);
-  // seed the record before sign-in (both apps load it via progress.load(name))
-  await page.evaluate((rec, nm) => {
-    localStorage.clear();
-    localStorage.setItem(`ncza:v1:progress:${nm}`, JSON.stringify(rec));
-    localStorage.setItem('ncza:v1:lastUser', nm);
-  }, RECORD, NAME);
-  await page.keyboard.press('Space'); // skip the typewriter
-  await sleep(1000);
-  await page.evaluate(() => {
-    const i = [...document.querySelectorAll('input')].find((x) => (x.type || 'text') === 'text');
-    if (i) i.focus();
-  });
-  await page.keyboard.down('Control'); await page.keyboard.press('a'); await page.keyboard.up('Control');
-  await page.keyboard.type(NAME);
-  await page.keyboard.press('Enter');
-  await sleep(2600); // welcome (1.7s) + dashboard settle
+  const page = await openApp(browser, { url: base, label: name, record: RECORD, name: NAME });
+  await signIn(page, NAME);
 
   // ---- glossary ----
   await page.click('.gloss-fab');
@@ -161,11 +79,7 @@ async function capture(browser, name, base) {
   await page.close();
 }
 
-const browser = await puppeteer.connect({
-  browserWSEndpoint: await wsEndpoint(),
-  defaultViewport: { width: 1440, height: 900 },
-});
-await capture(browser, 'monolith', MONOLITH_URL);
-await capture(browser, 'rebuild', REBUILD_URL);
+const browser = await launchBrowser();
+for (const t of targets()) await capture(browser, t.name, t.url);
 await browser.disconnect();
 console.log(`done → ${OUT}`);
