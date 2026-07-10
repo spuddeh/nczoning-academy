@@ -357,6 +357,9 @@ export async function openApp(browser, { url, label, record = null, name, before
   page.on('console', (m) => {
     if (m.type() === 'error') console.log(`[${label}] console error: ${m.text().slice(0, 300)}`);
   });
+  // public/assets/css/*.css are static assets, NOT hot-reloaded by Vite. Without
+  // this, a before/after CSS comparison silently compares the file to itself.
+  await page.setCacheEnabled(false);
   if (beforeGoto) await beforeGoto(page);
   await installState(page, record, name);
   await page.goto(url, { waitUntil: 'networkidle2', timeout: 30000 });

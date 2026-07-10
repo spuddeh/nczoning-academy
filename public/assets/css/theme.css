@@ -20,7 +20,9 @@
 html.theme-night-corp {
   /* raw palette (Night Corp) */
   --navy:  #0a192f;
-  --dark:  #112240;
+  --dark:  #112240;  /* no consumer: --surface/--panel-bg were deleted as dead.
+                        Kept as palette — a theme author's input vocabulary, and
+                        #17 derives panel fills from it. */
   --cyan:  #00f0ff;
   --amber: #ffb300;
   --gold:  #ffd400;
@@ -31,8 +33,6 @@ html.theme-night-corp {
 
   /* semantic roles (reference these in components, never the raw palette) */
   --bg:          var(--navy);
-  --surface:     var(--dark);
-  --panel-bg:    rgba(17, 34, 64, 0.40);
   --primary:     var(--cyan);   /* Zoning Cyan — links, focus, primary accents */
   --secondary:   var(--amber);  /* warnings / secondary emphasis */
   --tertiary:    var(--gold);   /* Academy gold — track titles, certificate */
@@ -115,6 +115,9 @@ html.theme-night-corp {
      measure and this can come back down. */
   --lh-body:  1.7;  /* reading prose */
   --lh-tight: 1.4;  /* headings, single-line UI */
+  /* Zero uses today, and kept on purpose: #19 adopts it. 158 letter-spacing
+     literals exist and six values cover most of them, so the scale is already
+     there, unnamed. Deleting this and reintroducing it there would be churn. */
   --tracking-caps: 0.16em; /* letter-spacing for uppercase labels */
 
   /* measure: width of the prose itself. Containers add their own padding on
@@ -127,18 +130,16 @@ html.theme-night-corp {
   /* geometry — Night Corp is sharp: no rounded corners */
   --radius: 0;
 
-  /* spacing scale */
-  --sp-1: 4px;
-  --sp-2: 8px;
-  --sp-3: 12px;
-  --sp-4: 16px;
-  --sp-6: 24px;
-  --sp-8: 32px;
-
   /* layout */
   --header-h: 62px; /* measured; monolith header is 62, not 64 */
-  --rail-w: 280px;
 }
+
+/* Deliberately NOT here: a spacing scale.
+   --sp-1..--sp-8 existed with zero uses and were deleted. The 227 padding /
+   margin / gap literals across the stylesheets are bespoke, measured from the
+   0.1.0 monolith, and forcing them onto an eight-step scale would cause real
+   visual churn for no theming benefit. A token nobody references is worse than
+   no token: it reads as a contract the code is keeping, and it isn't. */
 
 /* Additional themes (Arasaka / Militech / …) will be added here as
    `html.theme-<name> { --primary: …; --bg: …; … }`, overriding only the

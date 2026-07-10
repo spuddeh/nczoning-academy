@@ -46,6 +46,20 @@ export const RECORD_CERTIFIED = {
   audio: null,
 };
 
+/** The pinned-radio audio prefs. A fresh login randomises the station. */
+const AUDIO_PINNED = {
+  muted: false, musicOn: true, musicVol: 0.4, sfxVol: 0.8,
+  stationIdx: 1, trackIdx: 0, stationTracks: { 1: 0 }, cycle: true,
+};
+
+/**
+ * For computed-style snapshots: fully certified, so the certificate and its
+ * name prompt are reachable, AND radio pinned. A snapshot that diffs
+ * element-for-element cannot afford a DOM that varies between runs, and a
+ * randomised station changes the rendered track name.
+ */
+export const RECORD_SNAPSHOT = { ...RECORD_CERTIFIED, audio: AUDIO_PINNED };
+
 /** m01 done, radio pinned — a fresh login otherwise randomises the station. */
 export const RECORD_RADIO = {
   schema: 'ncza-record/v1',

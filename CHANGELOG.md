@@ -11,6 +11,15 @@ file records what a visitor receives.
 
 ## [Unreleased]
 
+## 0.3.2 - 2026-07-10
+
+### Removed
+
+- Nine unused custom properties from `theme.css`: the six `--sp-*` spacing steps,
+  plus `--surface`, `--panel-bg` and `--rail-w`. All had zero references.
+  Spacing does not get a scale — the padding/margin literals are measured from
+  the monolith and stay.
+
 ## 0.3.1 - 2026-07-10
 
 ### Fixed
