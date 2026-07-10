@@ -185,11 +185,14 @@
 
   &:last-child { border-bottom: 0; }
 }
-/* per-level accent — drives the dot and the tag colour */
+/* per-level accent — drives the dot and the tag colour.
+ * `alert` is also pinned to the top of the panel by Lock.tsx (by level, not by
+ * date); `resolved` is its green counterpart and sorts by date like the rest. */
 .lock-msg { --lvl: var(--muted); }
-.lock-msg.update { --lvl: var(--primary); }
-.lock-msg.alert  { --lvl: var(--secondary); }
-.lock-msg.info   { --lvl: var(--muted); }
+.lock-msg.update   { --lvl: var(--primary); }
+.lock-msg.alert    { --lvl: var(--secondary); }
+.lock-msg.resolved { --lvl: var(--success); }
+.lock-msg.info     { --lvl: var(--muted); }
 
 .lock-msg-dot {
   width: 7px;

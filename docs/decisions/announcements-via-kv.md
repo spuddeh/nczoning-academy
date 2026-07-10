@@ -42,12 +42,37 @@ Deleting a KV key reverts to the committed state with no deploy.
 - **KV values are not validated at runtime.** `scripts/validate-messages.mjs`
   accepts a file argument so a payload can be checked before `wrangler kv key
   put`. CI validates the committed baseline only. This is the sharp edge.
-- **Ordering is by `date`, not by source.** The client sorts newest-first and
-  undated entries sort last, so an ops alert needs a `date` to appear above the
-  evergreen lines. Source precedence governs *shadowing*, not display order.
+- **Source precedence governs shadowing, not display order.** Merging ops-first
+  only decides which entry wins an `id` collision. Display order is the client's
+  sort. Those are two different orderings, and conflating them is what put the
+  first ops alert at the *bottom* of the panel (observed on the preview).
 - `public/_routes.json` restricts Function invocation to `/messages.json`, so
   static assets are not billed a Function call. Pages would auto-generate an
   equivalent file; committing it makes the intent explicit.
+
+## Amendment (2026-07-10): levels, pinning, and required fields
+
+Testing the first real ops alert exposed the gap above. An undated
+`level: alert` rendered last, below the evergreen lines, and the four-item cap
+silently dropped a message. Three rules close it:
+
+1. **`alert` pins to the top by level, not by date.** An unresolved incident
+   outranks everything, so the cap can never discard it and a bad timestamp
+   cannot bury it.
+2. **`resolved` (green) is the counterpart level.** The incident is over, so it
+   does *not* pin: it falls back to date order and ages out naturally. Resolve
+   an incident by overwriting `messages:ops` with the **same `id`** at
+   `resolved`, replacing the banner rather than stacking a second one beside it.
+   Both levels sharing an `id` in one payload is a validator error.
+3. **Every field is required** (`id`, `level`, `date`, `title`, `body`). An
+   omitted field only ever means the author forgot. This turns the old "undated
+   entries sort last" runtime accident into a schema error, caught by CI on the
+   baseline and by `validate:messages` before a KV write. With no undated
+   entries possible, the two orderings finally agree.
+
+`date` also accepts a full ISO 8601 datetime, since a health check emits one.
+ISO strings compare lexicographically in chronological order, so timestamps and
+bare dates sort correctly against each other; only the first ten render.
 
 ## Alternatives rejected
 

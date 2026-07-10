@@ -15,7 +15,8 @@
   "definitions": {
     "message": {
       "type": "object",
-      "required": ["id", "title", "body"],
+      "$comment": "Every field is required. There is no message worth broadcasting that lacks any one of them, and an omitted field only ever means the author forgot.",
+      "required": ["id", "level", "date", "title", "body"],
       "additionalProperties": false,
       "properties": {
         "id": {
@@ -24,14 +25,13 @@
           "description": "Stable and unique. Reuse a baseline id from KV to shadow that entry."
         },
         "level": {
-          "enum": ["update", "info", "alert"],
-          "default": "info",
-          "description": "Drives the dot and tag colour: update=cyan, info=gray, alert=amber."
+          "enum": ["update", "info", "alert", "resolved"],
+          "description": "Drives the dot and tag colour: update=cyan, info=gray, alert=amber, resolved=green. `alert` also PINS the message to the top of the panel, above every other level, regardless of date. `resolved` does not pin — it falls back to date order, so a resolved incident ages out naturally."
         },
         "date": {
           "type": "string",
-          "format": "date",
-          "description": "YYYY-MM-DD. Sorted newest-first; undated entries sort LAST, which suits evergreen items. An ops alert needs a date to surface above them."
+          "description": "REQUIRED. `YYYY-MM-DD`, or a full ISO 8601 datetime when the writer has one (a health check does). ISO strings compare lexicographically in chronological order, so a timestamp orders correctly against a bare date on the same day. Only the first 10 characters are rendered.",
+          "anyOf": [{ "format": "date" }, { "format": "date-time" }]
         },
         "title": { "type": "string", "minLength": 1, "maxLength": 60 },
         "body": { "type": "string", "minLength": 1, "maxLength": 240 }

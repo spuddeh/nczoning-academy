@@ -7,9 +7,14 @@ GitHub Releases, matching the map repo's convention).
 
 ### Added
 
-- Lock / standby screen at `/` — landing page with a `SYSTEM BROADCAST` feed
-  read from `public/messages.json` (editable, no rebuild). Boot moves to
-  `/boot`, guarded so a refresh or direct hit returns to the lock.
+- Lock / standby screen at `/` — landing page with a `SYSTEM BROADCAST` feed.
+  Boot moves to `/boot`, guarded so a refresh or direct hit returns to the lock.
+- Announcements served by a Pages Function merging Workers KV (`messages:ops`,
+  `messages:manual`) over the committed `public/messages.json`. Posts go live
+  without a deploy; deleting a key reverts to the baseline.
+- `alert` messages pin to the top of the panel by level, and a green `resolved`
+  level stands them down. `messages.schema.json` + `validate:messages` (in CI)
+  require every field, and accept an ISO timestamp for `date`.
 
 ### Fixed
 

@@ -59,18 +59,26 @@ for (const file of targets) {
     ids.add(m.id);
   }
 
-  // Only the first four render. Undated entries sort last, so a dated post can
-  // silently push an evergreen line off the panel — worth knowing, not fatal.
+  // Only the first four render. `alert` pins to the top, so an alert is never
+  // the entry that gets cut — but everything below it competes for three slots.
   if (doc.messages.length > 4) {
     warnings.push(`${label}: ${doc.messages.length} messages, only the first 4 render after sorting`);
   }
-  const undated = doc.messages.filter((m) => !m.date);
-  if (doc.messages.length > 1 && undated.length === doc.messages.length) {
-    warnings.push(`${label}: no message carries a date — ordering is input order, not newest-first`);
+
+  const alerts = doc.messages.filter((m) => m.level === "alert");
+  if (alerts.length > 1) {
+    warnings.push(`${label}: ${alerts.length} unresolved alerts all pin to the top, leaving ${Math.max(0, 4 - alerts.length)} slot(s) for everything else`);
   }
-  for (const m of doc.messages) {
-    if (m.level === "alert" && !m.date) {
-      warnings.push(`${label}: alert "${m.id}" has no date, so it sorts BELOW every dated message`);
+  if (alerts.length >= 4) {
+    warnings.push(`${label}: alerts alone fill the panel — no other message can render`);
+  }
+
+  // A resolved incident does NOT pin; it sorts by date. Reusing the alert's id
+  // is how you replace the banner rather than stack a second one beside it.
+  const resolvedIds = new Set(doc.messages.filter((m) => m.level === "resolved").map((m) => m.id));
+  for (const a of alerts) {
+    if (resolvedIds.has(a.id)) {
+      errors.push(`${label}: "${a.id}" is both alert and resolved — ids must be unique, so one shadows the other`);
     }
   }
 

@@ -102,29 +102,55 @@ Delete a KV key and the site reverts to the committed baseline, no deploy. The
 Function never throws: unreachable KV, malformed KV JSON, or a missing baseline
 each degrade to whatever else is available, and an empty result hides the panel.
 
-A message:
+A message. **Every field is required** — there is no message worth broadcasting
+that lacks one, and an omission only ever means the author forgot:
 
 ```json
 { "id": "b-2026-07-09", "level": "update", "date": "2026-07-09",
   "title": "ACADEMY ONLINE", "body": "…" }
 ```
 
-`level` is `update` (cyan) · `info` (gray) · `alert` (amber). The client sorts
-newest-first by `date` and caps at four. **Undated entries sort last**, which
-suits evergreen items but means an ops alert needs a `date` to surface.
+| `level` | Colour | Ordering |
+| --- | --- | --- |
+| `alert` | amber | **pinned to the top**, above everything, regardless of date |
+| `update` | cyan | by date, newest first |
+| `resolved` | green | by date, newest first — ages out naturally |
+| `info` | gray | by date, newest first |
 
-Posting to KV (namespace bound as `MESSAGES` on the Pages project):
+Only `alert` pins. It does so by *level*, not date, so an unresolved incident can
+never be the entry the four-item cap discards, and a bad timestamp cannot bury
+it. `resolved` is its counterpart: the incident is over, so it stops pinning.
+
+`date` takes `YYYY-MM-DD` or a full ISO 8601 datetime (a health check has one).
+ISO strings compare lexicographically in chronological order, so a timestamp
+sorts correctly against a bare date on the same day. Only the first ten
+characters render.
+
+### Posting
+
+The KV namespace is bound as `MESSAGES` on the Pages project. **Adding a binding
+does not affect existing deployments — redeploy after you add one.**
 
 ```bash
 npm run validate:messages -- payload.json          # check it BEFORE it goes live
-npx wrangler kv key put --namespace-id=<id> messages:manual --path=payload.json
-npx wrangler kv key delete --namespace-id=<id> messages:ops    # revert to baseline
+npx wrangler kv key put --namespace-id=<id> messages:manual --path=payload.json --remote
+npx wrangler kv key delete --namespace-id=<id> messages:ops --remote   # revert to baseline
 ```
+
+An incident's lifecycle runs through one key. Write the `alert` to
+`messages:ops`; to stand it down, overwrite that key with the **same `id`** at
+`level: "resolved"`, so the green banner replaces the amber one rather than
+stacking beside it. Delete the key once it no longer matters. Never put both in
+one payload — ids must be unique, and the validator rejects it.
 
 `validate:messages` accepts a bare `[...]` array or `{ "messages": [...] }`, and
 runs in CI against the committed baseline. KV values are **not** validated by
 anything at runtime, so validate before you put. This panel is the first thing a
 visitor reads: post only claims you can point at in the code.
+
+Two more things about KV. Writes are eventually consistent, so a change can take
+up to about a minute to appear at an edge that recently read the old value. And
+`Lock.tsx` fetches once on mount, so an already-open tab needs a refresh.
 
 ## Accuracy mandate
 
