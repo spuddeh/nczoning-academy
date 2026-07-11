@@ -109,6 +109,7 @@
     letter-spacing: var(--tracking-mid);
   }
 }
+.radio-titlebar-controls { display: flex; align-items: center; gap: var(--space-xs); }
 .radio-minimize {
   background: transparent;
   border: none;
@@ -118,6 +119,19 @@
   cursor: pointer;
   padding: 0 var(--space-2xs);
   font-weight: 700;
+}
+/* power off entirely (issue #34) — reopen lives on the Service Record page */
+.radio-close {
+  background: transparent;
+  border: none;
+  color: var(--bg);
+  font-size: var(--fs-body);
+  line-height: 1;
+  cursor: pointer;
+  padding: 0 var(--space-2xs);
+  font-weight: 700;
+
+  &:hover { color: var(--danger); }
 }
 
 .radio-panel-body { padding: var(--space-2xl) var(--space-2xl) var(--space-3xl); }

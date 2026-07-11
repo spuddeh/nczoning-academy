@@ -37,6 +37,8 @@ interface MusicPlayerProps {
   onSfxVol: (v: number) => void;
   onToggleMusic: () => void;
   onToggleMute: () => void;
+  /** fully close the radio: pill dismissed, music stopped (issue #34) */
+  onClose: () => void;
 }
 
 const fmtTime = (sec: number): string => {
@@ -116,6 +118,7 @@ export function MusicPlayer({
   open, standby, st, trackProg, trackDur, sfxMuted, sfxVol, sfx,
   onToggleOpen, onPrev, onNext, onTogglePlay, onToggleCycle,
   onSelectStation, onMusicVol, onSfxVol, onToggleMusic, onToggleMute,
+  onClose,
 }: MusicPlayerProps) {
   const all = stations();
   const station = all[st.station] ?? all[0];
@@ -180,7 +183,10 @@ export function MusicPlayer({
     <div className="radio-panel">
       <div className="radio-panel-titlebar">
         <span>{'♫'} NC RADIO</span>
-        <button className="radio-minimize" type="button" title="Minimize" onClick={onToggleOpen}>{'–'}</button>
+        <div className="radio-titlebar-controls">
+          <button className="radio-minimize" type="button" title="Minimize" onClick={onToggleOpen}>{'–'}</button>
+          <button className="radio-close" type="button" title="Power off the radio (bring it back from the Service Record page)" onClick={onClose}>{'✕'}</button>
+        </div>
       </div>
       <div className="radio-panel-body">
         <div className="radio-now">

@@ -11,6 +11,15 @@ file records what a visitor receives.
 
 ## [Unreleased]
 
+## 0.7.0 - 2026-07-11
+
+### Added
+
+- The radio can be powered off entirely: a close button in the panel
+  titlebar dismisses the pill and stops the music. Power it back on from
+  the Service Record page; the off state persists in your record and your
+  saved station resumes. (#34)
+
 ## 0.6.0 - 2026-07-11
 
 ### Added

@@ -346,6 +346,16 @@
   color: var(--muted);
 }
 
+/* NC RADIO // OFFLINE section (issue #34) — section rhythm above; the
+   preceding locked-hint text carries no bottom margin of its own */
+.record-radio { margin-top: var(--section-gap); }
+.record-radio-caption {
+  font-family: var(--font-mono);
+  font-size: var(--fs-micro);
+  letter-spacing: var(--tracking-label);
+  color: var(--muted);
+}
+
 /* ---- shard eject/slot overlay (z 9998 — under the 9999 confirms) ---- */
 
 /* Its own root: fixed at App level, so it inherits :root, not .record-main. */
