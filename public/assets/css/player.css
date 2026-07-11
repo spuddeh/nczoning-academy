@@ -605,6 +605,8 @@
   font-weight: 600;
 }
 .lab-brief { color: var(--text-body); font-size: var(--fs-body); margin-bottom: var(--space-xl); line-height: var(--lh-body); }
+/* the authored procedure list (lab.steps) — sits between briefing and console */
+.lab-steps { margin-bottom: var(--space-2xl); }
 .lab-request {
   border: 1px solid rgb(from var(--primary) r g b / 0.25);
   background: rgb(from var(--field-bg) r g b / 0.85);
