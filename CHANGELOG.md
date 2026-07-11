@@ -11,6 +11,15 @@ file records what a visitor receives.
 
 ## [Unreleased]
 
+## 0.6.0 - 2026-07-11
+
+### Added
+
+- Lab scenario selector: labs with named canned server states show a
+  SIMULATE chip row (m04 NOMINAL / STALE / NOT-READY, m05 NOMINAL /
+  RATE-LIMITED) so TRANSMIT can serve failure responses that no request
+  edit could reach. Value-keyed labs are unchanged. (#2)
+
 ## 0.5.2 - 2026-07-11
 
 ### Fixed

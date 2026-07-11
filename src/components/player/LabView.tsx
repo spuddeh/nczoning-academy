@@ -25,8 +25,23 @@ function fieldValue(lab: Lab, edits: Record<string, string>, path: string): stri
   return '';
 }
 
-function pickResponse(lab: Lab, edits: Record<string, string>): LabCanned | null {
+// Named server states (issue #2): canned `when` values that are neither the
+// default, the ETag rule, nor a request-value condition — states the operator
+// could never reach by editing the request (m04 'stale'/'not-ready', m05
+// 'rate-limited'). The scenario selector renders only when a lab has some.
+function namedStates(lab: Lab): string[] {
+  return (lab.canned ?? [])
+    .map((c) => c.when ?? '')
+    .filter((w) => w && w !== 'default' && w !== 'if-none-match-matches' && !/^[^=]+=/.test(w));
+}
+
+function pickResponse(lab: Lab, edits: Record<string, string>, scenario: string): LabCanned | null {
   const canned = lab.canned ?? [];
+  // a simulated server state overrides request matching (NOMINAL = 'default')
+  if (scenario !== 'default') {
+    const named = canned.find((c) => c.when === scenario);
+    if (named) return named;
+  }
   const def = canned.find((c) => c.when === 'default') ?? canned[0] ?? null;
   for (const c of canned) {
     if (c === def || c.when === 'default') continue;
@@ -42,7 +57,6 @@ function pickResponse(lab: Lab, edits: Record<string, string>): LabCanned | null
       const sent = fieldValue(lab, edits, `query.${key}`).trim() || fieldValue(lab, edits, `headers.${key}`).trim();
       if (sent === val) return c;
     }
-    // other `when` states ('stale', 'not-ready', ...) are not operator-reachable
   }
   return def;
 }
@@ -61,6 +75,10 @@ function displayPath(lab: Lab, edits: Record<string, string>): string {
 export function LabView({ lab }: { lab: Lab }) {
   const [edits, setEdits] = useState<Record<string, string>>({});
   const [resp, setResp] = useState<LabCanned | null>(null);
+  // simulated server state; 'default' = NOMINAL. Switching clears the shown
+  // response so the console prompts a fresh TRANSMIT for the new state.
+  const [scenario, setScenario] = useState('default');
+  const scenarios = namedStates(lab);
   const req = lab.request ?? {};
   const editable = req.editable ?? [];
   const statusClass = resp ? (resp.status < 300 ? 'ok' : resp.status < 400 ? 'warn' : 'err') : '';
@@ -94,6 +112,22 @@ export function LabView({ lab }: { lab: Lab }) {
         </div>
       )}
 
+      {scenarios.length > 0 && (
+        <div className="lab-scenario">
+          <span className="lab-scenario-label">SIMULATE:</span>
+          {['default', ...scenarios].map((s) => (
+            <button
+              key={s}
+              type="button"
+              className={`lab-chip${scenario === s ? ' active' : ''}`}
+              onClick={() => { setScenario(s); setResp(null); }}
+            >
+              {s === 'default' ? 'NOMINAL' : s.toUpperCase()}
+            </button>
+          ))}
+        </div>
+      )}
+
       <div className="lab-request">
         <div className="lab-label">REQUEST</div>
         <div className="lab-method-line">
@@ -117,7 +151,7 @@ export function LabView({ lab }: { lab: Lab }) {
             </div>
           );
         })}
-        <button type="button" className="lab-transmit" onClick={() => setResp(pickResponse(lab, edits))}>
+        <button type="button" className="lab-transmit" onClick={() => setResp(pickResponse(lab, edits, scenario))}>
           [ TRANSMIT ]
         </button>
       </div>
