@@ -78,6 +78,22 @@ export function LabView({ lab }: { lab: Lab }) {
       </div>
       {lab.briefing && <div className="lab-brief"><Md text={lab.briefing} /></div>}
 
+      {/* the authored try-and-see procedure (issue #14: the shell dropped
+          lab.steps entirely) — numbered like the module's MISSION OBJECTIVES */}
+      {(lab.steps ?? []).length > 0 && (
+        <div className="lab-steps">
+          <div className="lab-label">PROCEDURE</div>
+          <div className="stage-list">
+            {(lab.steps ?? []).map((s, i) => (
+              <div key={i} className="stage-list-row">
+                <span className="stage-list-num">[{String(i + 1).padStart(2, '0')}]</span>
+                <span><Md text={s} /></span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       <div className="lab-request">
         <div className="lab-label">REQUEST</div>
         <div className="lab-method-line">

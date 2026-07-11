@@ -11,6 +11,14 @@ file records what a visitor receives.
 
 ## [Unreleased]
 
+## 0.5.2 - 2026-07-11
+
+### Fixed
+
+- Labs now render their authored step-by-step PROCEDURE between the briefing
+  and the request console. The instructions existed in every lab's course
+  data; the shell was silently dropping them. (#14)
+
 ## 0.5.1 - 2026-07-11
 
 ### Added
