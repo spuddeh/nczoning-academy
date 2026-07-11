@@ -11,6 +11,21 @@ file records what a visitor receives.
 
 ## [Unreleased]
 
+## 0.8.0 - 2026-07-11
+
+### Added
+
+- SYSTEM BROADCAST now reaches signed-in operators: a mail button in the
+  header (unread counter; blinking amber dot while an alert is live) opens
+  the feed from any view, and a slim dismissible alert strip appears under
+  the header while an alert-level incident is unresolved. The feed refreshes
+  every five minutes. (#10)
+
+### Changed
+
+- Broadcast read/dismiss state lasts one signed-in session: jacking out (or
+  purging) clears it, so the next operator at the terminal sees live alerts.
+
 ## 0.7.1 - 2026-07-11
 
 ### Added

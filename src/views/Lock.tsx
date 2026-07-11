@@ -9,26 +9,14 @@
 //    the static /messages.json, with an inlined fallback.
 import { useEffect, useState } from 'react';
 import { IDENTITY } from '../lib/academy';
+import { MESSAGES_FALLBACK, fetchMessages } from '../lib/messages';
+import { BroadcastFeed } from '../components/BroadcastFeed';
 import type { Sfx } from '../lib/sfx';
+import type { SysMessage } from '../lib/types';
 
 interface LockProps {
   sfx: Sfx;
   onLogin: () => void;
-}
-
-type Level = 'update' | 'info' | 'alert' | 'resolved';
-
-// messages.schema.json requires EVERY field. They stay optional here on purpose:
-// this type describes what arrives over the wire, and KV values are written
-// straight to the live feed without runtime validation. So the renderer treats a
-// missing field as a bug it must survive, not as a shape it can rely on.
-interface SysMessage {
-  id: string;
-  level?: Level;
-  /** `YYYY-MM-DD` or a full ISO datetime; only the first 10 chars render. */
-  date?: string;
-  title?: string;
-  body?: string;
 }
 
 const DAYS = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
@@ -36,41 +24,6 @@ const p2 = (n: number) => String(n).padStart(2, '0');
 // The terminal reports Night City's year, not ours. Weekday and day/month stay
 // real (the clock is live) — only the year is in-fiction.
 const LORE_YEAR = 2077;
-
-// Evergreen fallback if /messages.json can't be fetched (offline, 404, etc).
-const FALLBACK: SysMessage[] = [
-  { id: 'welcome', level: 'info', date: '2026-07-10', title: 'ACADEMY STANDING BY', body: 'New training tracks are added as the NC Zoning modding toolset grows.' },
-];
-
-// An unresolved incident outranks every other message. Pinning by LEVEL rather
-// than date means the panel's 4-item cap can never discard the one message that
-// matters, and an ops writer cannot bury its own alert with a bad timestamp.
-// `resolved` deliberately does NOT pin: it falls back to date order and ages out.
-const pinned = (m: SysMessage) => (m.level === 'alert' ? 0 : 1);
-
-// ISO strings compare lexicographically in chronological order, so a bare
-// `YYYY-MM-DD` and a full timestamp sort correctly against each other.
-const byDateDesc = (a: SysMessage, b: SysMessage) =>
-  String(b.date ?? '').localeCompare(String(a.date ?? ''));
-
-const norm = (raw: unknown): SysMessage[] => {
-  const list = Array.isArray(raw)
-    ? raw
-    : Array.isArray((raw as { messages?: unknown })?.messages)
-      ? (raw as { messages: SysMessage[] }).messages
-      : [];
-  return list
-    .slice()
-    .sort((a, b) => pinned(a) - pinned(b) || byDateDesc(a, b))
-    .slice(0, 4);
-};
-
-const LEVELS: Record<Level, { tag: string; className: string }> = {
-  update: { tag: 'UPDATE', className: 'update' },
-  info: { tag: 'INFO', className: 'info' },
-  alert: { tag: 'ALERT', className: 'alert' },
-  resolved: { tag: 'RESOLVED', className: 'resolved' },
-};
 
 export function Lock({ sfx, onLogin }: LockProps) {
   const [now, setNow] = useState(() => new Date());
@@ -83,10 +36,11 @@ export function Lock({ sfx, onLogin }: LockProps) {
 
   useEffect(() => {
     let alive = true;
-    fetch('/messages.json', { cache: 'no-store' })
-      .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`))))
-      .then((data) => { if (alive) setMessages(norm(data)); })
-      .catch(() => { if (alive) setMessages(norm(FALLBACK)); });
+    // failed fetch → the evergreen fallback line; a 200 with zero messages
+    // hides the panel (emptiness is a choice, failure is an accident)
+    void fetchMessages().then((r) => {
+      if (alive) setMessages(r.ok ? r.messages : MESSAGES_FALLBACK);
+    });
     return () => { alive = false; };
   }, []);
 
@@ -134,32 +88,7 @@ export function Lock({ sfx, onLogin }: LockProps) {
           </div>
         </div>
 
-        {messages.length > 0 && (
-          <div className="lock-broadcast">
-            <div className="lock-broadcast-head">
-              <span className="lock-broadcast-led statusled" />
-              <span className="lock-broadcast-title">SYSTEM BROADCAST</span>
-            </div>
-            <div className="lock-broadcast-list">
-              {messages.map((m) => {
-                const lvl = LEVELS[(m.level ?? 'info') as Level] ?? LEVELS.info;
-                return (
-                  <div className={`lock-msg ${lvl.className}`} key={m.id}>
-                    <span className="lock-msg-dot" />
-                    <div className="lock-msg-body">
-                      <div className="lock-msg-head">
-                        <span className="lock-msg-tag">{lvl.tag}</span>
-                        <span className="lock-msg-title">{m.title}</span>
-                        <span className="lock-msg-date">{m.date?.slice(0, 10)}</span>
-                      </div>
-                      <div className="lock-msg-text">{m.body}</div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
+        <BroadcastFeed messages={messages} />
 
         <button className="lock-login" type="button" onClick={() => void login()}>[ LOGIN ]</button>
 

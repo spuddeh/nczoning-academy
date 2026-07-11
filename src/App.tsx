@@ -30,10 +30,13 @@ import {
 } from './lib/academy';
 import { Sfx, attachPointerTick } from './lib/sfx';
 import { clearSession, hasSession, readSession, writeSession } from './lib/session';
+import { fetchMessages } from './lib/messages';
+import { AlertStrip } from './components/AlertStrip';
+import { BroadcastFeed } from './components/BroadcastFeed';
 import type { QuizApi } from './components/player/QuizView';
 import type {
   Course, CourseModule, ProgressRecord, Question, QuizAnswerState,
-  RadioEngine, RadioEngineState, RecordAudio, Txn,
+  RadioEngine, RadioEngineState, RecordAudio, SysMessage, Txn,
 } from './lib/types';
 
 interface ImportMsg { ok: boolean; text: string; }
@@ -102,6 +105,15 @@ export function App() {
   // Radio fully closed (issue #34): pill dismissed, music stopped. Persists
   // in the record's audio prefs; reopened from the Service Record page.
   const [radioClosed, setRadioClosed] = useState(false);
+  // SYSTEM BROADCAST in-app (issue #10): polled feed shared by the dashboard
+  // panel and the shell alert strip. Dismissals are in-memory on purpose — a
+  // still-live alert returns on refresh, and vanishes when ops resolves it.
+  const [messages, setMessages] = useState<SysMessage[]>([]);
+  const [dismissedAlerts, setDismissedAlerts] = useState<string[]>([]);
+  // Header bell popover + read watermark. Seen state is in-memory: a refresh
+  // marks the feed unread again, which errs towards showing announcements.
+  const [broadcastOpen, setBroadcastOpen] = useState(false);
+  const [seenIds, setSeenIds] = useState<string[]>([]);
   const [playerOpen, setPlayerOpen] = useState(false);
   const [trackPos, setTrackPos] = useState({ frac: 0, dur: 240 });
   // SFX prefs are React state (the panel renders them); synced into the Sfx
@@ -279,6 +291,19 @@ export function App() {
     window.addEventListener('pagehide', flush);
     return () => window.removeEventListener('pagehide', flush);
   }, [snapshot]);
+
+  // In-app broadcast poll (issue #10): fetch on sign-in and every 5 minutes
+  // (the endpoint is no-store and cheap), so a mid-session alert arrives
+  // mid-session. A failed poll keeps the last known list rather than
+  // flashing the panel away; the lock screen owns the evergreen fallback.
+  useEffect(() => {
+    if (!signedIn) return;
+    let alive = true;
+    const load = () => { void fetchMessages().then((r) => { if (alive && r.ok) setMessages(r.messages); }); };
+    load();
+    const t = window.setInterval(load, 5 * 60 * 1000);
+    return () => { alive = false; window.clearInterval(t); };
+  }, [signedIn]);
 
   // Music runs only once the operator is past the lock and boot screens,
   // and only while the radio has not been closed (issue #34).
@@ -621,6 +646,11 @@ export function App() {
     clearSession();
     setSignedIn(false);
     setEntered(false);
+    // broadcast read/dismiss state is per signed-in session: the next sign-in
+    // (possibly a different operator on this terminal) sees live alerts again
+    setDismissedAlerts([]);
+    setSeenIds([]);
+    setBroadcastOpen(false);
     const bal = econRef.current.startingBalance;
     setOp(freshOperator(bal));
     setEddiesShown(bal);
@@ -821,6 +851,25 @@ export function App() {
     [course, op.moduleDone],
   );
 
+  // Bell state (issue #10): unread count + a live-alert indicator that does
+  // not care about read state — an unresolved incident stays flagged.
+  const unread = messages.filter((m) => !seenIds.includes(m.id)).length;
+  const alertLive = messages.some((m) => m.level === 'alert');
+  const alertShowing = messages.some((m) => m.level === 'alert' && !dismissedAlerts.includes(m.id));
+
+  const messagesRef = useRef(messages);
+  messagesRef.current = messages;
+  const toggleBroadcast = useCallback(() => {
+    setBroadcastOpen((o) => {
+      // opening marks everything currently in the feed as read
+      if (!o) setSeenIds(messagesRef.current.map((m) => m.id));
+      return !o;
+    });
+  }, []);
+
+  // the popover is anchored chrome, not a route: close it on navigation
+  useEffect(() => { setBroadcastOpen(false); }, [path]);
+
   const lock = (
     <Lock
       sfx={sfx.current}
@@ -843,7 +892,7 @@ export function App() {
   );
 
   const shell = (content: React.ReactNode) => signedIn ? (
-    <div className="app-shell">
+    <div className={`app-shell${alertShowing ? ' has-alert' : ''}`}>
       <AppHeader
         course={course}
         moduleDone={op.moduleDone}
@@ -853,7 +902,27 @@ export function App() {
         onOpenGlossary={() => setGlossaryOpen(true)}
         onOpenTxns={openTxns}
         onLogout={logout}
+        unread={unread}
+        alertLive={alertLive}
+        broadcastOpen={broadcastOpen}
+        onToggleBroadcast={toggleBroadcast}
       />
+      {/* live incident banner — every view, only while an alert is unresolved */}
+      <AlertStrip
+        messages={messages}
+        dismissed={dismissedAlerts}
+        onDismiss={(id) => setDismissedAlerts((d) => d.concat(id))}
+      />
+      {/* bell popover (issue #10): the broadcast feed, reachable from any view */}
+      {broadcastOpen && (
+        <>
+          <div className="broadcast-pop-backdrop" onClick={() => setBroadcastOpen(false)} />
+          <div className="broadcast-pop">
+            <BroadcastFeed messages={messages} />
+            {messages.length === 0 && <div className="broadcast-pop-empty">&gt; NO BROADCASTS ON RECORD.</div>}
+          </div>
+        </>
+      )}
       {/* On a restored session the route is live before the course fetch and
           record adoption land; the views assume both at mount (the player
           reads its resume place from op state), so hold them briefly. */}

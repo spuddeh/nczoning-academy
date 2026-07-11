@@ -323,6 +323,218 @@ input::placeholder {
   }
 }
 
+/* ---- SYSTEM BROADCAST feed (shared: lock screen + dashboard, issue #10).
+   Declarations moved verbatim from lock.css; context sizing stays with the
+   caller (.lock-stack .broadcast, .dash-broadcast). ---- */
+.broadcast {
+  border: 1px solid rgb(from var(--primary) r g b / 0.28);
+  background: rgb(from var(--bg) r g b / 0.6);
+}
+.broadcast-head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-md) var(--space-3xl);
+  border-bottom: 1px solid rgb(from var(--primary) r g b / 0.18);
+  background: rgb(from var(--primary) r g b / 0.04);
+}
+.broadcast-led {
+  width: 7px;
+  height: 7px;
+  flex: none;
+  border-radius: 50%;
+  background: var(--primary);
+  box-shadow: 0 0 8px var(--primary);
+}
+.broadcast-title {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: var(--fs-label);
+  letter-spacing: var(--tracking-caps);
+  color: var(--primary);
+}
+.broadcast-list {
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+.bc-msg {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-md);
+  padding: var(--space-lg) var(--space-3xl);
+  border-bottom: 1px solid rgb(from var(--muted) r g b / 0.12);
+
+  &:last-child { border-bottom: 0; }
+}
+/* per-level accent — drives the dot and the tag colour.
+ * `alert` is also pinned to the top of the panel (by level, not by date);
+ * `resolved` is its green counterpart and sorts by date like the rest. */
+.bc-msg { --lvl: var(--muted); }
+.bc-msg.update   { --lvl: var(--primary); }
+.bc-msg.alert    { --lvl: var(--secondary); }
+.bc-msg.resolved { --lvl: var(--success); }
+.bc-msg.info     { --lvl: var(--muted); }
+
+.bc-msg-dot {
+  width: 7px;
+  height: 7px;
+  flex: none;
+  border-radius: 50%;
+  margin-top: var(--space-2xs);
+  background: var(--lvl);
+  box-shadow: 0 0 7px var(--lvl);
+}
+.bc-msg-body { min-width: 0; flex: 1; }
+.bc-msg-head {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-md);
+  flex-wrap: wrap;
+}
+.bc-msg-tag {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: var(--fs-micro);
+  letter-spacing: var(--tracking-caps);
+  color: var(--lvl);
+}
+.bc-msg-title {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: var(--fs-label);
+  letter-spacing: var(--tracking-label);
+  color: var(--text);
+}
+.bc-msg-date {
+  margin-left: auto;
+  font-family: var(--font-mono);
+  font-size: var(--fs-micro);
+  letter-spacing: var(--tracking-mid);
+  color: var(--placeholder);
+}
+.bc-msg-text {
+  margin-top: var(--space-2xs);
+  font-family: var(--font-body);
+  font-size: var(--fs-secondary);
+  line-height: 1.45;
+  color: var(--muted);
+}
+
+/* Header broadcast bell (issue #10): opens the feed popover from any view.
+   Amber blinking dot while an alert is live (read state does not clear an
+   unresolved incident); otherwise an unread count since this page load. */
+.hdr-bell {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  padding: var(--space-sm) var(--space-md);
+  background: transparent;
+  border: 1px solid rgb(from var(--muted) r g b / 0.4);
+  color: var(--muted);
+  cursor: pointer;
+
+  &:hover, &.open { border-color: var(--primary); color: var(--primary); }
+}
+.hdr-bell-dot {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--secondary);
+  box-shadow: 0 0 7px var(--secondary);
+}
+.hdr-bell-count {
+  position: absolute;
+  top: -7px;
+  right: -7px;
+  min-width: 15px;
+  padding: 1px 3px;
+  border-radius: 8px;
+  background: var(--secondary);
+  color: var(--bg);
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 9px;
+  line-height: 13px;
+  text-align: center;
+}
+
+/* the popover: the shared .broadcast panel anchored under the header */
+.broadcast-pop-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-broadcast);
+  background: transparent;
+}
+.broadcast-pop {
+  position: fixed;
+  top: 70px;
+  right: 22px;
+  width: 430px;
+  max-width: calc(100vw - 44px);
+  z-index: var(--z-broadcast);
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.55);
+}
+.broadcast-pop-empty {
+  border: 1px solid rgb(from var(--primary) r g b / 0.28);
+  background: rgb(from var(--bg) r g b / 0.92);
+  padding: var(--space-xl) var(--space-3xl);
+  font-family: var(--font-mono);
+  font-size: var(--fs-micro);
+  letter-spacing: var(--tracking-label);
+  color: var(--muted);
+}
+/* the popover panel sits over solid page content — go opaque */
+.broadcast-pop .broadcast { background: rgb(from var(--bg) r g b / 0.97); backdrop-filter: blur(6px); }
+
+/* Shell alert strip (issue #10): renders under the header ONLY while an
+   alert-level broadcast is live — visible from every view, dismissible per
+   message for the current page load (an active incident returns on refresh). */
+.alert-strip {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  padding: var(--space-sm) var(--space-5xl);
+  background: rgb(from var(--secondary) r g b / 0.1);
+  border-bottom: 1px solid rgb(from var(--secondary) r g b / 0.5);
+}
+.alert-strip-tag {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: var(--fs-micro);
+  letter-spacing: var(--tracking-caps);
+  color: var(--secondary);
+  flex: none;
+}
+.alert-strip-text {
+  font-family: var(--font-mono);
+  font-size: var(--fs-micro);
+  letter-spacing: var(--tracking-label);
+  color: var(--text);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.alert-strip-dismiss {
+  margin-left: auto;
+  flex: none;
+  background: transparent;
+  border: none;
+  color: var(--secondary);
+  font-size: var(--fs-label);
+  line-height: 1;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 0 var(--space-2xs);
+
+  &:hover { color: var(--text); }
+}
+
 /* Session restore (issue #9): brief stand-in main while the course fetch
    lands on a refreshed in-app route. */
 .restore-wait {
@@ -397,6 +609,9 @@ input::placeholder {
 }
 
 /* glossary floating button (desktop) */
+/* the alert strip adds a chrome row under the header — shift the fab clear
+   of it (and of its dismiss ✕) while an alert is showing */
+.app-shell.has-alert .gloss-fab { top: 112px; }
 .gloss-fab {
   position: fixed;
   top: 76px;
@@ -460,6 +675,8 @@ input::placeholder {
   /* icon-only jack-out: the label doesn't fit the wrapped meta row */
   .hdr-logout { padding: var(--space-xs) var(--space-md) !important; min-height: 40px; }
   .hdr-logout-txt { display: none; }
+  /* the wrapped header is taller; anchor the bell popover below it */
+  .broadcast-pop { top: 118px; right: 10px; left: 10px; width: auto; }
 
   .dash-scroll {
     padding: var(--space-5xl) var(--space-xl) 46px !important;
