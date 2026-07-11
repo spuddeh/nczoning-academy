@@ -11,6 +11,13 @@ file records what a visitor receives.
 
 ## [Unreleased]
 
+## 0.7.1 - 2026-07-11
+
+### Added
+
+- Slotting a shard at the boot screen now plays the shard-reader animation
+  before the welcome readout, matching the Service Record slot. (#30)
+
 ## 0.7.0 - 2026-07-11
 
 ### Added
