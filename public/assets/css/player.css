@@ -723,9 +723,17 @@
 .scenario-prompt { margin: var(--space-3xl) 0 var(--space-xl); }
 
 /* ---- completion ---- */
+/* relative anchor so the stamp pins to the card corner */
+.complete-wrap { position: relative; }
 .complete-copy { color: var(--text-body); font-size: var(--fs-body); margin-bottom: var(--space-3xl); line-height: var(--lh-body); }
+/* certified state: keep the copy clear of the corner stamp */
+.complete-copy.stamped { padding-right: 300px; }
 .complete-row { display: flex; align-items: center; gap: var(--space-xl); flex-wrap: wrap; }
+/* a mark on the document, not a row item: stamped over the top-right corner */
 .complete-stamp {
+  position: absolute;
+  top: -6px;
+  right: 0;
   font-family: var(--font-identity);
   font-weight: 400;
   font-size: var(--fs-heading);
@@ -733,12 +741,25 @@
   color: var(--success);
   border: 2px solid var(--success);
   padding: var(--space-sm) var(--space-2xl);
-  transform: rotate(-3deg);
+  transform: rotate(3deg);
   box-shadow: 0 0 16px rgb(from var(--success) r g b / 0.25);
 }
-.complete-save {
-  background: var(--primary);
-  border: 1px solid var(--primary);
+/* forward action on the certified row — green to match the certified state */
+.complete-next {
+  background: var(--success);
+  border: 1px solid var(--success);
+  color: var(--bg);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: var(--fs-label);
+  letter-spacing: var(--tracking-mid);
+  padding: var(--space-lg) var(--space-3xl);
+  cursor: pointer;
+}
+/* capstone payoff — gold, echoing the certificate */
+.complete-cert {
+  background: var(--tertiary);
+  border: 1px solid var(--tertiary);
   color: var(--bg);
   font-family: var(--font-display);
   font-weight: 700;

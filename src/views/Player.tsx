@@ -26,6 +26,8 @@ interface PlayerProps {
   onBackToDashboard: () => void;
   onComplete: (m: CourseModule) => void;
   onSaveProgress: (moduleId: string, revealed: number) => void;
+  /** capstone completion payoff — opens the certificate overlay */
+  onViewCert: () => void;
   /** Ledger deep-link target; tick marks each fresh jump (same-module too). */
   jump: { moduleId: string; qid: string; tick: number } | null;
 }
@@ -34,7 +36,7 @@ export function Player({
   course, moduleId, quiz, moduleDone, revealedBy, quizApi,
   moduleReward, economySymbol,
   onAdvance, onSelectModule, onBackToDashboard, onComplete, onSaveProgress,
-  jump,
+  onViewCert, jump,
 }: PlayerProps) {
   const mods = sortedModules(course ?? {});
   const m = mods.find((x) => x.id === moduleId) ?? mods[0];
@@ -117,6 +119,9 @@ export function Player({
   const showContinue = !atEnd && (!cur || cur.kind !== 'complete');
   const gated = stageGated(cur, quiz);
   const done = !!moduleDone[m.id];
+  // Forward action for the certified row; undefined on the last module (the
+  // rail order and this agree — both come from sortedModules).
+  const nextMod = mods[mods.findIndex((x) => x.id === m.id) + 1];
 
   const advance = () => {
     const nv = revealed + 1;
@@ -234,27 +239,38 @@ export function Player({
                 )}
                 {stage.kind === 'complete' && (
                   <StageCard accent={done ? 'green-strong' : 'gold'}>
-                    <SectionLabel text="MODULE COMPLETE" tone={done ? 'green' : 'cyan'} />
-                    <div className="complete-copy">
-                      {done
-                        ? 'Standing updated. Reward transferred to your account. This module is now certified on your Service Record Shard.'
-                        : 'All sections cleared. Transmit for completion to receive your eddies reward and raise your standing.'}
-                    </div>
-                    {done ? (
-                      <div className="complete-row">
-                        <span className="complete-stamp">✓ CERTIFIED</span>
-                        <button type="button" className="complete-save" onClick={() => onSaveProgress(m.id, revealed)}>
-                          [ SAVE TO SHARD ]
-                        </button>
-                        <button type="button" className="quiz-submit" onClick={onBackToDashboard}>
-                          [ RETURN TO DASHBOARD ]
-                        </button>
+                    {/* relative wrapper so the stamp can pin to the card corner */}
+                    <div className="complete-wrap">
+                      <SectionLabel text="MODULE COMPLETE" tone={done ? 'green' : 'cyan'} />
+                      {/* the stamp is a mark on the document, not an action:
+                          corner-pinned, angled opposite the old inline tilt */}
+                      {done && <span className="complete-stamp">✓ CERTIFIED</span>}
+                      <div className={`complete-copy${done ? ' stamped' : ''}`}>
+                        {done
+                          ? 'Standing updated. Reward transferred to your account. This module is now certified on your Service Record Shard.'
+                          : 'All sections cleared. Transmit for completion to receive your eddies reward and raise your standing.'}
                       </div>
-                    ) : (
-                      <button type="button" className="complete-transmit" onClick={() => onComplete(m)}>
-                        [ TRANSMIT FOR COMPLETION // +{economySymbol} {moduleReward(m)} ]
-                      </button>
-                    )}
+                      {done ? (
+                        <div className="complete-row">
+                          {/* one forward action: the next module, or the course
+                              payoff on the capstone. Saving lives in the rail
+                              (SAVE PROGRESS) and on the Service Record. */}
+                          {nextMod ? (
+                            <button type="button" className="complete-next" onClick={() => onSelectModule(nextMod.id)}>
+                              [ NEXT MODULE › ]
+                            </button>
+                          ) : (
+                            <button type="button" className="complete-cert" onClick={onViewCert}>
+                              [ VIEW CERTIFICATE ]
+                            </button>
+                          )}
+                        </div>
+                      ) : (
+                        <button type="button" className="complete-transmit" onClick={() => onComplete(m)}>
+                          [ TRANSMIT FOR COMPLETION // +{economySymbol} {moduleReward(m)} ]
+                        </button>
+                      )}
+                    </div>
                   </StageCard>
                 )}
               </div>
