@@ -65,7 +65,13 @@ html.theme-acme { --primary: #ff2e63; --tertiary: #ffd166; }
 ```
 
 Every derived border, glow and tint turns with it; neutrals and the other
-semantic colours (`--success` etc) hold. The derived tokens in `theme.css`
+semantic colours (`--success` etc) hold.
+
+> **Re-bind on the theme class, not `:root`.** `theme.css` defines the roles under
+> `:root, html.theme-night-corp`, and `html.theme-night-corp` (specificity 0,1,1)
+> outranks a bare `:root` override (0,1,0) — a `:root` re-bind silently changes
+> nothing and looks like the cascade is broken. It isn't; your override just lost.
+> Use `html.theme-<name>`. The derived tokens in `theme.css`
 (`--line`, `--card-glow`, `--scanline`, …) are themselves relative-colour, so
 they follow too.
 
