@@ -11,6 +11,15 @@ file records what a visitor receives.
 
 ## [Unreleased]
 
+## 0.8.1 - 2026-07-11
+
+### Fixed
+
+- The mail button's unread count is cyan (amber stays reserved for live
+  alerts) and now persists per terminal: opening the feed marks messages
+  read in localStorage, so the count no longer returns on refresh or
+  re-login. Alert surfaces are unchanged.
+
 ## 0.8.0 - 2026-07-11
 
 ### Added
