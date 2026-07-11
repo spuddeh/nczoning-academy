@@ -948,6 +948,7 @@ export function App() {
           onBackToDashboard={() => navigate('/dashboard')}
           onComplete={completeModule}
           onSaveProgress={saveProgress}
+          onViewCert={openCert}
           jump={jump}
         />,
       )} />

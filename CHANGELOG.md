@@ -11,6 +11,19 @@ file records what a visitor receives.
 
 ## [Unreleased]
 
+## 0.5.1 - 2026-07-11
+
+### Added
+
+- The module completion card now carries one forward action: [ NEXT MODULE › ]
+  mid-course, [ VIEW CERTIFICATE ] on the capstone. (#11)
+
+### Changed
+
+- The CERTIFIED stamp pins to the completion card's top-right corner, angled
+  like a mark on the document. SAVE TO SHARD left the card; the rail's
+  SAVE PROGRESS is the save affordance.
+
 ## 0.5.0 - 2026-07-11
 
 ### Added
