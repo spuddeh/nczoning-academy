@@ -446,6 +446,7 @@ input::placeholder {
   background: var(--secondary);
   box-shadow: 0 0 7px var(--secondary);
 }
+/* cyan on purpose: amber is the ALERT colour and belongs to the dot only */
 .hdr-bell-count {
   position: absolute;
   top: -7px;
@@ -453,7 +454,7 @@ input::placeholder {
   min-width: 15px;
   padding: 1px 3px;
   border-radius: 8px;
-  background: var(--secondary);
+  background: var(--primary);
   color: var(--bg);
   font-family: var(--font-mono);
   font-weight: 700;

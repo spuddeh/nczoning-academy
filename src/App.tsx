@@ -30,7 +30,7 @@ import {
 } from './lib/academy';
 import { Sfx, attachPointerTick } from './lib/sfx';
 import { clearSession, hasSession, readSession, writeSession } from './lib/session';
-import { fetchMessages } from './lib/messages';
+import { fetchMessages, markSeen, readSeenIds } from './lib/messages';
 import { AlertStrip } from './components/AlertStrip';
 import { BroadcastFeed } from './components/BroadcastFeed';
 import type { QuizApi } from './components/player/QuizView';
@@ -110,10 +110,11 @@ export function App() {
   // still-live alert returns on refresh, and vanishes when ops resolves it.
   const [messages, setMessages] = useState<SysMessage[]>([]);
   const [dismissedAlerts, setDismissedAlerts] = useState<string[]>([]);
-  // Header bell popover + read watermark. Seen state is in-memory: a refresh
-  // marks the feed unread again, which errs towards showing announcements.
+  // Header mail popover + read watermark. Seen state is TERMINAL-local
+  // (localStorage via lib/messages.ts): the unread count is convenience, so
+  // it survives refresh and logout. The alert dot/strip ignore it entirely.
   const [broadcastOpen, setBroadcastOpen] = useState(false);
-  const [seenIds, setSeenIds] = useState<string[]>([]);
+  const [seenIds, setSeenIds] = useState<string[]>(() => readSeenIds());
   const [playerOpen, setPlayerOpen] = useState(false);
   const [trackPos, setTrackPos] = useState({ frac: 0, dur: 240 });
   // SFX prefs are React state (the panel renders them); synced into the Sfx
@@ -646,10 +647,10 @@ export function App() {
     clearSession();
     setSignedIn(false);
     setEntered(false);
-    // broadcast read/dismiss state is per signed-in session: the next sign-in
-    // (possibly a different operator on this terminal) sees live alerts again
+    // alert-strip dismissals are per signed-in session: the next sign-in
+    // (possibly a different operator on this terminal) sees live alerts
+    // again. The unread watermark stays — it is terminal-local convenience.
     setDismissedAlerts([]);
-    setSeenIds([]);
     setBroadcastOpen(false);
     const bal = econRef.current.startingBalance;
     setOp(freshOperator(bal));
@@ -861,8 +862,8 @@ export function App() {
   messagesRef.current = messages;
   const toggleBroadcast = useCallback(() => {
     setBroadcastOpen((o) => {
-      // opening marks everything currently in the feed as read
-      if (!o) setSeenIds(messagesRef.current.map((m) => m.id));
+      // opening marks everything currently in the feed as read (persisted)
+      if (!o) setSeenIds(markSeen(messagesRef.current.map((m) => m.id)));
       return !o;
     });
   }, []);

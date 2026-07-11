@@ -44,6 +44,34 @@ export function normalizeMessages(raw: unknown): SysMessage[] {
     .slice(0, 4);
 }
 
+// ---- read watermark ----
+// TERMINAL-local (localStorage), on purpose: which announcements a human has
+// glanced at is terminal trivia, not service-record material — a shard slotted
+// on another machine must not mark that terminal's feed read. This module owns
+// the ncza:v1:broadcast-seen key the way session.ts owns sessionStorage;
+// operator profiles remain progress.js territory. The live-alert indicator
+// and the alert strip deliberately do NOT consult this.
+const SEEN_KEY = 'ncza:v1:broadcast-seen';
+const SEEN_CAP = 50; // the feed caps at 4; 50 comfortably outlives id churn
+
+export function readSeenIds(): string[] {
+  try {
+    const raw = window.localStorage.getItem(SEEN_KEY);
+    const list = raw ? JSON.parse(raw) : [];
+    return Array.isArray(list) ? list.filter((x) => typeof x === 'string') : [];
+  } catch {
+    return []; // storage blocked or corrupt — everything reads as unread
+  }
+}
+
+export function markSeen(ids: string[]): string[] {
+  const merged = [...new Set([...readSeenIds(), ...ids])].slice(-SEEN_CAP);
+  try {
+    window.localStorage.setItem(SEEN_KEY, JSON.stringify(merged));
+  } catch { /* storage unavailable — the count returns next load */ }
+  return merged;
+}
+
 // Failure and emptiness must not look the same (see the #8 groundwork): a
 // failed fetch reports ok=false so callers can fall back or keep their last
 // known list; a 200 with zero messages is the feed genuinely empty.
