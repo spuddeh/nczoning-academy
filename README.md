@@ -21,7 +21,7 @@ src/
   components/              header, overlays, modals, music player, player primitives
   lib/                     academy (config/course/identity), sfx, player, types
 public/                    static passthrough — served as-is, never bundled
-  assets/css/              theme.css (tokens) + one stylesheet per view
+  assets/css/              theme.css (design tokens) + one stylesheet per view
   config.js                ACADEMY_CONFIG (hosted profile: live + persist)
   messages.json            SYSTEM BROADCAST baseline (KV overlays this)
   courses/
@@ -37,7 +37,7 @@ functions/
   tsconfig.json            Workers runtime types (separate from the app's)
 schema/                    course, radio-station + messages JSON Schemas — the content contracts
 scripts/                   ajv validators, freshness check, headless-browser harness
-docs/                      plan, app-shell overview, authoring guide, decisions/
+docs/                      plan, app-shell overview, authoring guide, design-tokens, decisions/
 dist/                      Vite build output (gitignored; Cloudflare builds it)
 ```
 

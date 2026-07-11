@@ -1,9 +1,13 @@
 # Type system
 
+> One axis of the [design token system](design-tokens.md). Colour, spacing,
+> letter-spacing and stacking follow the same pattern — this page is the type
+> detail.
+
 All font sizes in the Academy come from **eight semantic roles** defined in
 `public/assets/css/theme.css`. No stylesheet declares a pixel size at a call
-site. This mirrors how colour already worked: components name a role, never a
-raw value.
+site. Colour, spacing, letter-spacing and z-index all work the same way: a
+component names a role, never a raw value.
 
 ## The roles
 
