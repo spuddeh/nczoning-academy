@@ -32,6 +32,10 @@ const PROPS = [
   'box-shadow', 'text-shadow', 'outline-color', 'fill', 'stroke',
   'z-index', // #18: computed z-index on every positioned element must be identical
   'letter-spacing', // #19: tracking scale — diff must contain ONLY intended collapses
+  // #27 box model: spacing scale — diff must be ONLY these, ONLY the intended snaps
+  'padding-top', 'padding-right', 'padding-bottom', 'padding-left',
+  'margin-top', 'margin-right', 'margin-bottom', 'margin-left',
+  'row-gap', 'column-gap',
 ];
 
 /**
