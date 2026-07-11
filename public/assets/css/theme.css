@@ -158,6 +158,7 @@ html.theme-night-corp {
   --z-rail:          60;    /* the module-map rail, above its own backdrop */
   --z-sys-readout: 9100;    /* fixed telemetry satellite (bottom-left) */
   --z-gloss-fab:   9200;    /* glossary FAB, sits above the readout */
+  --z-broadcast:   9300;    /* bell popover + its click-away backdrop */
   --z-vignette:    9989;    /* CRT vignette overlay */
   --z-scanlines:   9990;    /* CRT scanlines, just above the vignette */
   --z-overlay:     9995;    /* modal scrim + radio pill/panel share this tier;

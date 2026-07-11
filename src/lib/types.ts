@@ -156,6 +156,19 @@ export interface Course {
   [k: string]: unknown;
 }
 
+// SYSTEM BROADCAST announcement, as served by /messages.json (baseline merged
+// with KV). Every field the schema requires stays optional here — this is the
+// wire shape, and KV values arrive unvalidated (see lib/messages.ts).
+export type SysLevel = 'update' | 'info' | 'alert' | 'resolved';
+export interface SysMessage {
+  id: string;
+  level?: SysLevel;
+  /** `YYYY-MM-DD` or a full ISO datetime; only the first 10 chars render. */
+  date?: string;
+  title?: string;
+  body?: string;
+}
+
 // Audio preferences carried inside the record (radio + SFX state).
 export interface RecordAudio {
   muted?: boolean;

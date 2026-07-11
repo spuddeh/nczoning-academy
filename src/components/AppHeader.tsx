@@ -17,9 +17,17 @@ interface AppHeaderProps {
   onOpenGlossary: () => void;
   onOpenTxns: () => void;
   onLogout: () => void;
+  /** SYSTEM BROADCAST bell (issue #10) */
+  unread: number;
+  alertLive: boolean;
+  broadcastOpen: boolean;
+  onToggleBroadcast: () => void;
 }
 
-export function AppHeader({ course, moduleDone, eddies, balPulse, glossaryOpen, onOpenGlossary, onOpenTxns, onLogout }: AppHeaderProps) {
+export function AppHeader({
+  course, moduleDone, eddies, balPulse, glossaryOpen, onOpenGlossary, onOpenTxns, onLogout,
+  unread, alertLive, broadcastOpen, onToggleBroadcast,
+}: AppHeaderProps) {
   const navigate = useNavigate();
   const path = useLocation().pathname;
   const dashActive = path === '/dashboard' || path.startsWith('/module');
@@ -84,6 +92,20 @@ export function AppHeader({ course, moduleDone, eddies, balPulse, glossaryOpen, 
             </svg>
           </div>
           <div className={`hdr-balance-val${eddies < 0 ? ' negative' : ''}`}>{symbol} {eddies}</div>
+        </button>
+        <button
+          className={`hdr-bell${broadcastOpen ? ' open' : ''}`}
+          type="button"
+          title="System broadcast"
+          onClick={onToggleBroadcast}
+        >
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <rect x="2" y="4" width="20" height="16" rx="1" />
+            <path d="m22 6-10 7L2 6" />
+          </svg>
+          {alertLive
+            ? <span className="hdr-bell-dot ledblink" />
+            : unread > 0 && <span className="hdr-bell-count">{unread}</span>}
         </button>
         <button
           className="hdr-logout"

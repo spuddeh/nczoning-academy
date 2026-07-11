@@ -150,103 +150,13 @@
   color: var(--muted);
 }
 
-/* ---- SYSTEM BROADCAST feed (announcements from /messages.json) ---- */
-.lock-broadcast {
+/* ---- SYSTEM BROADCAST feed ----
+   The panel itself is the SHARED .broadcast component (style.css, issue #10 —
+   also rendered on the dashboard). Only the lock-context sizing lives here. */
+.lock-stack .broadcast {
   width: 100%;
   margin: 0 0 26px;
   text-align: left;
-  border: 1px solid rgb(from var(--primary) r g b / 0.28);
-  background: rgb(from var(--bg) r g b / 0.6);
-}
-.lock-broadcast-head {
-  display: flex;
-  align-items: center;
-  gap: var(--space-sm);
-  padding: var(--space-md) var(--space-3xl);
-  border-bottom: 1px solid rgb(from var(--primary) r g b / 0.18);
-  background: rgb(from var(--primary) r g b / 0.04);
-}
-.lock-broadcast-led {
-  width: 7px;
-  height: 7px;
-  flex: none;
-  border-radius: 50%;
-  background: var(--primary);
-  box-shadow: 0 0 8px var(--primary);
-}
-.lock-broadcast-title {
-  font-family: var(--font-display);
-  font-weight: 700;
-  font-size: var(--fs-label);
-  letter-spacing: var(--tracking-caps);
-  color: var(--primary);
-}
-.lock-broadcast-list {
-  max-height: 220px;
-  overflow-y: auto;
-}
-
-.lock-msg {
-  display: flex;
-  align-items: flex-start;
-  gap: var(--space-md);
-  padding: var(--space-lg) var(--space-3xl);
-  border-bottom: 1px solid rgb(from var(--muted) r g b / 0.12);
-
-  &:last-child { border-bottom: 0; }
-}
-/* per-level accent — drives the dot and the tag colour.
- * `alert` is also pinned to the top of the panel by Lock.tsx (by level, not by
- * date); `resolved` is its green counterpart and sorts by date like the rest. */
-.lock-msg { --lvl: var(--muted); }
-.lock-msg.update   { --lvl: var(--primary); }
-.lock-msg.alert    { --lvl: var(--secondary); }
-.lock-msg.resolved { --lvl: var(--success); }
-.lock-msg.info     { --lvl: var(--muted); }
-
-.lock-msg-dot {
-  width: 7px;
-  height: 7px;
-  flex: none;
-  border-radius: 50%;
-  margin-top: var(--space-2xs);
-  background: var(--lvl);
-  box-shadow: 0 0 7px var(--lvl);
-}
-.lock-msg-body { min-width: 0; flex: 1; }
-.lock-msg-head {
-  display: flex;
-  align-items: baseline;
-  gap: var(--space-md);
-  flex-wrap: wrap;
-}
-.lock-msg-tag {
-  font-family: var(--font-display);
-  font-weight: 700;
-  font-size: var(--fs-micro);
-  letter-spacing: var(--tracking-caps);
-  color: var(--lvl);
-}
-.lock-msg-title {
-  font-family: var(--font-display);
-  font-weight: 700;
-  font-size: var(--fs-label);
-  letter-spacing: var(--tracking-label);
-  color: var(--text);
-}
-.lock-msg-date {
-  margin-left: auto;
-  font-family: var(--font-mono);
-  font-size: var(--fs-micro);
-  letter-spacing: var(--tracking-mid);
-  color: var(--placeholder);
-}
-.lock-msg-text {
-  margin-top: var(--space-2xs);
-  font-family: var(--font-body);
-  font-size: var(--fs-secondary);
-  line-height: 1.45;
-  color: var(--muted);
 }
 
 /* the one action — solid cyan, matching the boot ACCESS button's ready state */
