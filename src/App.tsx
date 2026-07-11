@@ -561,8 +561,10 @@ export function App() {
   }, [adoptRecord, progress]);
 
   // Slot animation: mirror of eject — shard slides INTO the reader, decodes,
-  // commits at 100%.
-  const slotShard = useCallback((rec: ProgressRecord) => {
+  // commits at 100%. Shared by the Service Record slot and the boot slot
+  // (issue #30); boot trims the post-read hold because its welcome readout
+  // follows as the next ceremony.
+  const runSlotAnimation = useCallback((commit: () => void, holdMs: number, onCleared?: () => void) => {
     if (ioRef.current) return;
     sfx.current.play('whoosh');
     setShardIO({ mode: 'slot', phase: 'reading', progress: 0 });
@@ -573,10 +575,10 @@ export function App() {
       if (finished) return;
       finished = true;
       setShardIO((io) => (io ? { ...io, progress: 100 } : io));
-      commitImport(rec);
+      commit();
       sfx.current.play('chime');
       setShardIO((io) => (io ? { ...io, phase: 'slotted' } : io));
-      ioClear.current = window.setTimeout(() => setShardIO(null), 1700);
+      ioClear.current = window.setTimeout(() => { setShardIO(null); onCleared?.(); }, holdMs);
     };
     const frame = (t: number) => {
       const k = Math.min(1, (t - start) / dur);
@@ -586,7 +588,11 @@ export function App() {
     };
     ioRaf.current = requestAnimationFrame(frame);
     ioGuard.current = window.setTimeout(finish, dur + 250);
-  }, [commitImport]);
+  }, []);
+
+  const slotShard = useCallback((rec: ProgressRecord) => {
+    runSlotAnimation(() => commitImport(rec), 1700);
+  }, [runSlotAnimation, commitImport]);
 
   // Post-login slot: parse + migrate, then confirm before replacing a
   // non-empty record (module certified OR balance moved off starting).
@@ -780,6 +786,10 @@ export function App() {
     finishBoot();
   }, [courseLoading, progress, adoptRecord, applyAudio, finishBoot]);
 
+  // Boot slot (issue #30): the reader animation plays first (trimmed 800ms
+  // hold), THEN the welcome readout — the overlay is the "machine reads your
+  // file" beat, the welcome is the "you're in" payoff, and every boot login
+  // ends in the same welcome regardless of how you authenticated.
   const slotAtBoot = useCallback((json: string) => {
     if (courseLoading) { setImportMsg({ ok: false, text: 'STAND BY // COURSE LOADING' }); return; }
     let rec: ProgressRecord;
@@ -790,14 +800,17 @@ export function App() {
       setImportMsg({ ok: false, text: `SHARD REJECTED // ${(err as Error)?.message || 'invalid file'}` });
       return;
     }
-    const name = sanitizeName(rec.operatorName);
-    adoptRecord(rec, name);
-    if (name) { try { progress?.setUser(name); } catch { /* in-memory */ } }
-    sfx.current.play('access');
-    setImportMsg(null);
-    setBootWelcome(true);
-    finishBoot();
-  }, [courseLoading, progress, adoptRecord, finishBoot]);
+    runSlotAnimation(() => {
+      const name = sanitizeName(rec.operatorName);
+      adoptRecord(rec, name);
+      if (name) { try { progress?.setUser(name); } catch { /* in-memory */ } }
+      setImportMsg(null);
+    }, 800, () => {
+      sfx.current.play('access');
+      setBootWelcome(true);
+      finishBoot();
+    });
+  }, [courseLoading, progress, adoptRecord, runSlotAnimation, finishBoot]);
 
   const readFailed = useCallback(() => {
     setImportMsg({ ok: false, text: 'SHARD READ FAILED // could not read file' });
@@ -869,7 +882,6 @@ export function App() {
           onClose={() => setTxnOpen(false)}
         />
       )}
-      {shardIO && <ShardOverlay io={shardIO} />}
       {pendingShard && (
         <ConfirmDialog
           title="OVERWRITE WARNING"
@@ -936,6 +948,7 @@ export function App() {
   );
 
   return (
+    <>
     <Routes>
       <Route path="/" element={lock} />
       {/* Boot is a transient splash, not a destination: reaching it without the
@@ -980,5 +993,9 @@ export function App() {
       )} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
+    {/* App level, not shell: the boot slot (issue #30) animates pre-login.
+        position:fixed, so the mount point has no visual effect. */}
+    {shardIO && <ShardOverlay io={shardIO} />}
+    </>
   );
 }
