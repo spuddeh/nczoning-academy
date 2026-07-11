@@ -18,6 +18,9 @@ export interface RadioUiState {
 
 interface MusicPlayerProps {
   open: boolean;
+  /** Restored session, engine not built yet: audio is waiting for the first
+      gesture of this page load. The pill shows a disconnected state. */
+  standby: boolean;
   st: RadioUiState;
   trackProg: number; // 0..1 fraction (polled while open)
   trackDur: number; // seconds
@@ -110,7 +113,7 @@ function VolRow(props: {
 }
 
 export function MusicPlayer({
-  open, st, trackProg, trackDur, sfxMuted, sfxVol, sfx,
+  open, standby, st, trackProg, trackDur, sfxMuted, sfxVol, sfx,
   onToggleOpen, onPrev, onNext, onTogglePlay, onToggleCycle,
   onSelectStation, onMusicVol, onSfxVol, onToggleMusic, onToggleMute,
 }: MusicPlayerProps) {
@@ -129,6 +132,29 @@ export function MusicPlayer({
 
   // Collapsed: the corner station pill.
   if (!open) {
+    // Disconnected after a restored refresh — any gesture reconnects, so this
+    // resolves on the click that opens the panel (or any earlier one).
+    if (standby) {
+      return (
+        <button
+          className="radio-pill standby"
+          type="button"
+          title="The browser pauses audio across a refresh — any click or key reconnects it"
+          onClick={onToggleOpen}
+        >
+          <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" style={{ display: 'block' }} aria-hidden="true">
+            <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+            <line x1={12} y1={9} x2={12} y2={13} />
+            <line x1={12} y1={17} x2={12.01} y2={17} />
+          </svg>
+          <span className="radio-freq">{station.freq}</span>
+          <div className="radio-track-window">
+            {/* same ref as the station pill so the marquee effect picks it up */}
+            <span className="radio-track" ref={trackRef}>AUDIO STANDBY // CLICK TO RECONNECT</span>
+          </div>
+        </button>
+      );
+    }
     return (
       <button
         className={`radio-pill${st.musicMuted ? ' muted' : ''}`}

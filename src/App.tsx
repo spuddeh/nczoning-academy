@@ -29,6 +29,7 @@ import {
   loadCourse, migrateRecord, sanitizeName, sortedModules, stations,
 } from './lib/academy';
 import { Sfx, attachPointerTick } from './lib/sfx';
+import { clearSession, hasSession, readSession, writeSession } from './lib/session';
 import type { QuizApi } from './components/player/QuizView';
 import type {
   Course, CourseModule, ProgressRecord, Question, QuizAnswerState,
@@ -73,7 +74,16 @@ export function App() {
   // The whole pre-auth surface: the lock screen and the boot splash behind it.
   const path = useLocation().pathname;
   const preAuth = path === '/' || path === '/boot';
-  const [signedIn, setSignedIn] = useState(false);
+  // Seeded from the sessionStorage snapshot so the very first render of a
+  // refreshed in-app route doesn't bounce to the lock (issue #9). The record
+  // itself adopts in the restore effect once the course arrives; `restoring`
+  // holds the route views back until it has (they mount-read op state — the
+  // player's resume place, for one — so adoption must land first).
+  const [signedIn, setSignedIn] = useState(() => hasSession());
+  const [restoring, setRestoring] = useState(() => hasSession());
+  // Restored session, radio not yet built: the pill shows a disconnected
+  // state until the first gesture boots the engine (startRadio clears it).
+  const [audioStandby, setAudioStandby] = useState(() => hasSession());
   // Set as the operator leaves the lock; gates /boot. In-memory on purpose —
   // a refresh clears it, so every fresh load starts at the lock screen.
   const [entered, setEntered] = useState(false);
@@ -115,6 +125,9 @@ export function App() {
   const sfx = useRef<Sfx>(null as unknown as Sfx);
   if (!sfx.current) { sfx.current = new Sfx(); sfx.current.sfxVol = 0.8; }
   const radio = useRef<RadioEngine | null>(null);
+  // Radio prefs that arrived before the engine existed (session restore adopts
+  // the record at load, but the engine only builds on the first gesture).
+  const pendingRadio = useRef<Parameters<RadioEngine['restore']>[0] | null>(null);
   const welcomeT = useRef<number | undefined>(undefined);
   const flyerId = useRef(0);
   const pulseT = useRef<number | undefined>(undefined);
@@ -127,8 +140,8 @@ export function App() {
   const ioClear = useRef<number | undefined>(undefined);
 
   // Live-state ref so adapter/economy callbacks never capture a stale render.
-  const live = useRef({ op, course, radioSt, sfxMuted, sfxVol });
-  live.current = { op, course, radioSt, sfxMuted, sfxVol };
+  const live = useRef({ op, course, radioSt, sfxMuted, sfxVol, preAuth, signedIn });
+  live.current = { op, course, radioSt, sfxMuted, sfxVol, preAuth, signedIn };
 
   // Modal flags mirrored into a ref so the mount-time key handler sees them.
   const modals = useRef({ glossaryOpen, txnOpen });
@@ -174,6 +187,7 @@ export function App() {
   // screen's LOGIN click is the gesture, so this runs from there. The engine
   // constructs inactive (active=false), so music still waits for /dashboard.
   const startRadio = useCallback(() => {
+    setAudioStandby(false); // a gesture reached us — the pill's standby state resolves
     if (radio.current || !window.NCRadio || !stations().length) return;
     const mirror = (st: RadioEngineState) => setRadioSt({
       station: st.stationIndex, track: st.trackIndex, stationTracks: st.trackIndexByStation,
@@ -185,6 +199,7 @@ export function App() {
       autoRotate: true,
       onStateChange: mirror,
     });
+    if (pendingRadio.current) { radio.current.restore(pendingRadio.current); pendingRadio.current = null; }
     mirror(radio.current.getState()); // the engine doesn't emit on create — seed the mirror
   }, []);
 
@@ -242,16 +257,49 @@ export function App() {
   }, []);
 
   // Debounced local save whenever operator state OR the persisted audio
-  // prefs change (persist only). The monolith saves on every state update;
-  // these are the fields the snapshot actually carries.
+  // prefs change. The session snapshot (refresh continuity, issue #9) writes
+  // in BOTH persist modes; the durable profile stays persist-gated.
   useEffect(() => {
-    if (!cfg().persist || !progress || !signedIn) return;
-    const t = window.setTimeout(() => { try { progress.save(); } catch { /* storage unavailable */ } }, 400);
+    if (!signedIn) return;
+    const t = window.setTimeout(() => {
+      writeSession(snapshot());
+      if (cfg().persist && progress) { try { progress.save(); } catch { /* storage unavailable */ } }
+    }, 400);
     return () => window.clearTimeout(t);
-  }, [op, radioSt, sfxMuted, sfxVol, signedIn, progress]);
+  }, [op, radioSt, sfxMuted, sfxVol, signedIn, progress, snapshot]);
+
+  // A refresh can land inside that 400ms window — flush the snapshot on
+  // pagehide so the last action survives the reload.
+  useEffect(() => {
+    const flush = () => { if (live.current.signedIn) writeSession(snapshot()); };
+    window.addEventListener('pagehide', flush);
+    return () => window.removeEventListener('pagehide', flush);
+  }, [snapshot]);
 
   // Music runs only once the operator is past the lock and boot screens.
   useEffect(() => { radio.current?.setActive(!preAuth); }, [preAuth]);
+
+  // Deferred audio boot (issue #9): user activation is per page load, so a
+  // restored session comes back with no gesture and the radio can't legally
+  // build at load. The first gesture of the new load — any click or key —
+  // stands in for the lock's LOGIN click: the context is created and resumed
+  // inside it (no autoplay warning), the engine builds, and the stashed radio
+  // prefs apply. Until then the app is fully usable, just silent.
+  useEffect(() => {
+    if (!signedIn || radio.current) return;
+    const off = () => {
+      window.removeEventListener('pointerdown', arm);
+      window.removeEventListener('keydown', arm);
+    };
+    const arm = () => {
+      off();
+      startRadio();
+      radio.current?.setActive(!live.current.preAuth);
+    };
+    window.addEventListener('pointerdown', arm);
+    window.addEventListener('keydown', arm);
+    return off;
+  }, [signedIn, startRadio]);
 
   // The Sfx instance mirrors the React prefs (it gates every play() call).
   useEffect(() => {
@@ -371,7 +419,13 @@ export function App() {
     window.setTimeout(step1, 260);
   }, [logTxn]);
 
-  // ---- record adoption (login + slot share it) ----
+  // ---- record adoption (login + slot + session restore share it) ----
+  // Apply radio prefs now if the engine exists, else stash them for startRadio.
+  const restoreRadio = useCallback((p: Parameters<RadioEngine['restore']>[0]) => {
+    if (radio.current) radio.current.restore(p);
+    else pendingRadio.current = p;
+  }, []);
+
   const applyAudio = useCallback((a: RecordAudio | null) => {
     if (a) {
       if (typeof a.muted === 'boolean') { sfx.current.muted = a.muted; setSfxMuted(a.muted); }
@@ -380,7 +434,7 @@ export function App() {
         sfx.current.sfxVol = v;
         setSfxVolState(v);
       }
-      radio.current?.restore({
+      restoreRadio({
         stationIndex: typeof a.stationIdx === 'number' && a.stationIdx >= 0 ? a.stationIdx : undefined,
         trackIndexByStation: a.stationTracks && typeof a.stationTracks === 'object' ? a.stationTracks : undefined,
         cycle: typeof a.cycle === 'boolean' ? a.cycle : undefined,
@@ -390,9 +444,9 @@ export function App() {
     } else {
       // fresh login → random station, first track
       const n = stations().length;
-      if (n) radio.current?.restore({ stationIndex: Math.floor(Math.random() * n), trackIndexByStation: {} });
+      if (n) restoreRadio({ stationIndex: Math.floor(Math.random() * n), trackIndexByStation: {} });
     }
-  }, []);
+  }, [restoreRadio]);
 
   const adoptRecord = useCallback((rec: ProgressRecord, name: string) => {
     setOp({
@@ -402,6 +456,29 @@ export function App() {
     setEddiesShown(rec.eddies);
     applyAudio(rec.audio);
   }, [applyAudio]);
+
+  // Session restore (issue #9): a mid-session refresh serves back the page the
+  // operator was on. The route survives in the URL and signedIn seeded from the
+  // session flag; the record adopts here once the course arrives (migrateRecord
+  // needs it for defaults). Runs after the mount effect's balance seeding, so
+  // the adopted record wins. A snapshot that fails migration ends the session
+  // rather than guessing.
+  const restoreDone = useRef(false);
+  useEffect(() => {
+    if (!course || restoreDone.current) return;
+    restoreDone.current = true;
+    if (!hasSession()) return;
+    try {
+      const rec = migrateRecord(readSession(), course);
+      const name = sanitizeName(rec.operatorName);
+      adoptRecord(rec, name);
+      if (name) { try { progress?.setUser(name); } catch { /* in-memory */ } }
+    } catch {
+      clearSession();
+      setSignedIn(false);
+    }
+    setRestoring(false);
+  }, [course, adoptRecord, progress]);
 
   // ---- shard I/O: eject (export), slot (import), purge ----
   // EJECT: animated overlay 0→100 over 820ms, then the actual download. The
@@ -524,17 +601,36 @@ export function App() {
     reader.readAsText(file);
   }, [progress, slotShard]);
 
-  // PURGE: wipe progress back to a clean record; the operator stays signed
-  // in. Removes the persisted profile (persist mode only).
-  const confirmPurge = useCallback(() => {
+  // The ONE end-of-session path (issues #9 + #4): logout and purge both funnel
+  // here so "signed out" means one thing — session snapshot gone, in-memory
+  // record reset, back to the lock. Music stops via the preAuth effect.
+  const endSession = useCallback(() => {
+    clearSession();
+    setSignedIn(false);
+    setEntered(false);
     const bal = econRef.current.startingBalance;
+    setOp(freshOperator(bal));
+    setEddiesShown(bal);
+    navigate('/');
+  }, [navigate]);
+
+  const logout = useCallback(() => {
+    sfx.current.play('nav');
+    setImportMsg(null);
+    endSession();
+  }, [endSession]);
+
+  // PURGE: wipe the persisted profile (persist mode only) and end the session —
+  // a purge starts you from scratch at the lock (#4). progress.remove() also
+  // clears lastUser when it was this operator, so boot doesn't pre-fill a
+  // purged name. The import line surfaces on the next boot.
+  const confirmPurge = useCallback(() => {
     try { if (cfg().persist) progress?.remove(live.current.op.operatorName); } catch { /* storage unavailable */ }
     sfx.current.play('err');
     setPurgePrompt(false);
-    setOp((o) => ({ ...o, moduleDone: {}, quiz: {}, revealedBy: {}, eddies: bal, txns: [] }));
-    setEddiesShown(bal);
     setImportMsg({ ok: true, text: 'LOCAL CACHE PURGED // RECORD RESET TO CLEAN STATE' });
-  }, [progress]);
+    endSession();
+  }, [progress, endSession]);
 
   const setOperatorName = useCallback((v: string) => {
     setOp((o) => ({ ...o, operatorName: cleanNameInput(v) }));
@@ -720,8 +816,12 @@ export function App() {
         glossaryOpen={glossaryOpen}
         onOpenGlossary={() => setGlossaryOpen(true)}
         onOpenTxns={openTxns}
+        onLogout={logout}
       />
-      {content}
+      {/* On a restored session the route is live before the course fetch and
+          record adoption land; the views assume both at mount (the player
+          reads its resume place from op state), so hold them briefly. */}
+      {course && !restoring ? content : <main className="restore-wait">REBUILDING SESSION…</main>}
       <SysReadout />
       <GlossaryFab open={glossaryOpen} onOpen={() => setGlossaryOpen(true)} />
       <FlyerLayer flyers={flyers} />
@@ -788,6 +888,7 @@ export function App() {
       {/* last, like the monolith: same z as the modal scrim, wins by DOM order */}
       <MusicPlayer
         open={playerOpen}
+        standby={audioStandby}
         st={radioSt}
         trackProg={trackPos.frac}
         trackDur={trackPos.dur}
