@@ -99,6 +99,9 @@ export function App() {
   // Radio: mirror of the engine's discrete state, the pill/panel toggle, and
   // the track progress (polled every 400ms only while the panel is open).
   const [radioSt, setRadioSt] = useState<RadioUiState>(RADIO_DEFAULTS);
+  // Radio fully closed (issue #34): pill dismissed, music stopped. Persists
+  // in the record's audio prefs; reopened from the Service Record page.
+  const [radioClosed, setRadioClosed] = useState(false);
   const [playerOpen, setPlayerOpen] = useState(false);
   const [trackPos, setTrackPos] = useState({ frac: 0, dur: 240 });
   // SFX prefs are React state (the panel renders them); synced into the Sfx
@@ -140,8 +143,8 @@ export function App() {
   const ioClear = useRef<number | undefined>(undefined);
 
   // Live-state ref so adapter/economy callbacks never capture a stale render.
-  const live = useRef({ op, course, radioSt, sfxMuted, sfxVol, preAuth, signedIn });
-  live.current = { op, course, radioSt, sfxMuted, sfxVol, preAuth, signedIn };
+  const live = useRef({ op, course, radioSt, sfxMuted, sfxVol, preAuth, signedIn, radioClosed });
+  live.current = { op, course, radioSt, sfxMuted, sfxVol, preAuth, signedIn, radioClosed };
 
   // Modal flags mirrored into a ref so the mount-time key handler sees them.
   const modals = useRef({ glossaryOpen, txnOpen });
@@ -158,7 +161,7 @@ export function App() {
   econRef.current = econ;
 
   const snapshot = useCallback((): ProgressRecord => {
-    const { op: o, course: c, radioSt: r, sfxMuted: m, sfxVol: sv } = live.current;
+    const { op: o, course: c, radioSt: r, sfxMuted: m, sfxVol: sv, radioClosed: rc } = live.current;
     return {
       schema: RECORD_SCHEMA,
       course: c?.id || 'sample',
@@ -169,6 +172,7 @@ export function App() {
       audio: {
         muted: m, musicOn: !r.musicMuted, musicVol: r.musicVol, sfxVol: sv,
         stationIdx: r.station, trackIdx: r.track, stationTracks: r.stationTracks, cycle: r.cycle,
+        off: rc,
       },
     };
   }, []);
@@ -276,8 +280,9 @@ export function App() {
     return () => window.removeEventListener('pagehide', flush);
   }, [snapshot]);
 
-  // Music runs only once the operator is past the lock and boot screens.
-  useEffect(() => { radio.current?.setActive(!preAuth); }, [preAuth]);
+  // Music runs only once the operator is past the lock and boot screens,
+  // and only while the radio has not been closed (issue #34).
+  useEffect(() => { radio.current?.setActive(!preAuth && !radioClosed); }, [preAuth, radioClosed]);
 
   // Deferred audio boot (issue #9): user activation is per page load, so a
   // restored session comes back with no gesture and the radio can't legally
@@ -294,7 +299,7 @@ export function App() {
     const arm = () => {
       off();
       startRadio();
-      radio.current?.setActive(!live.current.preAuth);
+      radio.current?.setActive(!live.current.preAuth && !live.current.radioClosed);
     };
     window.addEventListener('pointerdown', arm);
     window.addEventListener('keydown', arm);
@@ -434,6 +439,7 @@ export function App() {
         sfx.current.sfxVol = v;
         setSfxVolState(v);
       }
+      setRadioClosed(!!a.off);
       restoreRadio({
         stationIndex: typeof a.stationIdx === 'number' && a.stationIdx >= 0 ? a.stationIdx : undefined,
         trackIndexByStation: a.stationTracks && typeof a.stationTracks === 'object' ? a.stationTracks : undefined,
@@ -442,7 +448,8 @@ export function App() {
         musicMuted: typeof a.musicOn === 'boolean' ? !a.musicOn : undefined,
       });
     } else {
-      // fresh login → random station, first track
+      // fresh login → random station, first track, radio on
+      setRadioClosed(false);
       const n = stations().length;
       if (n) restoreRadio({ stationIndex: Math.floor(Math.random() * n), trackIndexByStation: {} });
     }
@@ -667,6 +674,22 @@ export function App() {
     sfx.current.play('tick');
   }, []);
 
+  // Close the radio entirely (issue #34): pill dismissed, music stopped (the
+  // activity effect reacts to radioClosed). Reopen lives on the Service
+  // Record; the click is a gesture, so startRadio can build the engine if the
+  // radio was closed for this whole page load.
+  const closeRadio = useCallback(() => {
+    sfx.current.play('tick');
+    setPlayerOpen(false);
+    setRadioClosed(true);
+  }, []);
+
+  const reopenRadio = useCallback(() => {
+    sfx.current.play('nav');
+    setRadioClosed(false);
+    startRadio();
+  }, [startRadio]);
+
   const setMusicVol = useCallback((v: number) => radio.current?.setMusicVolume(v), []);
   const setSfxVol = useCallback((v: number) => setSfxVolState(Math.max(0, Math.min(1, v))), []);
 
@@ -886,7 +909,7 @@ export function App() {
         />
       )}
       {/* last, like the monolith: same z as the modal scrim, wins by DOM order */}
-      <MusicPlayer
+      {!radioClosed && <MusicPlayer
         open={playerOpen}
         standby={audioStandby}
         st={radioSt}
@@ -905,7 +928,8 @@ export function App() {
         onSfxVol={setSfxVol}
         onToggleMusic={toggleMusic}
         onToggleMute={toggleMute}
-      />
+        onClose={closeRadio}
+      />}
     </div>
   ) : (
     <Navigate to="/" replace />
@@ -932,6 +956,8 @@ export function App() {
           onSlotFile={slotFile}
           onViewCert={openCert}
           onPurge={() => setPurgePrompt(true)}
+          radioClosed={radioClosed}
+          onReopenRadio={reopenRadio}
         />,
       )} />
       <Route path="/module/:moduleId" element={shell(

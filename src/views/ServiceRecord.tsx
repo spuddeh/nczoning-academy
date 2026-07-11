@@ -19,11 +19,15 @@ interface ServiceRecordProps {
   onSlotFile: (f: File) => void;
   onViewCert: () => void;
   onPurge: () => void;
+  /** radio power state (issue #34): the reopen control lives here for now */
+  radioClosed: boolean;
+  onReopenRadio: () => void;
 }
 
 export function ServiceRecord({
   course, moduleDone, eddies, operatorName, importMsg,
   onNameChange, onEject, onSlotFile, onViewCert, onPurge,
+  radioClosed, onReopenRadio,
 }: ServiceRecordProps) {
   const fileRef = useRef<HTMLInputElement>(null);
   const { mods, done, certified } = progressStats(course ?? {}, moduleDone);
@@ -153,6 +157,16 @@ export function ServiceRecord({
         {!certified && (
           <div className="record-locked-hint">
             &gt; CERTIFICATE LOCKED. Complete the capstone module to unlock the printable field certificate.
+          </div>
+        )}
+
+        {radioClosed && (
+          <div className="record-radio">
+            <SectionLabel text="NC RADIO // OFFLINE" />
+            <div className="record-io-row">
+              <button type="button" className="record-io-btn cyan" onClick={onReopenRadio}>[ POWER ON RADIO ]</button>
+              <span className="record-radio-caption">Radio powered down from the player. Powering on resumes your saved station.</span>
+            </div>
           </div>
         )}
 

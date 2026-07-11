@@ -166,6 +166,9 @@ export interface RecordAudio {
   trackIdx?: number;
   stationTracks?: Record<string, number>;
   cycle?: boolean;
+  /** radio fully closed: pill dismissed, music stopped (issue #34).
+      Absent on older shards = radio on. */
+  off?: boolean;
 }
 
 // The REAL ncza-record/v1 shape, as shipped by the 0.1.0 monolith
