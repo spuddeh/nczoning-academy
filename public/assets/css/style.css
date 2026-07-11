@@ -300,6 +300,41 @@ input::placeholder {
   &:hover { background: rgb(from var(--primary) r g b / 0.12); border-color: var(--primary); }
 }
 
+/* JACK OUT — ends the session and returns to the lock. Quiet chrome at rest,
+   danger accent on hover: an exit, not a feature. */
+.hdr-logout {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+  padding: var(--space-sm) var(--space-lg);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: var(--fs-label);
+  letter-spacing: var(--tracking-mid);
+  cursor: pointer;
+  background: transparent;
+  border: 1px solid rgb(from var(--muted) r g b / 0.4);
+  color: var(--muted);
+
+  &:hover {
+    background: rgb(from var(--danger) r g b / 0.08);
+    border-color: var(--danger);
+    color: var(--danger);
+  }
+}
+
+/* Session restore (issue #9): brief stand-in main while the course fetch
+   lands on a refreshed in-app route. */
+.restore-wait {
+  flex: 1;
+  display: grid;
+  place-items: center;
+  font-family: var(--font-mono);
+  font-size: var(--fs-label);
+  letter-spacing: var(--tracking-mid);
+  color: var(--muted);
+}
+
 /* ---- fixed satellites (shared chrome — render on every view) ---- */
 
 /* Both are position:fixed and mount at App root, so they inherit from :root,
@@ -422,6 +457,9 @@ input::placeholder {
   /* glossary moves into the header row; the fixed floater hides */
   .gloss-fab { display: none !important; }
   .gloss-hdr { display: inline-flex !important; padding: var(--space-xs) var(--space-md) !important; min-height: 40px; }
+  /* icon-only jack-out: the label doesn't fit the wrapped meta row */
+  .hdr-logout { padding: var(--space-xs) var(--space-md) !important; min-height: 40px; }
+  .hdr-logout-txt { display: none; }
 
   .dash-scroll {
     padding: var(--space-5xl) var(--space-xl) 46px !important;

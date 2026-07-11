@@ -38,6 +38,15 @@
   &.muted { border-color: rgb(from var(--muted) r g b / 0.4); }
   &.muted:hover { border-color: var(--primary); }
   &.muted .radio-freq, &.muted .radio-track { color: var(--muted); }
+
+  /* disconnected after a restored refresh — resolves on the first gesture */
+  &.standby {
+    border-color: rgb(from var(--danger) r g b / 0.6);
+    box-shadow: 0 0 22px rgb(from var(--danger) r g b / 0.14);
+    color: var(--danger);
+  }
+  &.standby:hover { border-color: var(--danger); }
+  &.standby .radio-freq, &.standby .radio-track { color: var(--danger); }
 }
 .radio-eq { display: flex; align-items: flex-end; gap: 2px; }
 .radio-eq-bar {

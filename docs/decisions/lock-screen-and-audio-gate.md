@@ -35,7 +35,10 @@ A **lock / standby screen** at `/`, in front of boot. Boot moves to `/boot`.
 - The radio engine constructs with `active = false`, so deferring its creation
   to the LOGIN gesture does not change when music starts. The `preAuth` effect
   still owns that, flipping `setActive(true)` only at `/dashboard`.
-- `entered` is in-memory on purpose. Every fresh load starts at the lock.
+- `entered` is in-memory on purpose. Every fresh *visit* starts at the lock;
+  since the session-continuity work (issues #9/#4, see
+  `session-continuity-and-logout.md`) a mid-session **refresh** restores the
+  page you were on instead — the lock remains the front door for new tabs.
 - `messages.json` must carry **verifiable** claims. It is the first thing a
   visitor reads, and it is not covered by any schema or validator. An empty
   `messages` array hides the panel; a failed fetch renders the evergreen

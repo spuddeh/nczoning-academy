@@ -11,6 +11,22 @@ file records what a visitor receives.
 
 ## [Unreleased]
 
+## 0.5.0 - 2026-07-11
+
+### Added
+
+- JACK OUT button in the app header ends the session and returns to the lock
+  screen (icon-only on phones).
+
+### Fixed
+
+- Refreshing an in-app page now serves back the page you were on instead of
+  ejecting to the lock screen; audio re-arms on your first click or keypress
+  (browser autoplay policy forbids sooner), and until then the radio pill
+  shows a red AUDIO STANDBY state with a warning triangle. (#9)
+- Purging the local cache now signs you out to the lock screen for a genuine
+  fresh start, instead of leaving you on the Service Record page. (#4)
+
 ## 0.4.3 - 2026-07-11
 
 ### Changed

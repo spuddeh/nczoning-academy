@@ -16,9 +16,10 @@ interface AppHeaderProps {
   glossaryOpen: boolean;
   onOpenGlossary: () => void;
   onOpenTxns: () => void;
+  onLogout: () => void;
 }
 
-export function AppHeader({ course, moduleDone, eddies, balPulse, glossaryOpen, onOpenGlossary, onOpenTxns }: AppHeaderProps) {
+export function AppHeader({ course, moduleDone, eddies, balPulse, glossaryOpen, onOpenGlossary, onOpenTxns, onLogout }: AppHeaderProps) {
   const navigate = useNavigate();
   const path = useLocation().pathname;
   const dashActive = path === '/dashboard' || path.startsWith('/module');
@@ -83,6 +84,18 @@ export function AppHeader({ course, moduleDone, eddies, balPulse, glossaryOpen, 
             </svg>
           </div>
           <div className={`hdr-balance-val${eddies < 0 ? ' negative' : ''}`}>{symbol} {eddies}</div>
+        </button>
+        <button
+          className="hdr-logout"
+          type="button"
+          title="End session and return to the lock screen"
+          onClick={onLogout}
+        >
+          <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M18.36 6.64a9 9 0 1 1-12.73 0" />
+            <line x1="12" y1="2" x2="12" y2="11" />
+          </svg>
+          <span className="hdr-logout-txt">JACK OUT</span>
         </button>
       </div>
     </header>
