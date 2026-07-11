@@ -20,7 +20,7 @@
   place-items: center;
   background: var(--bg);
   z-index: var(--z-view);
-  padding: 40px 24px;
+  padding: var(--frame-gutter) var(--space-6xl);
   overflow-x: hidden;
   overflow-y: auto; /* grid centering scrolls cleanly when content is tall */
 }
@@ -57,7 +57,7 @@
   height: 72px;
   width: auto;
   display: block;
-  margin: 0 0 22px;
+  margin: 0 0 var(--space-5xl);
   filter: brightness(0) invert(1) drop-shadow(0 0 14px rgb(from var(--primary) r g b / 0.45));
 }
 
@@ -72,7 +72,7 @@
 }
 
 .lock-sub {
-  margin-top: 10px;
+  margin-top: var(--space-md);
   font-family: var(--font-mono);
   font-size: var(--fs-micro);
   letter-spacing: var(--tracking-wide);
@@ -82,7 +82,7 @@
 /* plain-language "what this is" line */
 .lock-desc {
   max-width: 440px;
-  margin: 18px 0 0;
+  margin: var(--space-3xl) 0 0;
   font-family: var(--font-body);
   font-size: var(--fs-body);
   line-height: 1.5;
@@ -99,15 +99,15 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
-  padding: 14px 20px;
+  gap: var(--space-2xl);
+  padding: var(--space-xl) var(--space-4xl);
   border: 1px solid rgb(from var(--primary) r g b / 0.28);
   background: rgb(from var(--bg) r g b / 0.6);
 }
 .lock-status-left {
   display: flex;
   align-items: center;
-  gap: 11px;
+  gap: var(--space-md);
   text-align: left;
 }
 .lock-led {
@@ -143,7 +143,7 @@
   font-variant-numeric: tabular-nums;
 }
 .lock-clock-date {
-  margin-top: 4px;
+  margin-top: var(--space-2xs);
   font-family: var(--font-mono);
   font-size: var(--fs-micro);
   letter-spacing: var(--tracking-caps);
@@ -161,8 +161,8 @@
 .lock-broadcast-head {
   display: flex;
   align-items: center;
-  gap: 9px;
-  padding: 11px 18px;
+  gap: var(--space-sm);
+  padding: var(--space-md) var(--space-3xl);
   border-bottom: 1px solid rgb(from var(--primary) r g b / 0.18);
   background: rgb(from var(--primary) r g b / 0.04);
 }
@@ -189,8 +189,8 @@
 .lock-msg {
   display: flex;
   align-items: flex-start;
-  gap: 11px;
-  padding: 13px 18px;
+  gap: var(--space-md);
+  padding: var(--space-lg) var(--space-3xl);
   border-bottom: 1px solid rgb(from var(--muted) r g b / 0.12);
 
   &:last-child { border-bottom: 0; }
@@ -209,7 +209,7 @@
   height: 7px;
   flex: none;
   border-radius: 50%;
-  margin-top: 5px;
+  margin-top: var(--space-2xs);
   background: var(--lvl);
   box-shadow: 0 0 7px var(--lvl);
 }
@@ -217,7 +217,7 @@
 .lock-msg-head {
   display: flex;
   align-items: baseline;
-  gap: 10px;
+  gap: var(--space-md);
   flex-wrap: wrap;
 }
 .lock-msg-tag {
@@ -242,7 +242,7 @@
   color: var(--placeholder);
 }
 .lock-msg-text {
-  margin-top: 4px;
+  margin-top: var(--space-2xs);
   font-family: var(--font-body);
   font-size: var(--fs-secondary);
   line-height: 1.45;
@@ -257,7 +257,7 @@
   font-weight: 700;
   font-size: var(--fs-ui);
   letter-spacing: var(--tracking-wide);
-  padding: 17px;
+  padding: var(--space-2xl);
   cursor: pointer;
   background: var(--primary);
   border: 1px solid var(--primary);
@@ -274,8 +274,8 @@
 .lock-audio-hint {
   display: flex;
   align-items: center;
-  gap: 9px;
-  margin-top: 18px;
+  gap: var(--space-sm);
+  margin-top: var(--space-3xl);
   color: var(--placeholder);
   font-family: var(--font-mono);
   font-size: var(--fs-micro);
@@ -284,7 +284,7 @@
 
 @media (max-width: 640px) {
   .lock-screen { --fs-title: 26px; } /* re-bind the role, not the call site */
-  .lock-status { flex-direction: column; align-items: flex-start; gap: 12px; }
+  .lock-status { flex-direction: column; align-items: flex-start; gap: var(--space-lg); }
   .lock-clock { text-align: left; }
   .lock-login { min-height: 52px; }
 }

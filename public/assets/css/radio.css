@@ -26,8 +26,8 @@
   z-index: var(--z-overlay);
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 10px 14px;
+  gap: var(--space-md);
+  padding: var(--space-md) var(--space-xl);
   background: rgb(from var(--bg) r g b / 0.94);
   border: 1px solid rgb(from var(--primary) r g b / 0.5);
   box-shadow: 0 0 22px rgb(from var(--primary) r g b / 0.14);
@@ -91,7 +91,7 @@
   justify-content: space-between;
   background: var(--primary);
   color: var(--bg);
-  padding: 8px 8px 8px 14px;
+  padding: var(--space-sm) var(--space-sm) var(--space-sm) var(--space-xl);
 
   > span {
     font-family: var(--font-identity);
@@ -107,15 +107,15 @@
   font-size: var(--fs-ui);
   line-height: 1;
   cursor: pointer;
-  padding: 0 4px;
+  padding: 0 var(--space-2xs);
   font-weight: 700;
 }
 
-.radio-panel-body { padding: 16px 16px 18px; }
+.radio-panel-body { padding: var(--space-2xl) var(--space-2xl) var(--space-3xl); }
 
 /* now-playing box — .dim marks muted-or-paused text/fill */
 .radio-now {
-  padding: 13px 15px;
+  padding: var(--space-lg) var(--space-xl);
   border: 1px solid rgb(from var(--primary) r g b / 0.25);
   background: rgb(from var(--primary) r g b / 0.04);
 }
@@ -123,7 +123,7 @@
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
-  gap: 12px;
+  gap: var(--space-lg);
 
   > div:first-child { min-width: 0; flex: 1; }
 }
@@ -141,7 +141,7 @@
   font-size: var(--fs-label);
   letter-spacing: var(--tracking-mid);
   color: var(--text);
-  margin-top: 5px;
+  margin-top: var(--space-2xs);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -153,7 +153,7 @@
   font-weight: 600;
   letter-spacing: var(--tracking-tight);
   color: var(--tertiary);
-  margin-top: 9px;
+  margin-top: var(--space-sm);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -170,7 +170,7 @@
   text-overflow: ellipsis;
 }
 
-.radio-prog { margin-top: 12px; }
+.radio-prog { margin-top: var(--space-lg); }
 .radio-prog-bar { position: relative; height: 4px; background: rgb(from var(--muted) r g b / 0.22); }
 .radio-prog-fill {
   position: absolute;
@@ -185,14 +185,14 @@
 .radio-prog-times {
   display: flex;
   justify-content: space-between;
-  margin-top: 5px;
+  margin-top: var(--space-2xs);
   font-size: var(--fs-micro);
   letter-spacing: var(--tracking-label);
   color: var(--muted);
 }
 
 /* transport */
-.radio-transport { display: flex; gap: 8px; margin-top: 14px; }
+.radio-transport { display: flex; gap: var(--space-sm); margin-top: var(--space-xl); }
 .radio-tbtn {
   flex: none;
   display: flex;
@@ -200,7 +200,7 @@
   justify-content: center;
   min-width: 40px;
   height: 38px;
-  padding: 0 12px;
+  padding: 0 var(--space-lg);
   background: transparent;
   border: 1px solid rgb(from var(--muted) r g b / 0.45);
   color: var(--text);
@@ -219,7 +219,7 @@
   }
 }
 .radio-caption {
-  margin-top: 8px;
+  margin-top: var(--space-sm);
   text-align: center;
   font-size: var(--fs-micro);
   letter-spacing: var(--tracking-caps);
@@ -227,9 +227,9 @@
 }
 
 /* station chips */
-.radio-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 14px; }
+.radio-chips { display: flex; flex-wrap: wrap; gap: var(--space-xs); margin-top: var(--space-xl); }
 .radio-chip {
-  padding: 5px 8px;
+  padding: var(--space-2xs) var(--space-sm);
   font-family: var(--font-mono);
   font-size: var(--fs-micro);
   letter-spacing: var(--tracking-label);
@@ -250,12 +250,12 @@
 
 /* auto-rotate toggle */
 .radio-cycle {
-  margin-top: 12px;
+  margin-top: var(--space-lg);
   width: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: var(--space-sm);
   height: 32px;
   cursor: pointer;
   font-family: var(--font-mono);
@@ -276,14 +276,14 @@
 }
 
 /* volume rows */
-.radio-volrow { margin-top: 12px; }
+.radio-volrow { margin-top: var(--space-lg); }
 .radio-volhead {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 5px;
+  margin-bottom: var(--space-2xs);
 
-  > div { display: flex; align-items: center; gap: 8px; }
+  > div { display: flex; align-items: center; gap: var(--space-sm); }
 }
 .radio-volmute {
   width: 24px;

@@ -11,6 +11,20 @@ file records what a visitor receives.
 
 ## [Unreleased]
 
+## 0.4.3 - 2026-07-11
+
+### Changed
+
+- Spacing now comes from a scale in `theme.css` instead of 460 literals on 36
+  values. Two layers: a 2px-step numeric scale over the dense region
+  (`--space-2xs` … `--space-6xl`, 4–24px, mirroring the map), and named layout
+  tokens for the large values that repeat by meaning (`--section-gap` 34px,
+  `--scrim-pad` 32px, `--frame-gutter` 40px). 88% of spacing is tokenised; the
+  rest stays literal on purpose — sub-4px optical nudges, per-view page-frame
+  padding, and medium one-off gaps with no shared role. Values on the scale are
+  unchanged; odd values snap 1px to the nearest rung. Only box-model properties
+  move — colour, stacking and tracking are byte-identical.
+
 ## 0.4.2 - 2026-07-11
 
 ### Changed

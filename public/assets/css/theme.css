@@ -167,14 +167,34 @@ html.theme-night-corp {
   --z-flyer:       9997;    /* eddies flyer animation */
   --z-scrim:       9998;    /* cert + shard overlays, under the confirms */
   --z-dialog:      9999;    /* name-prompt + confirm dialogs sit on top */
-}
 
-/* Deliberately NOT here: a spacing scale.
-   --sp-1..--sp-8 existed with zero uses and were deleted. The 227 padding /
-   margin / gap literals across the stylesheets are bespoke, measured from the
-   0.1.0 monolith, and forcing them onto an eight-step scale would cause real
-   visual churn for no theming benefit. A token nobody references is worse than
-   no token: it reads as a contract the code is keeping, and it isn't. */
+  /* Spacing scale. Two layers, because the data has two shapes (see #27).
+     1) A 2px-step numeric scale over the dense region (≤24px), mirroring the
+        map's --space-* naming. 88% of all spacing is this. Values on the scale
+        are unchanged; a few odd values snap 1px to the nearest rung (signed off
+        on the render). Sub-4px values are optical nudges, NOT spacing — they
+        stay literal, which is also where the map's scale starts. */
+  --space-2xs:  4px;
+  --space-xs:   6px;
+  --space-sm:   8px;
+  --space-md:  10px;
+  --space-lg:  12px;
+  --space-xl:  14px;
+  --space-2xl: 16px;
+  --space-3xl: 18px;
+  --space-4xl: 20px;
+  --space-5xl: 22px;
+  --space-6xl: 24px;
+
+  /*  2) Named layout tokens for the large values that repeat by MEANING, not as
+        scale steps — putting them on the numeric ladder would be false
+        uniformity. Everything else >24px (page-frame top/bottom padding, the
+        26–30px medium band, true one-offs like the 80px player runway) stays
+        literal: frequent is not the same as a shared role. */
+  --section-gap:   34px;  /* rhythm between record/dashboard section blocks */
+  --scrim-pad:     32px;  /* inset of the fixed overlay scrims */
+  --frame-gutter:  40px;  /* horizontal page gutter (dash, player, record, lock) */
+}
 
 /* Additional themes (Arasaka / Militech / …) will be added here as
    `html.theme-<name> { --primary: …; --bg: …; … }`, overriding only the
