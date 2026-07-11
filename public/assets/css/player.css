@@ -607,6 +607,35 @@
 .lab-brief { color: var(--text-body); font-size: var(--fs-body); margin-bottom: var(--space-xl); line-height: var(--lh-body); }
 /* the authored procedure list (lab.steps) — sits between briefing and console */
 .lab-steps { margin-bottom: var(--space-2xl); }
+/* scenario selector (issue #2): simulated server states for named canned
+   responses — amber, pairing with the SIMULATION MODE banner */
+.lab-scenario {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  flex-wrap: wrap;
+  margin-bottom: var(--space-2xl);
+}
+.lab-scenario-label {
+  font-family: var(--font-mono);
+  font-size: var(--fs-micro);
+  letter-spacing: var(--tracking-mid);
+  color: var(--muted);
+}
+.lab-chip {
+  background: transparent;
+  border: 1px solid rgb(from var(--secondary) r g b / 0.5);
+  color: var(--secondary);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: var(--fs-micro);
+  letter-spacing: var(--tracking-mid);
+  padding: var(--space-xs) var(--space-lg);
+  cursor: pointer;
+
+  &:hover { background: rgb(from var(--secondary) r g b / 0.12); }
+  &.active { background: var(--secondary); border-color: var(--secondary); color: var(--bg); }
+}
 .lab-request {
   border: 1px solid rgb(from var(--primary) r g b / 0.25);
   background: rgb(from var(--field-bg) r g b / 0.85);
