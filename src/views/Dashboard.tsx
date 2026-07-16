@@ -83,6 +83,7 @@ export function Dashboard({ course, moduleDone, revealedBy, onOpenCourse }: Dash
               <div className="course-chips">
                 <span className="course-chip">&#8961; {c.estMinutes ?? 0} MIN</span>
                 <span className="course-chip">{mods.length} MODULES</span>
+                {typeof c.version === 'string' && <span className="course-chip">V{c.version}</span>}
               </div>
               <div className="course-progress-row">
                 <span>PROGRESS</span>

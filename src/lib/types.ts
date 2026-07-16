@@ -137,11 +137,20 @@ export interface Txn {
   balanceAfter?: number;
 }
 
+// One course changelog heading: a content version, its date, and its changes.
+export interface CourseChangelogEntry {
+  version?: string;
+  date?: string;
+  changes?: string[];
+}
+
 export interface Course {
   schemaVersion?: string;
   id?: string;
   title?: string;
   subtitle?: string;
+  version?: string;
+  changelog?: CourseChangelogEntry[];
   estMinutes?: number;
   modules?: CourseModule[];
   economy?: {

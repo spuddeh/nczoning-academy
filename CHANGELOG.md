@@ -11,6 +11,21 @@ file records what a visitor receives.
 
 ## [Unreleased]
 
+## 0.9.0 - 2026-07-16
+
+### Added
+
+- Courses carry a content version and changelog (new `version` / `changelog`
+  fields in the course schema); the version renders as a chip on the course
+  card.
+
+### Changed
+
+- TRANSMISSION PROTOCOLS course v2.0.0: rewritten for the per-location-records
+  Data API (nc-zoning-board 1.4.0) — one record shape (slim/full gone),
+  server-computed `recently_updated`, `meta.counts` removed, all lab captures
+  re-recorded live and every citation re-pinned.
+
 ## 0.8.1 - 2026-07-11
 
 ### Fixed
