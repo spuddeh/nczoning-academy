@@ -5,7 +5,7 @@ GitHub Releases, matching the map repo's convention).
 
 **A merged PR is a release.** `main` deploys straight to Cloudflare Pages, so
 there is no window in which "unreleased" is true. Every PR that changes what the
-deployed site does adds its own version heading — nothing merged sits under
+deployed site does adds its own version heading; nothing merged sits under
 `[Unreleased]`. Developer tooling (`scripts/`, CI, harnesses) gets no entry: this
 file records what a visitor receives.
 
@@ -22,7 +22,7 @@ file records what a visitor receives.
 ### Changed
 
 - TRANSMISSION PROTOCOLS course v2.0.0: rewritten for the per-location-records
-  Data API (nc-zoning-board 1.4.0) — one record shape (slim/full gone),
+  Data API (nc-zoning-board 1.4.0): one record shape (slim/full gone),
   server-computed `recently_updated`, `meta.counts` removed, all lab captures
   re-recorded live and every citation re-pinned.
 
@@ -121,10 +121,10 @@ file records what a visitor receives.
   (`--space-2xs` … `--space-6xl`, 4–24px, mirroring the map), and named layout
   tokens for the large values that repeat by meaning (`--section-gap` 34px,
   `--scrim-pad` 32px, `--frame-gutter` 40px). 88% of spacing is tokenised; the
-  rest stays literal on purpose — sub-4px optical nudges, per-view page-frame
+  rest stays literal on purpose: sub-4px optical nudges, per-view page-frame
   padding, and medium one-off gaps with no shared role. Values on the scale are
   unchanged; odd values snap 1px to the nearest rung. Only box-model properties
-  move — colour, stacking and tracking are byte-identical.
+  move; colour, stacking and tracking are byte-identical.
 
 ## 0.4.2 - 2026-07-11
 
@@ -135,7 +135,7 @@ file records what a visitor receives.
   Because tracking is in `em` it scales with size, so many of those values were
   the same rendered spacing written differently; the near-duplicates collapse
   (e.g. `0.14em` → `0.12em`). Chosen at the rendered result, not the grep. Only
-  letter-spacing moves — colour, stacking and layout are byte-identical.
+  letter-spacing moves; colour, stacking and layout are byte-identical.
 
 ## 0.4.1 - 2026-07-11
 
@@ -153,7 +153,7 @@ file records what a visitor receives.
 
 - Colour is now themeable. The 185 colour literals and 107 raw-palette
   references outside `theme.css` were the reason a theme swap only half-worked;
-  they now resolve through the semantic roles — directly, or as a tint/line/glow
+  they now resolve through the semantic roles: directly, or as a tint/line/glow
   via relative colour syntax (`rgb(from var(--primary) r g b / 0.25)`). The
   derived tokens in `theme.css` (`--line*`, `--card-glow`, `--scanline`,
   `--primary-dim`, `--card-bg`) follow their role too. Re-binding one role now
@@ -168,7 +168,7 @@ file records what a visitor receives.
 
 - Nine unused custom properties from `theme.css`: the six `--sp-*` spacing steps,
   plus `--surface`, `--panel-bg` and `--rail-w`. All had zero references.
-  Spacing does not get a scale — the padding/margin literals are measured from
+  Spacing does not get a scale: the padding/margin literals are measured from
   the monolith and stay.
 
 ## 0.3.1 - 2026-07-10
@@ -183,7 +183,7 @@ file records what a visitor receives.
 
 ### Added
 
-- Lock / standby screen at `/` — landing page with a `SYSTEM BROADCAST` feed.
+- Lock / standby screen at `/`: landing page with a `SYSTEM BROADCAST` feed.
   Boot moves to `/boot`, guarded so a refresh or direct hit returns to the lock.
 - Announcements served by a Pages Function merging Workers KV (`messages:ops`,
   `messages:manual`) over the committed `public/messages.json`. Posts go live
@@ -199,7 +199,7 @@ file records what a visitor receives.
 - Type is now driven by eight semantic `--fs-*` roles in `theme.css`, replacing
   every ad-hoc pixel size across all nine stylesheets. Card headings out-rank
   body text again. Views re-bind roles on their own root rather than overriding
-  call sites — see `docs/type-system.md`.
+  call sites; see `docs/type-system.md`.
 - The app header and fixed satellites moved from `dashboard.css` to `style.css`.
   They render on every view, not just the dashboard.
 
@@ -209,7 +209,7 @@ file records what a visitor receives.
   builds on the LOGIN gesture rather than at app mount.
 - The lock's `access` cue no longer races `AudioContext.resume()`, which
   dropped it silently on keyboard activation.
-- `.chunk-table-caption` renamed `.chunk-table-body` — it renders the table
+- `.chunk-table-caption` renamed `.chunk-table-body`: it renders the table
   chunk's teaching paragraph, and was styled as grey metadata.
 
 ## 0.2.0 - 2026-07-09

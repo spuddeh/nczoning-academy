@@ -1,4 +1,4 @@
-// SYSTEM BROADCAST panel — shared by the lock screen and the dashboard
+// SYSTEM BROADCAST panel: shared by the lock screen and the dashboard
 // (issue #10). One renderer, so the level chips, pinning presentation and
 // list cap read identically on both surfaces. Container spacing belongs to
 // the caller's context, not this component.
@@ -6,7 +6,7 @@ import { MESSAGE_LEVELS } from '../lib/messages';
 import type { SysLevel, SysMessage } from '../lib/types';
 
 export function BroadcastFeed({ messages }: { messages: SysMessage[] }) {
-  if (messages.length === 0) return null; // an empty feed hides — emptiness is a choice
+  if (messages.length === 0) return null; // an empty feed hides; emptiness is a choice
   return (
     <div className="broadcast">
       <div className="broadcast-head">

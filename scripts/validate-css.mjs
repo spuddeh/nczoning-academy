@@ -2,7 +2,7 @@
 // Validate the stylesheets under public/assets/css/. Nothing else in this repo
 // parses CSS: tsc ignores it, the course validator ignores it, and a CSS parse
 // error is not a build error, so Cloudflare Pages ships it happily. #20 proved
-// the cost — a stray `*/` swallowed `--fs-title` and the module title rendered
+// the cost: a stray `*/` swallowed `--fs-title` and the module title rendered
 // at 16px in production, invisible to every tool and to code review.
 //
 // Two hand-rolled checks, no dependency (this build has no PostCSS on purpose):
@@ -13,7 +13,7 @@
 //      (and no inline fallback) is the #20 failure mode generalised: the token
 //      looks defined to grep but was eaten by the parser, or was never there.
 //      A `var(--x, fallback)` is self-protecting and exempt (that is how the one
-//      runtime-set var, --mqd, is handled — no allowlist needed).
+//      runtime-set var, --mqd, is handled, no allowlist needed).
 //
 // Run: node scripts/validate-css.mjs   (or: npm run validate:css)
 
@@ -56,7 +56,7 @@ function stripComments(src, file) {
   return out;
 }
 
-// Pass 1 — strip comments (which also runs the balance check), collect every
+// Pass 1: strip comments (which also runs the balance check), collect every
 // custom-property DEFINITION across all files. A local re-binding counts: the
 // token is defined, that is all this check asks.
 const codeByFile = {};
@@ -68,7 +68,7 @@ for (const f of files) {
   for (const m of code.matchAll(/(?:^|[\s;{])(--[a-z0-9-]+)\s*:/gi)) defined.add(m[1]);
 }
 
-// Pass 2 — every var(--x) without a fallback must resolve to a definition.
+// Pass 2: every var(--x) without a fallback must resolve to a definition.
 for (const f of files) {
   const code = codeByFile[f];
   for (const m of code.matchAll(/var\(\s*(--[a-z0-9-]+)\s*(,)?/gi)) {

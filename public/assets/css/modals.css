@@ -1,5 +1,5 @@
-/* Overlay modals — Field Glossary + Transaction History.
-   Measured spec: docs/monolith-parity-spec.md — "Overlay modals". */
+/* Overlay modals: Field Glossary + Transaction History.
+   Measured spec: docs/monolith-parity-spec.md, "Overlay modals". */
 
 /* ---- shared shell ---- */
 
@@ -23,7 +23,7 @@
   flex-direction: column;
   max-height: calc(100vh - 112px);
 
-  /* glossary — a reading surface, so it takes the same measure as a lesson:
+  /* glossary: a reading surface, so it takes the same measure as a lesson:
      + 64px .gloss-body padding + 40px .gloss-card padding */
   &.cyan {
     width: calc(var(--measure) + 104px);
@@ -54,7 +54,7 @@
   align-items: center;
   gap: var(--space-lg);
   font-family: var(--font-identity);
-  font-weight: 400; /* Night Corp Display has no 700 — bold renders faux */
+  font-weight: 400; /* Night Corp Display has no 700; bold renders faux */
   font-size: var(--fs-secondary);
   letter-spacing: var(--tracking-mid);
 }
@@ -270,7 +270,7 @@
   > .note { float: right; color: var(--muted); opacity: 0.7; }
 }
 
-/* 22px between groups only — :first-of-type would not exclude the first
+/* 22px between groups only; :first-of-type would not exclude the first
    group here (it is preceded by other divs of the same element type) */
 .txn-group + .txn-group { margin-top: var(--space-5xl); }
 

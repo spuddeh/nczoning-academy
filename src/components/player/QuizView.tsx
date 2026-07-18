@@ -1,6 +1,6 @@
 // Knowledge checks: single-select (mcq / spot-wrong), multi-select, and
 // sequence ordering with lift-and-carry drag (pointer events = mouse AND
-// touch). Measured spec: docs/monolith-parity-spec.md — "Quizzes".
+// touch). Measured spec: docs/monolith-parity-spec.md, "Quizzes".
 import { useEffect, useRef, useState } from 'react';
 import type { PointerEvent as ReactPointerEvent, MouseEvent as ReactMouseEvent } from 'react';
 import type { Question, QuizAnswerState, QuizOption } from '../../lib/types';

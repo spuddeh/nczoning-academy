@@ -1,5 +1,5 @@
 // Fixed bottom-left telemetry readout. Mirrors the map's model: every 2s roll
-// a new sync offset — 85% nominal (0-200ms), 10% elevated (200-800ms),
+// a new sync offset: 85% nominal (0-200ms), 10% elevated (200-800ms),
 // 5% critical (800-1800ms). Status text + LED colour follow the tier.
 // Deliberately keeps running under prefers-reduced-motion (it's an ambient
 // text/opacity readout, not transform motion) so the terminal reads as live.

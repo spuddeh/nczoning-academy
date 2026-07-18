@@ -85,7 +85,7 @@ export function createProgress(host: ProgressHost): ProgressAdapter | null {
   return window.Progress?.create(host) ?? null;
 }
 
-// Version-tolerant record migration — port of the monolith's migrateRecord.
+// Version-tolerant record migration: port of the monolith's migrateRecord.
 // THROWS on anything that isn't a ncza-record (the thrown message surfaces in
 // the boot import line as `SHARD REJECTED // <message>`).
 export function migrateRecord(rec: unknown, course: Course): ProgressRecord {

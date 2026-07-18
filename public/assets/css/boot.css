@@ -1,7 +1,7 @@
-/* NC Zoning Academy — boot / login view.
+/* NC Zoning Academy: boot / login view.
  * Geometry and colour are measured from the 0.1.0 monolith
  * (docs/monolith-parity-spec.md). Type comes from the --fs-* roles, re-bound
- * for this view on .boot-screen below — see docs/type-system.md.
+ * for this view on .boot-screen below (see docs/type-system.md).
  * The whole screen is click-to-skip during the typewriter animation; the form
  * appears only once the boot log completes (or is skipped).
  */
@@ -42,7 +42,7 @@
   box-shadow: var(--card-glow);
 }
 
-/* cyan titlebar — navy text on cyan */
+/* cyan titlebar: navy text on cyan */
 .boot-titlebar {
   display: flex;
   justify-content: space-between;
@@ -68,7 +68,7 @@
   padding: 26px 28px 28px;
 }
 
-/* boot log — one cyan mono block; height reserved so the card doesn't jump
+/* boot log: one cyan mono block; height reserved so the card doesn't jump
    while the typewriter runs */
 .boot-log {
   margin: 0;
@@ -140,7 +140,7 @@
   }
 }
 
-/* ACCESS TERMINAL — two states: ready (name typed, course loaded) is solid
+/* ACCESS TERMINAL, two states: ready (name typed, course loaded) is solid
    cyan; not-ready is the dimmed outline */
 .boot-access {
   display: block;

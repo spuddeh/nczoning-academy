@@ -1,15 +1,15 @@
 /// <reference types="@cloudflare/workers-types" />
 //
-// GET /messages.json — the lock screen's SYSTEM BROADCAST feed.
+// GET /messages.json: the lock screen's SYSTEM BROADCAST feed.
 //
 // A Pages Function at this path takes precedence over the static asset of the
 // same name, and `context.next()` hands us that asset's Response. So instead of
 // "serve KV, else serve the file", we can read the committed file as a BASELINE
 // and overlay KV on top of it:
 //
-//   messages:ops     KV  — automated alerts (a health check writes these)
-//   messages:manual  KV  — hand-written posts, live the moment you save them
-//   public/messages.json — the committed, reviewed, evergreen baseline
+//   messages:ops     KV  : automated alerts (a health check writes these)
+//   messages:manual  KV  : hand-written posts, live the moment you save them
+//   public/messages.json : the committed, reviewed, evergreen baseline
 //
 // Delete a KV key and the site reverts to the committed state with no deploy.
 //
@@ -50,7 +50,7 @@ async function readKey(kv: KVNamespace | undefined, key: string): Promise<SysMes
     const raw = await kv.get(key);
     return raw ? coerce(JSON.parse(raw)) : [];
   } catch {
-    return []; // KV unreachable, or the value is not JSON — treat as no messages
+    return []; // KV unreachable, or the value is not JSON; treat as no messages
   }
 }
 
@@ -60,7 +60,7 @@ export const onRequestGet: PagesFunction<Env> = async (ctx) => {
   try {
     baseline = coerce(await (await ctx.next()).json());
   } catch {
-    baseline = []; // asset missing or not JSON — KV alone still renders
+    baseline = []; // asset missing or not JSON; KV alone still renders
   }
 
   const [ops, manual] = await Promise.all([
@@ -69,7 +69,7 @@ export const onRequestGet: PagesFunction<Env> = async (ctx) => {
   ]);
 
   // First id wins, so a KV entry shadows a baseline one by reusing its id.
-  // Precedence is ops > manual > baseline. This governs *shadowing only* —
+  // Precedence is ops > manual > baseline. This governs *shadowing only*:
   // the client re-sorts newest-first by date, so an ops alert needs a `date`
   // to surface above the evergreen lines (undated entries sort last).
   const seen = new Set<string>();

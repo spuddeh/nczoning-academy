@@ -1,5 +1,5 @@
 // Shared app header chrome: brand, nav tabs, clearance + balance cluster.
-// Measured spec: docs/monolith-parity-spec.md — "App shell". The balance
+// Measured spec: docs/monolith-parity-spec.md, "App shell". The balance
 // button opens the transaction-history modal; the header GLOSSARY button is
 // the ≤640px opener (the FAB hides there). DASHBOARD is the active tab for
 // both the dashboard and player views (the monolith's navTabStyle rule).

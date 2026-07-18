@@ -1,4 +1,4 @@
-// Live incident banner (issue #10) — a slim bar under the app header that
+// Live incident banner (issue #10): a slim bar under the app header that
 // renders ONLY while an alert-level broadcast is live, on every post-login
 // view. An operator mid-module during an outage sees "it's the system, not
 // you" without visiting the dashboard. Dismiss is per message and in-memory:

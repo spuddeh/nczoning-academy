@@ -60,7 +60,7 @@ const AUDIO_PINNED = {
  */
 export const RECORD_SNAPSHOT = { ...RECORD_CERTIFIED, audio: AUDIO_PINNED };
 
-/** m01 done, radio pinned — a fresh login otherwise randomises the station. */
+/** m01 done, radio pinned; a fresh login otherwise randomises the station. */
 export const RECORD_RADIO = {
   schema: 'ncza-record/v1',
   course: 'data-api',

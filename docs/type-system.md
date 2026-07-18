@@ -1,7 +1,7 @@
 # Type system
 
 > One axis of the [design token system](design-tokens.md). Colour, spacing,
-> letter-spacing and stacking follow the same pattern — this page is the type
+> letter-spacing and stacking follow the same pattern; this page is the type
 > detail.
 
 All font sizes in the Academy come from **eight semantic roles** defined in

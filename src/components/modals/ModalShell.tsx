@@ -2,7 +2,7 @@
 // blurred scrim (click closes), accent-bordered box (clicks stop), solid
 // accent title bar with an [ ESC ] CLOSE button. Escape handling lives in
 // App so it works while focus is in a modal input.
-// Measured spec: docs/monolith-parity-spec.md — "Overlay modals".
+// Measured spec: docs/monolith-parity-spec.md, "Overlay modals".
 import type { ReactNode } from 'react';
 
 interface ModalShellProps {

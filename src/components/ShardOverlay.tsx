@@ -1,6 +1,6 @@
-// Shard reader overlay — one component for both directions: eject (chip
+// Shard reader overlay, one component for both directions: eject (chip
 // slides OUT of the reader while the record encodes) and slot (chip slides
-// IN while it decodes). Measured spec: docs/monolith-parity-spec.md —
+// IN while it decodes). Measured spec: docs/monolith-parity-spec.md,
 // "exportRecord + renderEject" / "importRecord / slotShard / renderSlot".
 // z 9998: under the red confirm dialogs; the radio pill wins by DOM order.
 

@@ -1,6 +1,6 @@
 // Module player: module-map rail (off-canvas drawer ≤640px), streamed stage
 // column, gated CONTINUE, and the completion stage. Stage model in
-// lib/player.ts; measured spec: docs/monolith-parity-spec.md — "Module player".
+// lib/player.ts; measured spec: docs/monolith-parity-spec.md, "Module player".
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { Course, CourseModule, QuizAnswerState } from '../lib/types';
 import { buildStages, partialFrac, resumeRevealed, stageDataId, stageGated } from '../lib/player';
@@ -26,7 +26,7 @@ interface PlayerProps {
   onBackToDashboard: () => void;
   onComplete: (m: CourseModule) => void;
   onSaveProgress: (moduleId: string, revealed: number) => void;
-  /** capstone completion payoff — opens the certificate overlay */
+  /** capstone completion payoff: opens the certificate overlay */
   onViewCert: () => void;
   /** Ledger deep-link target; tick marks each fresh jump (same-module too). */
   jump: { moduleId: string; qid: string; tick: number } | null;
@@ -46,8 +46,8 @@ export function Player({
   const followRaf = useRef(0);
 
   // Smoothly follow the bottom of the stream (the monolith's stick follower).
-  // Runs CONTINUOUSLY while stuck so any content growth — a new stage, quiz
-  // feedback expanding — glides down instead of stepping; a user wheel/touch
+  // Runs CONTINUOUSLY while stuck so any content growth (a new stage, quiz
+  // feedback expanding) glides down instead of stepping; a user wheel/touch
   // disengages it until the next advance/module entry.
   const follow = useCallback(() => {
     cancelAnimationFrame(followRaf.current);
@@ -65,7 +65,7 @@ export function Player({
   // A jump is "live" until its flash window has passed; after that, later
   // module changes take the normal resume path. Marked via a timeout (not in
   // the effect body) so StrictMode's double mount-run takes the same branch
-  // both times — the relative scroll re-measures, so re-running converges.
+  // both times; the relative scroll re-measures, so re-running converges.
   const jumpDone = useRef(0);
 
   // Module entry: either apply a live ledger jump (reveal up to the answered
@@ -120,7 +120,7 @@ export function Player({
   const gated = stageGated(cur, quiz);
   const done = !!moduleDone[m.id];
   // Forward action for the certified row; undefined on the last module (the
-  // rail order and this agree — both come from sortedModules).
+  // rail order and this agree: both come from sortedModules).
   const nextMod = mods[mods.findIndex((x) => x.id === m.id) + 1];
 
   const advance = () => {

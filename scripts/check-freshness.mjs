@@ -4,7 +4,7 @@
 // Each course pins the source commits its project claims were audited against
 // (contentAudit.repos). This script asks GitHub, for every pinned repo, which
 // files changed on the current default branch since that commit, and flags any
-// that the course actually CITES — those modules need re-auditing. Files that
+// that the course actually CITES: those modules need re-auditing. Files that
 // changed but are not cited are ignored; a repo that only moved past the pin
 // with no cited file touched is reported as safe to re-pin.
 //

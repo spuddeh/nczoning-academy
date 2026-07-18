@@ -1,6 +1,6 @@
-// NC Radio — collapsed pill and expanded panel (monolith renderMusicPlayer).
+// NC Radio: collapsed pill and expanded panel (monolith renderMusicPlayer).
 // The host (App) owns the engine and all state; this renders it and forwards
-// intents. Measured spec: docs/monolith-parity-spec.md — "Radio panel".
+// intents. Measured spec: docs/monolith-parity-spec.md, "Radio panel".
 import { useEffect, useRef } from 'react';
 import { applyMarquee, stations } from '../lib/academy';
 import type { Sfx } from '../lib/sfx';
@@ -47,7 +47,7 @@ const fmtTime = (sec: number): string => {
 };
 
 // EQ bars beating at the track bpm. Same formula at both sizes (pill 4x16,
-// panel 10x32). One animation shorthand per bar — mixing it with longhand
+// panel 10x32). One animation shorthand per bar; mixing it with longhand
 // animation-* props makes React warn on every rerender.
 function EqBars({ n, height, beat, playing }: { n: number; height: number; beat: number; playing: boolean }) {
   return (
@@ -128,14 +128,14 @@ export function MusicPlayer({
 
   useEffect(() => { if (!open) applyMarquee(trackRef.current); });
 
-  if (!station) return null; // no station data — the radio hides
+  if (!station) return null; // no station data; the radio hides
   const beat = 60 / (track?.bpm ?? 120);
   const playing = !st.paused && !st.musicMuted;
   const dim = st.musicMuted || st.paused;
 
   // Collapsed: the corner station pill.
   if (!open) {
-    // Disconnected after a restored refresh — any gesture reconnects, so this
+    // Disconnected after a restored refresh; any gesture reconnects, so this
     // resolves on the click that opens the panel (or any earlier one).
     if (standby) {
       return (

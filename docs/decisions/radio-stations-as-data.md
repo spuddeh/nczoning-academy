@@ -44,10 +44,10 @@ not the station); made pre-launch with no consumers.
 
 4. **Division of labour**: Claude Design owns the engine and the radio UI; the
    station data is authored and validated in the repo by Claude Code. As the
-   engine's author put it, "it's all just numbers in those track objects" — that
+   engine's author put it, "it's all just numbers in those track objects". That
    is data authoring.
 
-## Station object shape (radio-station/v2 — multi-track)
+## Station object shape (radio-station/v2, multi-track)
 
 The engine reads FLAT field names (not the nested `frequency`/`filterCutoff`/
 `chords`/`patterns`/`modes` sketched in early notes). A station is identity +
@@ -75,7 +75,7 @@ mask; `bass`/`lead`/`pad`/`style` from the enums; `prog` is exactly 4 bars; sane
 
 **Engine rotation (as shipped).** The engine keeps a current-track index per
 station and reads all musical fields off the current track. Track changes are
-**instant** — restart the sequencer on a fresh downbeat, silence ringing voices
+**instant**: restart the sequencer on a fresh downbeat, silence ringing voices
 (no tail), snap the filter/echo retune (no cue-and-crossfade). Next/prev step
 through the current station's tracks (they used to cycle stations); the dial
 selects stations. Auto-rotate scans the whole dial: a finished track rolls to the
@@ -99,8 +99,8 @@ length, Fixed determinism) are covered in
   `style`/`bass`/`lead`/`pad` enums (character comes from bpm/cut/swing/prog/
   patterns), so authoring a new track is pure data with no engine change; only
   bespoke new voicings would need an engine change.
-- Realism is improved with code-only, asset-free levers: humanized timing/velocity
-  and a synthesized-impulse convolution reverb. Actual drum samples are out (they
+- Realism is improved with code-only, asset-free levers: humanised timing/velocity
+  and a synthesised-impulse convolution reverb. Actual drum samples are out (they
   would break the zero-asset property) unless a deliberate future call is made.
 - The current volumes, mute state and current station persist in the progress
   object (Service Record shard), consistent with [progress-and-users](progress-and-users.md).

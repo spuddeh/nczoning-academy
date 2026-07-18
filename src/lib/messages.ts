@@ -1,4 +1,4 @@
-// SYSTEM BROADCAST feed — the ONE implementation of the announcements
+// SYSTEM BROADCAST feed: the ONE implementation of the announcements
 // contract (issue #10). The lock screen and the in-app surfaces (dashboard
 // panel, shell alert strip) all fetch, sort and classify through here so the
 // pinning and fallback rules cannot fork.
@@ -46,7 +46,7 @@ export function normalizeMessages(raw: unknown): SysMessage[] {
 
 // ---- read watermark ----
 // TERMINAL-local (localStorage), on purpose: which announcements a human has
-// glanced at is terminal trivia, not service-record material — a shard slotted
+// glanced at is terminal trivia, not service-record material; a shard slotted
 // on another machine must not mark that terminal's feed read. This module owns
 // the ncza:v1:broadcast-seen key the way session.ts owns sessionStorage;
 // operator profiles remain progress.js territory. The live-alert indicator
@@ -60,7 +60,7 @@ export function readSeenIds(): string[] {
     const list = raw ? JSON.parse(raw) : [];
     return Array.isArray(list) ? list.filter((x) => typeof x === 'string') : [];
   } catch {
-    return []; // storage blocked or corrupt — everything reads as unread
+    return []; // storage blocked or corrupt; everything reads as unread
   }
 }
 
@@ -68,7 +68,7 @@ export function markSeen(ids: string[]): string[] {
   const merged = [...new Set([...readSeenIds(), ...ids])].slice(-SEEN_CAP);
   try {
     window.localStorage.setItem(SEEN_KEY, JSON.stringify(merged));
-  } catch { /* storage unavailable — the count returns next load */ }
+  } catch { /* storage unavailable; the count returns next load */ }
   return merged;
 }
 

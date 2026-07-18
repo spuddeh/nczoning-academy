@@ -1,5 +1,5 @@
 /* Field certificate overlay + operator name prompt + print rules.
-   Measured spec: docs/monolith-parity-spec.md — "Certificate + name prompt". */
+   Measured spec: docs/monolith-parity-spec.md, "Certificate + name prompt". */
 
 /* ---- certificate overlay (z 9998; closes via button only) ---- */
 
@@ -327,7 +327,7 @@
    Fix over the monolith (which only flipped visibility): browsers strip
    background colours by default when printing, so the navy card and cyan
    titlebar vanished and left neon text on white paper. This variant is
-   ink-on-paper by design — dark navy/teal/green text and borders, no
+   ink-on-paper by design: dark navy/teal/green text and borders, no
    reliance on backgrounds printing at all. */
 
 @media print {

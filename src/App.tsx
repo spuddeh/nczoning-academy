@@ -1,6 +1,6 @@
 // Top-level app: owns the operator/record state, the Progress adapter, the
 // SFX synth, the radio engine host, and the eddies economy (flyers, ledger,
-// transfer). Views are routes: / (lock), /boot, /dashboard, /module/:moduleId —
+// transfer). Views are routes: / (lock), /boot, /dashboard, /module/:moduleId;
 // post-login routes are guarded and share the app shell.
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Navigate, Route, Routes, useLocation, useNavigate, useParams } from 'react-router-dom';
@@ -42,7 +42,7 @@ import type {
 interface ImportMsg { ok: boolean; text: string; }
 
 // The operator-progress slice of state (mirrors the record fields; audio is
-// NOT here — the snapshot builds it from the live radio/SFX state).
+// NOT here; the snapshot builds it from the live radio/SFX state).
 interface OperatorState {
   operatorName: string;
   moduleDone: Record<string, unknown>;
@@ -64,7 +64,7 @@ const ECON_DEFAULTS = { symbol: '€$', startingBalance: 500, moduleReward: 1000
 
 // Route adapter for the player. MUST live at module scope: defining it inside
 // App gives it a new component identity every render, and React then remounts
-// the whole player on every state tick (eddies count-up, flyers) — re-running
+// the whole player on every state tick (eddies count-up, flyers); re-running
 // the mount scroll and flashing the view.
 type PlayerRouteProps = Omit<React.ComponentProps<typeof Player>, 'moduleId'>;
 function PlayerRoute(props: PlayerRouteProps) {
@@ -80,14 +80,14 @@ export function App() {
   // Seeded from the sessionStorage snapshot so the very first render of a
   // refreshed in-app route doesn't bounce to the lock (issue #9). The record
   // itself adopts in the restore effect once the course arrives; `restoring`
-  // holds the route views back until it has (they mount-read op state — the
-  // player's resume place, for one — so adoption must land first).
+  // holds the route views back until it has (they mount-read op state: the
+  // player's resume place, for one, so adoption must land first).
   const [signedIn, setSignedIn] = useState(() => hasSession());
   const [restoring, setRestoring] = useState(() => hasSession());
   // Restored session, radio not yet built: the pill shows a disconnected
   // state until the first gesture boots the engine (startRadio clears it).
   const [audioStandby, setAudioStandby] = useState(() => hasSession());
-  // Set as the operator leaves the lock; gates /boot. In-memory on purpose —
+  // Set as the operator leaves the lock; gates /boot. In-memory on purpose:
   // a refresh clears it, so every fresh load starts at the lock screen.
   const [entered, setEntered] = useState(false);
   const [course, setCourse] = useState<Course | null>(null);
@@ -106,7 +106,7 @@ export function App() {
   // in the record's audio prefs; reopened from the Service Record page.
   const [radioClosed, setRadioClosed] = useState(false);
   // SYSTEM BROADCAST in-app (issue #10): polled feed shared by the dashboard
-  // panel and the shell alert strip. Dismissals are in-memory on purpose — a
+  // panel and the shell alert strip. Dismissals are in-memory on purpose: a
   // still-live alert returns on refresh, and vanishes when ops resolves it.
   const [messages, setMessages] = useState<SysMessage[]>([]);
   const [dismissedAlerts, setDismissedAlerts] = useState<string[]>([]);
@@ -164,7 +164,7 @@ export function App() {
   modals.current = { glossaryOpen, txnOpen };
 
   // Ledger deep-link target. Plain state (not a consume-once ref) so the
-  // player's mount effect stays idempotent under StrictMode's double run —
+  // player's mount effect stays idempotent under StrictMode's double run:
   // both runs must decide the same branch. The tick distinguishes a fresh
   // jump (same-module jumps included) from a later plain module change.
   const [jump, setJump] = useState<{ moduleId: string; qid: string; tick: number } | null>(null);
@@ -204,7 +204,7 @@ export function App() {
   // screen's LOGIN click is the gesture, so this runs from there. The engine
   // constructs inactive (active=false), so music still waits for /dashboard.
   const startRadio = useCallback(() => {
-    setAudioStandby(false); // a gesture reached us — the pill's standby state resolves
+    setAudioStandby(false); // a gesture reached us, the pill's standby state resolves
     if (radio.current || !window.NCRadio || !stations().length) return;
     const mirror = (st: RadioEngineState) => setRadioSt({
       station: st.stationIndex, track: st.trackIndex, stationTracks: st.trackIndexByStation,
@@ -217,7 +217,7 @@ export function App() {
       onStateChange: mirror,
     });
     if (pendingRadio.current) { radio.current.restore(pendingRadio.current); pendingRadio.current = null; }
-    mirror(radio.current.getState()); // the engine doesn't emit on create — seed the mirror
+    mirror(radio.current.getState()); // the engine doesn't emit on create; seed the mirror
   }, []);
 
   // ---- mount: course load, pointer tick, keyboard scrolling ----
@@ -235,7 +235,7 @@ export function App() {
     const detachTick = attachPointerTick(sfx.current);
     // Keyboard scrolling of the lesson/dashboard (targets the visible <main>).
     const onKey = (e: KeyboardEvent) => {
-      // Escape closes modals BEFORE the input guard — works from the search box.
+      // Escape closes modals BEFORE the input guard; works from the search box.
       if (e.key === 'Escape' && modals.current.glossaryOpen) { setGlossaryOpen(false); return; }
       if (e.key === 'Escape' && modals.current.txnOpen) { setTxnOpen(false); return; }
       const tg = e.target as HTMLElement | null;
@@ -285,7 +285,7 @@ export function App() {
     return () => window.clearTimeout(t);
   }, [op, radioSt, sfxMuted, sfxVol, signedIn, progress, snapshot]);
 
-  // A refresh can land inside that 400ms window — flush the snapshot on
+  // A refresh can land inside that 400ms window; flush the snapshot on
   // pagehide so the last action survives the reload.
   useEffect(() => {
     const flush = () => { if (live.current.signedIn) writeSession(snapshot()); };
@@ -312,7 +312,7 @@ export function App() {
 
   // Deferred audio boot (issue #9): user activation is per page load, so a
   // restored session comes back with no gesture and the radio can't legally
-  // build at load. The first gesture of the new load — any click or key —
+  // build at load. The first gesture of the new load (any click or key)
   // stands in for the lock's LOGIN click: the context is created and resumed
   // inside it (no autoplay warning), the engine builds, and the stashed radio
   // prefs apply. Until then the app is fully usable, just silent.
@@ -516,7 +516,7 @@ export function App() {
   // ---- shard I/O: eject (export), slot (import), purge ----
   // EJECT: animated overlay 0→100 over 820ms, then the actual download. The
   // rAF drives the bar; a guard timeout finishes anyway on backgrounded tabs
-  // (rAF pauses there — the download must never gate on it).
+  // (rAF pauses there; the download must never gate on it).
   const exportRecord = useCallback(() => {
     if (ioRef.current) return;
     sfx.current.play('whoosh');
@@ -562,7 +562,7 @@ export function App() {
   }, [snapshot]);
 
   // SAVE PROGRESS (player rail + completion stage): record the furthest
-  // reveal, then run the full eject flow — same as the monolith.
+  // reveal, then run the full eject flow, same as the monolith.
   const saveProgress = useCallback((moduleId: string, revealed: number) => {
     setOp((o) => ({ ...o, revealedBy: { ...o.revealedBy, [moduleId]: Math.max(o.revealedBy[moduleId] ?? 0, revealed) } }));
     exportRecord();
@@ -586,7 +586,7 @@ export function App() {
     setImportMsg({ ok: true, text: msg });
   }, [adoptRecord, progress]);
 
-  // Slot animation: mirror of eject — shard slides INTO the reader, decodes,
+  // Slot animation: mirror of eject; shard slides INTO the reader, decodes,
   // commits at 100%. Shared by the Service Record slot and the boot slot
   // (issue #30); boot trims the post-read hold because its welcome readout
   // follows as the next ceremony.
@@ -641,7 +641,7 @@ export function App() {
   }, [progress, slotShard]);
 
   // The ONE end-of-session path (issues #9 + #4): logout and purge both funnel
-  // here so "signed out" means one thing — session snapshot gone, in-memory
+  // here so "signed out" means one thing: session snapshot gone, in-memory
   // record reset, back to the lock. Music stops via the preAuth effect.
   const endSession = useCallback(() => {
     clearSession();
@@ -649,7 +649,7 @@ export function App() {
     setEntered(false);
     // alert-strip dismissals are per signed-in session: the next sign-in
     // (possibly a different operator on this terminal) sees live alerts
-    // again. The unread watermark stays — it is terminal-local convenience.
+    // again. The unread watermark stays; it is terminal-local convenience.
     setDismissedAlerts([]);
     setBroadcastOpen(false);
     const bal = econRef.current.startingBalance;
@@ -664,7 +664,7 @@ export function App() {
     endSession();
   }, [endSession]);
 
-  // PURGE: wipe the persisted profile (persist mode only) and end the session —
+  // PURGE: wipe the persisted profile (persist mode only) and end the session:
   // a purge starts you from scratch at the lock (#4). progress.remove() also
   // clears lastUser when it was this operator, so boot doesn't pre-fill a
   // purged name. The import line surfaces on the next boot.
@@ -818,7 +818,7 @@ export function App() {
   }, [courseLoading, progress, adoptRecord, applyAudio, finishBoot]);
 
   // Boot slot (issue #30): the reader animation plays first (trimmed 800ms
-  // hold), THEN the welcome readout — the overlay is the "machine reads your
+  // hold), THEN the welcome readout: the overlay is the "machine reads your
   // file" beat, the welcome is the "you're in" payoff, and every boot login
   // ends in the same welcome regardless of how you authenticated.
   const slotAtBoot = useCallback((json: string) => {
@@ -853,7 +853,7 @@ export function App() {
   );
 
   // Bell state (issue #10): unread count + a live-alert indicator that does
-  // not care about read state — an unresolved incident stays flagged.
+  // not care about read state; an unresolved incident stays flagged.
   const unread = messages.filter((m) => !seenIds.includes(m.id)).length;
   const alertLive = messages.some((m) => m.level === 'alert');
   const alertShowing = messages.some((m) => m.level === 'alert' && !dismissedAlerts.includes(m.id));
@@ -908,7 +908,7 @@ export function App() {
         broadcastOpen={broadcastOpen}
         onToggleBroadcast={toggleBroadcast}
       />
-      {/* live incident banner — every view, only while an alert is unresolved */}
+      {/* live incident banner: every view, only while an alert is unresolved */}
       <AlertStrip
         messages={messages}
         dismissed={dismissedAlerts}

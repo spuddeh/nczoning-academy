@@ -1,7 +1,7 @@
-/* NC Zoning Academy — module player: rail, stage cards, chunks, quizzes,
+/* NC Zoning Academy, module player: rail, stage cards, chunks, quizzes,
  * lab, scenario, completion + the economy overlays (flyers, transfer).
  * Geometry and colour are measured from the monolith
- * (docs/monolith-parity-spec.md — "Module player").
+ * (docs/monolith-parity-spec.md, "Module player").
  * Type is NOT: font sizes come from the --fs-* roles in theme.css, which
  * deliberately depart from the monolith's 24 ad-hoc sizes. Add a role there
  * rather than a pixel value here.
@@ -393,7 +393,7 @@
     font-family: var(--font-body);
     border-bottom: 1px solid rgb(from var(--muted) r g b / 0.12);
   }
-  /* the key column holds field names — code, so it takes the code role */
+  /* the key column holds field names: code, so it takes the code role */
   & td:first-child {
     color: var(--text);
     font-family: var(--font-mono);
@@ -427,8 +427,8 @@
   .chunk-callout.warning & { color: var(--secondary); }
   .chunk-callout.policy & { color: var(--muted); }
 }
-/* callouts and objectives keep Tier 1 white — they are emphasis, not running
-   prose — but share the body size so nothing jumps against .chunk-text. */
+/* callouts and objectives keep Tier 1 white: they are emphasis, not running
+   prose, but share the body size so nothing jumps against .chunk-text. */
 .chunk-callout-body { color: var(--text); font-size: var(--fs-body); line-height: var(--lh-body); }
 
 /* objectives / recap */
@@ -557,7 +557,7 @@
   background: transparent;
   border: 1px solid rgb(from var(--primary) r g b / 0.4);
   color: var(--primary);
-  font-size: 8px; /* a ▲/▼ glyph scaled to its button, not text — no type role */
+  font-size: 8px; /* a ▲/▼ glyph scaled to its button, not text; no type role */
   line-height: 1;
   padding: 3px var(--space-2xs);
   cursor: pointer;
@@ -605,10 +605,10 @@
   font-weight: 600;
 }
 .lab-brief { color: var(--text-body); font-size: var(--fs-body); margin-bottom: var(--space-xl); line-height: var(--lh-body); }
-/* the authored procedure list (lab.steps) — sits between briefing and console */
+/* the authored procedure list (lab.steps): sits between briefing and console */
 .lab-steps { margin-bottom: var(--space-2xl); }
 /* scenario selector (issue #2): simulated server states for named canned
-   responses — amber, pairing with the SIMULATION MODE banner */
+   responses; amber, pairing with the SIMULATION MODE banner */
 .lab-scenario {
   display: flex;
   align-items: center;
@@ -726,7 +726,7 @@
   white-space: pre;
 }
 .lab-nobody { font-family: var(--font-mono); font-size: var(--fs-code); color: var(--muted); font-style: italic; }
-/* debriefs are prose the learner reads, not metadata — Tier 2, not grey */
+/* debriefs are prose the learner reads, not metadata: Tier 2, not grey */
 .lab-debrief {
   margin-top: var(--space-xl);
   border-left: 2px solid var(--primary);
@@ -775,7 +775,7 @@
   transform: rotate(3deg);
   box-shadow: 0 0 16px rgb(from var(--success) r g b / 0.25);
 }
-/* forward action on the certified row — green to match the certified state */
+/* forward action on the certified row: green to match the certified state */
 .complete-next {
   background: var(--success);
   border: 1px solid var(--success);
@@ -787,7 +787,7 @@
   padding: var(--space-lg) var(--space-3xl);
   cursor: pointer;
 }
-/* capstone payoff — gold, echoing the certificate */
+/* capstone payoff: gold, echoing the certificate */
 .complete-cert {
   background: var(--tertiary);
   border: 1px solid var(--tertiary);

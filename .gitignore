@@ -8,10 +8,11 @@ Thumbs.db
 .vscode/
 .idea/
 CLAUDE.md
+.claude/
 docs/design-brief-assets/
 docs/design-handovers/
 
-# Wiki (Claude Wiki — local + Obsidian mirror, not committed)
+# Wiki (Claude Wiki: local + Obsidian mirror, not committed)
 wiki/
 raw/
 

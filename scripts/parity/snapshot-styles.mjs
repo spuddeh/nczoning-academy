@@ -31,8 +31,8 @@ const PROPS = [
   'border-top-color', 'border-right-color', 'border-bottom-color', 'border-left-color',
   'box-shadow', 'text-shadow', 'outline-color', 'fill', 'stroke',
   'z-index', // #18: computed z-index on every positioned element must be identical
-  'letter-spacing', // #19: tracking scale — diff must contain ONLY intended collapses
-  // #27 box model: spacing scale — diff must be ONLY these, ONLY the intended snaps
+  'letter-spacing', // #19: tracking scale: diff must contain ONLY intended collapses
+  // #27 box model: spacing scale, diff must be ONLY these, ONLY the intended snaps
   'padding-top', 'padding-right', 'padding-bottom', 'padding-left',
   'margin-top', 'margin-right', 'margin-bottom', 'margin-left',
   'row-gap', 'column-gap',
@@ -45,7 +45,7 @@ const PROPS = [
  * (NOMINAL / ELEVATED / CRITICAL), which drives three different colours. A
  * control run of the SAME css reported that span as red, then cyan, then green.
  * Pin it to NOMINAL for the ordinary views; the other two tiers get their own
- * dedicated snapshot below, so their colours are still covered — deliberately,
+ * dedicated snapshot below, so their colours are still covered, deliberately,
  * rather than by whatever the dice rolled.
  *
  * Run immediately before the walk: the interval could otherwise fire in the gap.
@@ -87,7 +87,7 @@ function walk(props, rootSel) {
  *
  * Without this the snapshot is not reproducible: a control run of the SAME css
  * twice reported a `.player` span as `rgb(0,240,255)` once and
- * `rgb(239,183,16)` the next — a colour captured mid-transition. Computed
+ * `rgb(239,183,16)` the next: a colour captured mid-transition. Computed
  * colour is a function of *when* you look. A before/after diff would then be
  * full of phantom changes, and the one real regression would be buried in them.
  *
@@ -111,7 +111,7 @@ const views = {};
 const record = async (page, view, rootSel = null) => {
   await freezeAnimations(page); // re-assert: some views mount after the last call
   await sleep(250);
-  await page.evaluate(pinLiveState); // last thing before the walk — see above
+  await page.evaluate(pinLiveState); // last thing before the walk; see above
   const data = await page.evaluate(walk, PROPS, rootSel);
   views[view] = data;
   process.stdout.write(`  ${view}: ${Object.keys(data).length} elements\n`);

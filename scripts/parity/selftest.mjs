@@ -1,5 +1,5 @@
 // Regression guard for #22: the driver must REFUSE to proceed on a page it does
-// not recognise, rather than screenshotting whatever is on screen — and it must
+// not recognise, rather than screenshotting whatever is on screen, and it must
 // not leave a browser behind when it refuses.
 //
 // This is the check that would have caught the stale drive loop. It needs no

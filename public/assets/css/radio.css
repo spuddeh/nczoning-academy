@@ -1,10 +1,10 @@
-/* NC Radio — collapsed pill + expanded panel (monolith renderMusicPlayer).
-   Measured spec: docs/monolith-parity-spec.md — "Radio panel". Both share
+/* NC Radio: collapsed pill + expanded panel (monolith renderMusicPlayer).
+   Measured spec: docs/monolith-parity-spec.md, "Radio panel". Both share
    the corner slot: fixed right/bottom 22, z 9995 (same as the modal scrim;
    the radio wins by DOM order). EQ bar animation values are inline per bar
    (duration from the track bpm). */
 
-/* Docked chrome, never a reading surface — the whole ladder steps down.
+/* Docked chrome, never a reading surface; the whole ladder steps down.
    Both the collapsed pill and the open panel are position:fixed at App root,
    so each needs the binding; neither inherits from the other. */
 .radio-pill,
@@ -39,7 +39,7 @@
   &.muted:hover { border-color: var(--primary); }
   &.muted .radio-freq, &.muted .radio-track { color: var(--muted); }
 
-  /* disconnected after a restored refresh — resolves on the first gesture */
+  /* disconnected after a restored refresh; resolves on the first gesture */
   &.standby {
     border-color: rgb(from var(--danger) r g b / 0.6);
     box-shadow: 0 0 22px rgb(from var(--danger) r g b / 0.14);
@@ -120,7 +120,7 @@
   padding: 0 var(--space-2xs);
   font-weight: 700;
 }
-/* power off entirely (issue #34) — reopen lives on the Service Record page */
+/* power off entirely (issue #34); reopen lives on the Service Record page */
 .radio-close {
   background: transparent;
   border: none;
@@ -136,7 +136,7 @@
 
 .radio-panel-body { padding: var(--space-2xl) var(--space-2xl) var(--space-3xl); }
 
-/* now-playing box — .dim marks muted-or-paused text/fill */
+/* now-playing box: .dim marks muted-or-paused text/fill */
 .radio-now {
   padding: var(--space-lg) var(--space-xl);
   border: 1px solid rgb(from var(--primary) r g b / 0.25);

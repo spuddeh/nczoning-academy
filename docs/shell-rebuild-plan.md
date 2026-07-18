@@ -52,7 +52,7 @@ Concinnity. See `wiki/decisions/shell-rebuild-in-repo.md` for the full decision.
 - `public/` is now static passthrough only; the monolith and the experiment files
   were removed (kept in git history).
 
-### 2.4 Views rebuilt — and the parity correction (2026-07-09)
+### 2.4 Views rebuilt, and the parity correction (2026-07-09)
 The boot and dashboard views were first built across `84743c2`/`d8bda22`
 (pre-React) and `f71f5a7`/`ca72a55`, and this doc originally called them
 "pixel-faithful". **That claim was wrong.** They had been verified against the
@@ -89,7 +89,7 @@ screenshots via `scripts/parity/` (see §4). Now matching the monolith:
 - Cross-cutting: the WebAudio UI SFX synth (tick on any clickable, nav/ok/err/
   access/chime/drive...), the global pointer-tick listener, the real
   `ncza-record/v1` schema (moduleDone/quiz/eddies/revealedBy/txns/operatorName/
-  audio — replacing the invented `{user, progress}` shape), saved-record
+  audio, replacing the invented `{user, progress}` shape), saved-record
   restore on login, debounced local save, and the monolith's responsive
   breakpoints (≤1024px, ≤640px).
 
@@ -102,7 +102,7 @@ screenshots via `scripts/parity/` (see §4). Now matching the monolith:
   `invalid file`, and the boot slot surfaces the reason instead of failing
   silently or logging in as the default operator.
 - Deliberate fixes vs the monolith (user-approved): the courses counter shows
-  the course count (`[ 1 ]`) — the monolith shows `modules.length` under an
+  the course count (`[ 1 ]`); the monolith shows `modules.length` under an
   AVAILABLE COURSES label, which is a bug; the root favicon 404 and the
   missing input id/name are fixed; JS hover-style mutation became CSS
   `:hover` (same visual result).
@@ -154,7 +154,7 @@ nczoning-academy/
   `src/lib/academy.ts` wraps those globals with
   typed functions so the React code never touches `window` directly.
 - The course loads at runtime: in live mode the app fetches
-  `/courses/<id>.json` (rooted, never relative — see §2.5); otherwise it falls
+  `/courses/<id>.json` (rooted, never relative, see §2.5); otherwise it falls
   back to an inline sample.
 - CSS lives in `public/assets/css/*.css` and is linked in `index.html`. This keeps
   the design tokens and theming editable without a rebuild.
@@ -208,7 +208,7 @@ And the binding rule added after the 2026-07-09 parity correction:
   every visible monolith element is either reproduced or explicitly listed
   here as deferred. The measurement source is the running monolith (served
   from git `f16bd4f`) and the extracted spec in
-  `docs/monolith-parity-spec.md` — never a from-memory summary. §6's short
+  `docs/monolith-parity-spec.md`, never a from-memory summary. §6's short
   list is what allowed the first false "pixel-faithful" claim; it is now
   deprecated in favour of the spec doc.
 
@@ -219,7 +219,7 @@ And the binding rule added after the 2026-07-09 parity correction:
 In priority order:
 
 1. ~~Routing slice~~ **DONE (2026-07-09, `ad86574`).** react-router over `/`
-   (boot) and `/dashboard` (guarded — deep links redirect to boot until
+   (boot) and `/dashboard` (guarded, deep links redirect to boot until
    signed in; unknown routes → `/`), `public/_redirects` shipped. Verified on
    the Cloudflare branch preview: `/dashboard` deep link serves the SPA (200),
    guard redirects, login navigates, zero console errors.
@@ -242,11 +242,11 @@ In priority order:
    ledger with summary cells, module grouping and jump-to-answer deep link
    back into the player (reveal + relative scroll + 1400ms flash). Openers
    wired (FAB + header button + balance chip); Escape closes from inside
-   inputs; radio pill moved after the modals in DOM order (same z-index —
+   inputs; radio pill moved after the modals in DOM order (same z-index,
    the monolith wins by order). Harness-verified: identical counts
    (42/42, 16/42 project, LEDGER [ 3 ], NET +€$ 900), identical jump
    offset (24px) and flash, pixel-matched pairs. Fixed along the way (in
-   the rebuild only): `resumeRevealed` now matches the monolith — a
+   the rebuild only): `resumeRevealed` now matches the monolith: a
    completed module reveals ALL stages (was resuming at the recorded
    reveal, so re-entering a certified module hid its tail).
 4. ~~Service Record~~ **DONE (2026-07-09).** View + full shard I/O extracted
@@ -257,26 +257,26 @@ In priority order:
    `ConfirmDialog` covers the red overwrite/purge confirms (deliberately not
    Escape-wired, like the monolith). Rail SAVE PROGRESS and the completion
    stage now route through the same eject overlay (the slice-2 bare download
-   predated it). No operator list here — that was a plan error; `listUsers()`
+   predated it). No operator list here; that was a plan error; `listUsers()`
    is adapter API only and the boot screen owns operator selection.
    Harness-verified end-to-end with a seeded record: view stats, eject
    (mid + settled + filename message), purge (confirm → wiped stats), slot
    (clean record → straight to animation → restored stats), slot-again
-   (overwrite confirm → cancel message) — all probes identical, pairs
+   (overwrite confirm → cancel message), all probes identical, pairs
    pixel-matched. VIEW CERTIFICATE gating (disabled unless certified) is in;
    its onClick lands with slice 5.
 5. ~~Certificate~~ **DONE (2026-07-09).** `CertificateOverlay` (no
-   click-outside/Escape close — button only, like the monolith; rank on the
+   click-outside/Escape close, button only, like the monolith; rank on the
    cert is the TOP course rank, clearance is earned) + `NamePromptDialog`
    (cyan, click-outside cancels, Enter/Escape on the input, raw value until
    confirm) + print CSS in cert.css (`#cert-print` becomes the printed page;
-   rebuild ids — `#vignette`, not the monolith's `#vign`). VIEW CERTIFICATE
+   rebuild ids: `#vignette`, not the monolith's `#vign`). VIEW CERTIFICATE
    onClick wired (name-blank → prompt path). Harness-verified with a fully
    certified seed (capture-cert.mjs): view gating, cert content
    (CLEARANCE LEVEL 9 // CERTIFIED FIELD OPERATOR), print-media emulation
    (cert visible+absolute, chrome hidden, controls display:none), edit-name
    round trip (prefill → cleared disables ISSUE → reissue as new name →
-   propagates to the record view) — all probes identical, pairs
+   propagates to the record view), all probes identical, pairs
    pixel-matched.
 6. ~~Radio panel~~ **DONE (2026-07-09).** `MusicPlayer` replaces `RadioPill`
    (one component, collapsed pill + expanded panel, like the monolith's
@@ -285,16 +285,16 @@ In priority order:
    AUTO-ROTATE, MUSIC + SYSTEM SOUNDS volume rows (speaker mutes, sliders,
    right-click reset to defaults). Pill gains the muted variant (gray
    border/text) and opens the panel. App now mirrors the FULL engine state
-   plus SFX prefs as React state and — closing a known spec gap — the record
+   plus SFX prefs as React state and, closing a known spec gap, the record
    snapshot builds `audio` from live state instead of echoing the adopted
    value, so shards/persistence carry the operator's actual radio + SFX
    prefs (monolith default sfxVol 0.8 adopted too). The monolith's header
    MUSIC/SFX button props turned out to be dead code (never consumed in the
-   DC markup), so the volume rows are the only mute UI — parity confirmed.
+   DC markup), so the volume rows are the only mute UI; parity confirmed.
    Harness-verified (capture-radio.mjs, seeded audio pins the station):
    pill, panel, pause/play, next-track, station dial, cycle toggle, music
    mute, slider + right-click reset, SFX mute, muted pill, and the
-   persisted audio object — byte-identical on both apps after the same
+   persisted audio object, byte-identical on both apps after the same
    interaction sequence; pairs pixel-matched.
 
 Done as of the 2026-07-09 parity rebuild (previously listed here): the radio
@@ -302,11 +302,11 @@ pill, the glossary floating button, the animated SYNC_OFFSET, and the
 stale-closure fix (the adapter callbacks now read live state via a ref).
 
 Known simplification pending the module player: the course progress bar and
-RESUME detection count completed modules only — the monolith also grants
+RESUME detection count completed modules only; the monolith also grants
 partial credit for started modules via `buildStages`, which needs the player's
 stage model. Port `partialFrac` with the player slice.
 
-Path to release — **SHIPPED as 0.2.0, 2026-07-09**:
+Path to release: **SHIPPED as 0.2.0, 2026-07-09**:
 - [PR #1](https://github.com/spuddeh/nczoning-academy/pull/1) merged to
   `main` (`be63fa8`) at verified full parity after the final monolith sweep;
   the 0.1.0 monolith (`public/index.html` + `support.js`) is retired from
@@ -318,7 +318,7 @@ Path to release — **SHIPPED as 0.2.0, 2026-07-09**:
 
 ---
 
-## 6. Reference values (measured from the monolith) — DEPRECATED
+## 6. Reference values (measured from the monolith): DEPRECATED
 
 Superseded by `docs/monolith-parity-spec.md`, which is extracted from the
 running monolith's rendered DOM and app script and is the only authoritative

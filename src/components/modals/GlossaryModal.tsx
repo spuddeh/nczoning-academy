@@ -1,7 +1,7 @@
 // Field Glossary modal: searchable, tier-filtered index of course
 // terminology. Query/tier state lives in App so it persists across
 // open/close for the session (it is NOT part of the record).
-// Measured spec: docs/monolith-parity-spec.md — "Field Glossary".
+// Measured spec: docs/monolith-parity-spec.md, "Field Glossary".
 import type { Course, GlossaryEntry } from '../../lib/types';
 import { Md, SourcesRow } from '../player/primitives';
 import { ModalShell } from './ModalShell';

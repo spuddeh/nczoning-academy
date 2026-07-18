@@ -4,7 +4,7 @@ A headless-Chrome driver for the Academy, plus the capture scripts built on it.
 
 Despite the folder name, **this is not a parity-only tool.** `lib/drive.mjs` is
 a general rig: launch Chrome, seed a record, sign in, probe the running app. Use
-it for anything that needs the real app in a real browser — computed styles,
+it for anything that needs the real app in a real browser: computed styles,
 z-index ladders, overlay geometry, before/after snapshots for a refactor. The
 `capture-*.mjs` scripts are one consumer, not the purpose.
 
@@ -17,13 +17,12 @@ which is where the name and the `MONOLITH_URL` plumbing come from.
 there, `signIn`/`clickByText`/`expectSelector` throw a `DriveError` naming what
 they wanted and dumping what was actually on the page.
 
-This is not politeness. Before #22 the sign-in sequence had gone stale — it
+This is not politeness. Before #22 the sign-in sequence had gone stale: it
 looked for a text input the lock screen no longer had, typed the callsign into
 the document, and screenshotted the lock screen as `rebuild-dashboard.png`.
 Exit 0, four PNGs, no warning. A stale driver that emits a plausible screenshot
 is worse than one that crashes, because the screenshot carries the authority of
-an artefact, and `wiki/learnings/parity-claims-need-artifacts.md` says artefacts
-are what settle a parity claim.
+an artefact, and artefacts are what settle a parity claim.
 
 `node scripts/parity/selftest.mjs` is the regression guard: it drives a page
 that is definitely not the app and asserts the driver refuses to proceed. It
@@ -45,14 +44,14 @@ npm run harness:clean                    # delete out/ entirely (incl. chrome-pr
 Each script wipes its own bucket on the way in, so a rerun **replaces** its
 artefacts rather than accumulating them. That bounds `out/`, and it means a PNG
 in `out/record/` is always from the last `capture-record` run. A stale screenshot
-is indistinguishable from a fresh one — the same trap as everything else here.
+is indistinguishable from a fresh one: the same trap as everything else here.
 
 `out/` is gitignored. `out/chrome-profile` is the reused browser profile; only
 `harness:clean` removes it.
 
 ## Proving a CSS refactor changed nothing
 
-Screenshots cannot settle "pure refactor, zero visual change" — you cannot eyeball
+Screenshots cannot settle "pure refactor, zero visual change": you cannot eyeball
 25,000 property values, and a modal nobody opened is not in the picture.
 
 ```bash
@@ -79,12 +78,12 @@ a channel step.
 were found by running it against unchanged CSS twice:
 
 - **Transitions and animations.** A `.player` span read `rgb(0,240,255)` on one
-  run and `rgb(239,183,16)` on the next — a colour caught mid-transition.
+  run and `rgb(239,183,16)` on the next: a colour caught mid-transition.
   Computed colour is a function of *when* you look. The snapshot injects
   `transition: none; animation: none` into `<head>`.
 - **`.sys-readout`.** It rolls `Math.random()` every 2s and swaps its tier class,
   giving three different colours. It is pinned to NOMINAL for the ordinary
-  views, and the ELEVATED and CRITICAL tiers get their own snapshots — so those
+  views, and the ELEVATED and CRITICAL tiers get their own snapshots, so those
   colours are covered deliberately rather than by whatever the dice rolled.
 
 Always run the control first (`before` vs a second `before`, expecting zero
@@ -95,7 +94,7 @@ differences) **and** a negative control (change one token, expect it to scream).
 
 Scripts run through `withBrowser(fn)`, which tears the browser down in a
 `finally`. This is not tidiness. A throw mid-drive is the **expected** outcome
-when the app has moved — that is what the assertions are for — so teardown
+when the app has moved (that is what the assertions are for), so teardown
 cannot live on the happy path.
 
 `browser.disconnect()` is not enough for a Chrome we spawned: it detaches the
@@ -142,7 +141,7 @@ for (const { name, url } of targets()) {
 }
 ```
 
-`signIn` takes an `onState` callback fired at each checkpoint — `entry`,
+`signIn` takes an `onState` callback fired at each checkpoint: `entry`,
 `boot-typing`, `boot-form`, `welcome`, `dashboard`. That is how `capture.mjs`
 photographs intermediate states without re-implementing the flow. **There is one
 definition of how you get into this app, and it is `signIn`.** When the entry
@@ -158,9 +157,9 @@ showing 1400 eddies and 1/9 progress, inherited from the previous script.
 
 **Two entry flows exist.** `signIn` detects which:
 
-- `lock` — the current app. `/` is `.lock-screen`; LOGIN opens `/boot`. The
+- `lock`: the current app. `/` is `.lock-screen`; LOGIN opens `/boot`. The
   LOGIN click is also the audio-unlock gesture, so don't bypass it.
-- `boot` — the archived monolith. `/` *is* the boot typewriter, and its roots
+- `boot`: the archived monolith. `/` *is* the boot typewriter, and its roots
   are inline-styled with **no class names at all**, so it can only be identified
   by the callsign field appearing after a keypress.
 
@@ -175,7 +174,7 @@ fires, so "click the first enabled option" loops forever.
 ## Known limitation: the monolith and seeded records
 
 The monolith does not pick up a seeded **certified** record, even installed
-before its first script runs — it boots at 1/9 and leaves VIEW CERTIFICATE
+before its first script runs; it boots at 1/9 and leaves VIEW CERTIFICATE
 disabled, so `capture-cert.mjs` throws on the monolith half.
 
 That is left unfixed deliberately. The monolith is frozen at `f16bd4f`, parity

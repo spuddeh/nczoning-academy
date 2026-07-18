@@ -60,7 +60,7 @@ for (const file of targets) {
   }
 
   // Only the first four render. `alert` pins to the top, so an alert is never
-  // the entry that gets cut — but everything below it competes for three slots.
+  // the entry that gets cut, but everything below it competes for three slots.
   if (doc.messages.length > 4) {
     warnings.push(`${label}: ${doc.messages.length} messages, only the first 4 render after sorting`);
   }

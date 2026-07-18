@@ -1,4 +1,4 @@
-// Parity capture — Service Record view + shard I/O. Seeds an m01 record, signs
+// Parity capture: Service Record view + shard I/O. Seeds an m01 record, signs
 // in, then drives: SERVICE RECORD nav → view probes → EJECT (mid + settled) →
 // PURGE (confirm → wiped) → SLOT a .shard file (clean record → straight to the
 // reader animation) → SLOT again (non-empty → overwrite confirm → cancel).
@@ -11,7 +11,7 @@ import { NAME, RECORD_M01 as RECORD } from './lib/fixtures.mjs';
 
 const OUT = outDir('record', { clean: true });
 
-// The .shard the SLOT step uploads — the same record the app just ejected.
+// The .shard the SLOT step uploads: the same record the app just ejected.
 const SHARD_FILE = path.join(OUT, 'seed.shard');
 fs.writeFileSync(SHARD_FILE, JSON.stringify(RECORD, null, 2));
 

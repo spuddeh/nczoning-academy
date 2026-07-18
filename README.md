@@ -1,7 +1,7 @@
 # NC Zoning Academy
 
 A personal, single-user micro-module LMS for deeply understanding the
-[NC Zoning Board](https://nczoning.net) map project's own systems — starting
+[NC Zoning Board](https://nczoning.net) map project's own systems, starting
 with the **Data API** as the proof-of-concept course.
 
 Night Corp branded throughout. Free, static, hosted on Cloudflare Pages. Course
@@ -14,28 +14,28 @@ JSON files, not a redesign.
 ## Repo layout
 
 ```text
-index.html                 Vite entry — links the static global CSS + data globals
+index.html                 Vite entry: links the static global CSS + data globals
 src/
   App.tsx                  routes, operator/record state, radio host, eddies economy
   views/                   Lock, Boot, Dashboard, Player, ServiceRecord
   components/              header, overlays, modals, music player, player primitives
   lib/                     academy (config/course/identity), sfx, player, types
-public/                    static passthrough — served as-is, never bundled
+public/                    static passthrough, served as-is, never bundled
   assets/css/              theme.css (design tokens) + one stylesheet per view
   config.js                ACADEMY_CONFIG (hosted profile: live + persist)
   messages.json            SYSTEM BROADCAST baseline (KV overlays this)
   courses/
     index.json             course registry the shell loads
     data-api.json          the POC course (9 modules)
-  radio/stations.js        window.RADIO_STATIONS — the 5-station dial
+  radio/stations.js        window.RADIO_STATIONS: the 5-station dial
   radio-engine.js          procedural Web Audio synth (no audio files)
   progress.js              localStorage adapter (ncza:v1:*)
   _redirects               SPA fallback so deep links resolve
   _routes.json             only /messages.json invokes a Function
 functions/
-  messages.json.ts         GET /messages.json — merges KV over the baseline
+  messages.json.ts         GET /messages.json: merges KV over the baseline
   tsconfig.json            Workers runtime types (separate from the app's)
-schema/                    course, radio-station + messages JSON Schemas — the content contracts
+schema/                    course, radio-station + messages JSON Schemas: the content contracts
 scripts/                   ajv validators, freshness check, headless-browser harness
 docs/                      plan, app-shell overview, authoring guide, design-tokens, decisions/
 dist/                      Vite build output (gitignored; Cloudflare builds it)
@@ -52,7 +52,7 @@ the bundle.
 
 The lock screen is the landing page and the audio gate. Browsers keep an
 `AudioContext` suspended until a user gesture, so the LOGIN click is what wakes
-the shared context and builds the radio engine — boot then inherits a running
+the shared context and builds the radio engine; boot then inherits a running
 context instead of playing silently. `/boot` is guarded: a refresh or a direct
 hit redirects to `/`. Post-login routes redirect to `/` when signed out. See
 [`docs/decisions/lock-screen-and-audio-gate.md`](docs/decisions/lock-screen-and-audio-gate.md).
@@ -71,7 +71,7 @@ npm run freshness      # are the contentAudit SHAs still current?
 ```
 
 `validate` fails on schema errors and warns (non-fatally) when content
-`sources[]` are empty — a nudge toward the accuracy mandate below. CI runs
+`sources[]` are empty: a nudge toward the accuracy mandate below. CI runs
 `validate` + `validate:radio` on any PR touching content; `freshness` runs
 weekly.
 
@@ -80,7 +80,7 @@ weekly.
 Each course is one `academy-course/v1` JSON document: metadata, a clearance-rank
 ladder, a `contentAudit` block pinning the project SHA all claims were verified
 against, a two-tier glossary, external resources, and an ordered list of
-**modules**. Each module follows the approved anatomy — hook, objectives,
+**modules**. Each module follows the approved anatomy: hook, objectives,
 single-concept chunks, a live lab, a knowledge check, a war-story scenario,
 recap, and field notes. See the schema and [`docs/plan.md`](docs/plan.md) for
 the full shape.
@@ -89,8 +89,8 @@ the full shape.
 
 The lock screen's SYSTEM BROADCAST panel fetches `/messages.json`. That path is
 served by a Pages Function ([`functions/messages.json.ts`](functions/messages.json.ts)),
-which merges three sources — later ones are shadowed by earlier ones sharing an
-`id`:
+which merges three sources (later ones are shadowed by earlier ones sharing an
+`id`):
 
 | Source | Where | Goes live |
 | --- | --- | --- |
@@ -102,7 +102,7 @@ Delete a KV key and the site reverts to the committed baseline, no deploy. The
 Function never throws: unreachable KV, malformed KV JSON, or a missing baseline
 each degrade to whatever else is available, and an empty result hides the panel.
 
-A message. **Every field is required** — there is no message worth broadcasting
+A message. **Every field is required.** There is no message worth broadcasting
 that lacks one, and an omission only ever means the author forgot:
 
 ```json
@@ -114,7 +114,7 @@ that lacks one, and an omission only ever means the author forgot:
 | --- | --- | --- |
 | `alert` | amber | **pinned to the top**, above everything, regardless of date |
 | `update` | cyan | by date, newest first |
-| `resolved` | green | by date, newest first — ages out naturally |
+| `resolved` | green | by date, newest first; ages out naturally |
 | `info` | gray | by date, newest first |
 
 Only `alert` pins. It does so by *level*, not date, so an unresolved incident can
@@ -129,7 +129,7 @@ characters render.
 ### Posting
 
 The KV namespace is bound as `MESSAGES` on the Pages project. **Adding a binding
-does not affect existing deployments — redeploy after you add one.**
+does not affect existing deployments. Redeploy after you add one.**
 
 ```bash
 npm run validate:messages -- payload.json          # check it BEFORE it goes live
@@ -141,7 +141,7 @@ An incident's lifecycle runs through one key. Write the `alert` to
 `messages:ops`; to stand it down, overwrite that key with the **same `id`** at
 `level: "resolved"`, so the green banner replaces the amber one rather than
 stacking beside it. Delete the key once it no longer matters. Never put both in
-one payload — ids must be unique, and the validator rejects it.
+one payload: ids must be unique, and the validator rejects it.
 
 `validate:messages` accepts a bare `[...]` array or `{ "messages": [...] }`, and
 runs in CI against the committed baseline. KV values are **not** validated by
@@ -155,7 +155,7 @@ up to about a minute to appear at an edge that recently read the old value. And
 ## Accuracy mandate
 
 Project claims are authored from the **real implementation** on the map repo's
-`origin/main` (`worker/src/*`), cited file + line + commit SHA — never from wiki
+`origin/main` (`worker/src/*`), cited file + line + commit SHA, never from wiki
 mirrors or derived docs. Every general concept is verified against official docs
 (MDN, developers.cloudflare.com, docs.github.com, learn.openapis.org) and cited
 section-deep. Canned lab responses are captured from real API calls.

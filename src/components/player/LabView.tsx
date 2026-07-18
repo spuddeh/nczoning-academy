@@ -2,12 +2,12 @@
 // Honours the course's per-lab data contract: `request.editable` declares
 // which query params / headers the operator can edit ('query.full',
 // 'headers.If-None-Match', ...), and canned `when` conditions select the
-// response — 'default' (fallback), 'if-none-match-matches' (the edited
+// response: 'default' (fallback), 'if-none-match-matches' (the edited
 // If-None-Match equals the default response's ETag → 304), or a generic
 // '<key>=<value>' matched against the edited query/header value (m01's
 // 'full=1'). GAP FIX vs the monolith, which hardcoded a single If-None-Match
 // input onto every lab and could never serve m01's full=1 response.
-// Visual spec: docs/monolith-parity-spec.md — "Lab".
+// Visual spec: docs/monolith-parity-spec.md, "Lab".
 import { useState } from 'react';
 import type { Lab, LabCanned } from '../../lib/types';
 import { Md, SectionLabel, SourcesRow, StageCard } from './primitives';
@@ -26,7 +26,7 @@ function fieldValue(lab: Lab, edits: Record<string, string>, path: string): stri
 }
 
 // Named server states (issue #2): canned `when` values that are neither the
-// default, the ETag rule, nor a request-value condition — states the operator
+// default, the ETag rule, nor a request-value condition: states the operator
 // could never reach by editing the request (m04 'stale'/'not-ready', m05
 // 'rate-limited'). The scenario selector renders only when a lab has some.
 function namedStates(lab: Lab): string[] {
@@ -97,7 +97,7 @@ export function LabView({ lab }: { lab: Lab }) {
       {lab.briefing && <div className="lab-brief"><Md text={lab.briefing} /></div>}
 
       {/* the authored try-and-see procedure (issue #14: the shell dropped
-          lab.steps entirely) — numbered like the module's MISSION OBJECTIVES */}
+          lab.steps entirely); numbered like the module's MISSION OBJECTIVES */}
       {(lab.steps ?? []).length > 0 && (
         <div className="lab-steps">
           <div className="lab-label">PROCEDURE</div>

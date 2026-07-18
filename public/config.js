@@ -1,4 +1,4 @@
-// NC Zoning Academy — hosting runtime config.
+// NC Zoning Academy: hosting runtime config.
 //
 // This is the HOSTED profile: live labs on, localStorage persistence on.
 // Claude Design's PREVIEW must override all three (liveMode:false, persist:false,

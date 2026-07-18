@@ -1,7 +1,7 @@
 // Operator name prompt for the certificate (z 9999, cyan). Click-outside
 // cancels; Enter/Escape are wired on the INPUT (not globally). The value is
-// kept RAW while typing (maxLength 42) — sanitation happens on confirm.
-// Measured spec: docs/monolith-parity-spec.md — "Certificate + name prompt".
+// kept RAW while typing (maxLength 42); sanitation happens on confirm.
+// Measured spec: docs/monolith-parity-spec.md, "Certificate + name prompt".
 
 interface NamePromptDialogProps {
   value: string;

@@ -1,7 +1,7 @@
-// Boot / login view — typewriter boot log (click or any key to skip), gated
+// Boot / login view: typewriter boot log (click or any key to skip), gated
 // ACCESS button, shard slot with result line, and the 1.7s green welcome
 // readout after login. All timings and SFX cues ported from the monolith
-// (docs/monolith-parity-spec.md — "Boot view").
+// (docs/monolith-parity-spec.md, "Boot view").
 import { useEffect, useRef, useState } from 'react';
 import type { ChangeEvent, KeyboardEvent } from 'react';
 import { IDENTITY, fullBoot } from '../lib/academy';
@@ -30,7 +30,7 @@ export function Boot({
   const timer = useRef<number | undefined>(undefined);
   const doneRef = useRef(false);
 
-  // Typewriter: 260ms lead-in (whoosh), then 1 char/tick — 140ms after a
+  // Typewriter: 260ms lead-in (whoosh), then 1 char/tick: 140ms after a
   // newline, 34ms after '.' or ':', else 12ms. Drive-seek SFX at newlines,
   // head chatter every 6th char.
   useEffect(() => {

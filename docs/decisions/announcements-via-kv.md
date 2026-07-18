@@ -6,7 +6,7 @@ retired as a runtime source once the `/admin` surface lands. An administrator
 should manage announcements in one place, not keep two datapoints in sync. The
 "evergreen vs timely" split below was a developer's model, not an operator's.
 `public/messages.json` becomes a one-time seed, and the Function must then stop
-conflating a KV read *failure* with an *empty* feed — see the issue.
+conflating a KV read *failure* with an *empty* feed; see the issue.
 
 ## Context
 
@@ -17,7 +17,7 @@ was only half true: the file is committed, so a post meant edit → commit → p
 
 Two things pushed past that. The maintainer wants to post an announcement
 without a git round trip, and wants the option of **automated** broadcasts
-later — an "API is down" alert written by a health check, which cannot be a
+later: an "API is down" alert written by a health check, which cannot be a
 commit at all.
 
 ## Decision
@@ -25,9 +25,9 @@ commit at all.
 Serve `/messages.json` from a **Pages Function** backed by **Workers KV**,
 merging three sources. Earlier sources shadow later ones that share an `id`:
 
-1. `messages:ops` (KV) — automated alerts, for a health check to write
-2. `messages:manual` (KV) — hand-written posts, live on save
-3. `public/messages.json` — the committed, reviewed, evergreen baseline
+1. `messages:ops` (KV): automated alerts, for a health check to write
+2. `messages:manual` (KV): hand-written posts, live on save
+3. `public/messages.json`: the committed, reviewed, evergreen baseline
 
 A Pages Function at a path takes precedence over the static asset of the same
 name, and `context.next()` returns that asset's `Response`. So the baseline is
