@@ -54,8 +54,7 @@ The lock screen is the landing page and the audio gate. Browsers keep an
 `AudioContext` suspended until a user gesture, so the LOGIN click is what wakes
 the shared context and builds the radio engine; boot then inherits a running
 context instead of playing silently. `/boot` is guarded: a refresh or a direct
-hit redirects to `/`. Post-login routes redirect to `/` when signed out. See
-[`docs/decisions/lock-screen-and-audio-gate.md`](docs/decisions/lock-screen-and-audio-gate.md).
+hit redirects to `/`. Post-login routes redirect to `/` when signed out.
 
 ## Commands
 
@@ -82,8 +81,7 @@ ladder, a `contentAudit` block pinning the project SHA all claims were verified
 against, a two-tier glossary, external resources, and an ordered list of
 **modules**. Each module follows the approved anatomy: hook, objectives,
 single-concept chunks, a live lab, a knowledge check, a war-story scenario,
-recap, and field notes. See the schema and [`docs/plan.md`](docs/plan.md) for
-the full shape.
+recap, and field notes. See the schema for the full shape.
 
 ## Announcements
 
