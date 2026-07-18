@@ -7,7 +7,7 @@
 // Relative colour syntax computes as `color(srgb 0 0.9412 1 / 0.25)`; the
 // literal it replaces computes as `rgba(0, 240, 255, 0.25)`. Same colour,
 // different string. Comparing the strings reports a difference on every line
-// that was touched, which is worse than useless — it hides the one line that
+// that was touched, which is worse than useless: it hides the one line that
 // actually moved. So every colour is parsed to numeric RGBA and compared with a
 // tolerance of half a channel step, which is the most a correct sRGB round-trip
 // can cost.

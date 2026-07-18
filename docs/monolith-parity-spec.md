@@ -1,4 +1,4 @@
-# Monolith Parity Spec — measured from the 0.1.0 Design export
+# Monolith Parity Spec: measured from the 0.1.0 Design export
 
 Extracted 2026-07-09 by driving the live monolith (git `f16bd4f`, served from
 history) in headless Chrome and dumping rendered DOM + the app script. This is
@@ -26,19 +26,19 @@ gray `#8892b0`, white `#e6f1ff`, field `#050a14`, dim-gray `#54617f`
   border; thumb hover `#1e4470`
 - `input::placeholder`: `#54617f`
 - Keyframes:
-  - `cursorblink{0%,49%{opacity:1}50%,100%{opacity:0}}` — 1s steps(1) infinite
+  - `cursorblink{0%,49%{opacity:1}50%,100%{opacity:0}}`: 1s steps(1) infinite
   - `.cursor`: inline-block 9px × 1.05em, bg cyan, margin-left 2px,
     vertical-align -2px
   - `ledblink` (1.1s steps(2)) opacity 1→0.2; `statusblink` (2s ease) 1→0.3;
     `.statusled` uses statusblink
   - `eqbar{0%{scaleY(0.18)}100%{scaleY(1)}}`
   - `mqbounce{0%,14%{translateX(0)}86%,100%{translateX(var(--mqd,0))}}`
-  - `floatup`, `flashbg`, `ncrowbump` — module-player slice
+  - `floatup`, `flashbg`, `ncrowbump`: module-player slice
 - `#scanlines`: fixed inset 0, z 9990, repeating-linear-gradient 0deg,
   cyan 0.035 1px / transparent to 3px. `#vign`: fixed, z 9989,
   radial-gradient transparent 55% → rgba(0,0,0,0.45) 100%
 - Reduced motion: scanlines hidden; `.ledblink`/`.cursor` animation none.
-  Sync-offset telemetry still runs (deliberate — text change, not motion).
+  Sync-offset telemetry still runs (deliberate: text change, not motion).
 - Print block: only `#cert-print` visible (certificate slice)
 - Responsive: ≤1024px hides `.hdr-status`/`.hdr-clearance`, dash-scroll
   padding 36/24/54; ≤640px: header wraps (auto height, pad 10 14), sys-readout
@@ -64,7 +64,7 @@ filtered white noise Q 1.1. Gated on `muted`/`sfxVol<=0`.
 | drive | noise 0.09 0.05 bandpass 1500→620; tone 68→54 0.06 square 0.028 |
 | drivehi | noise 0.05 0.028 bandpass 2400→1300 |
 
-Global pointer tick: capture-phase `pointerdown` on the root — walk ≤6
+Global pointer tick: capture-phase `pointerdown` on the root, walk ≤6
 ancestors; if BUTTON (not disabled) / role=button / `style.cursor==='pointer'`
 → `sfx('tick')`; `data-nosfx` opts out.
 
@@ -87,7 +87,7 @@ Typing (`startTyping`): 260ms initial delay + `whoosh`; reveal 1 char per
 tick; delay per just-typed char: `\n` 140ms, `.` or `:` 34ms, else 12ms.
 SFX: `drive` at each `\n`, `drivehi` every 6th char. On completion:
 `bootDone`, `drive`. Skip (any key or click while `!bootDone`): full text +
-bootDone instantly. Full text lines: see `fullBoot()` — identical to current
+bootDone instantly. Full text lines: see `fullBoot()`, identical to current
 rebuild's `bootLines` + identity block, joined with real newlines.
 
 After bootDone (`showBootBtn`): `margin-top:22px` block; divider
@@ -101,7 +101,7 @@ Auth form (`bootDone && !bootWelcome`):
   autofocus, placeholder `e.g. S. DORSETT`; input filter strips control chars
   (`_cleanNameInput`), Enter submits. Prefilled with last operator when
   `cfg.persist`.
-- ACCESS button — TWO states (`ready = name.trim() && !courseLoading`):
+- ACCESS button, TWO states (`ready = name.trim() && !courseLoading`):
   ready → solid cyan bg, navy text, cursor pointer; not-ready → transparent
   bg, border `rgba(0,240,255,0.35)`, text `rgba(0,240,255,0.55)`,
   `cursor:not-allowed`. Orbitron 700 14px ls .18em, padding 15px, 100% width.
@@ -148,23 +148,23 @@ blur 8):
 - Meta (gap 18): hidden header glossary button (shows ≤640 only) + 1px×26px
   divider (both `display:none` at desktop); clearance block (right-aligned:
   `OPERATOR CLEARANCE` Fira 9px ls .14em gray over rank Orbitron 700 12px
-  ls .1em cyan — `LVL <n> <RANK TITLE>`, clearance = max clearance of
+  ls .1em cyan: `LVL <n> <RANK TITLE>`, clearance = max clearance of
   completed modules, rank from `course.ranks`); balance BUTTON
   (title "View transaction history"): border 1px `rgba(255,212,0,0.5)`,
   bg `rgba(255,212,0,0.05)`, pad 6 12, column align-end gap 2; row =
   `BALANCE` Fira 8.5px ls .14em gray + 10px hamburger-lines SVG (#8892b0,
   opacity .85); value Fira 600 14px ls .06em gold `€$ 500`
   (`symbol + ' ' + eddies`; red when negative). Hover: bg `0.12`, border
-  `0.85` alpha. (Opens transaction history — later slice; render the button
+  `0.85` alpha. (Opens transaction history, later slice; render the button
   now, no-op with cursor pointer.)
 
-SYSTEM_STATUS readout: fixed `left:18px` (`306px` in player view — animated
+SYSTEM_STATUS readout: fixed `left:18px` (`306px` in player view, animated
 via `transition:left 0.35s cubic-bezier(0.22,1,0.36,1)`), `bottom:14px`,
 z 9100, flex gap 11, pad 7 4, pointer-events none, Orbitron 10px, opacity .9.
 Parts: `[SYSTEM_STATUS: <STATUS>]` ls 1px, colour cyan/amber/red by status
 (transition color .5s); LED 8px circle `.statusled` class, bg+glow
 green/amber/red; `SYNC_OFFSET: <n.nn>ms` Fira ls .08em cyan opacity .75
-tabular-nums. Telemetry: every 2000ms roll — 85% `rand*200` NOMINAL,
+tabular-nums. Telemetry: every 2000ms roll, 85% `rand*200` NOMINAL,
 10% `200+rand*600` ELEVATED, 5% `800+rand*1000` CRITICAL. Initial 88.4
 NOMINAL. Runs under reduced-motion (deliberate).
 
@@ -186,13 +186,13 @@ Fira 11px ls .12em 600 cyan; track-name marquee: 96px overflow-hidden window,
 text Fira 11px ls .12em 600 GOLD `♪ <Track Name>`; if overflow > 2px set
 `--mqd = -(overflow+6)px` and duration `max(4, dist/22+1.4)s` (mqbounce
 alternate), else no animation. Radio is constructed at mount (suspended AC),
-`setActive(view!=='boot')` — music only starts after login gesture. Click
+`setActive(view!=='boot')`, music only starts after login gesture. Click
 opens the radio panel (later slice; render pill + engine wiring now).
 
 ## Dashboard view
 
 Scroll container `.dash-scroll`: `flex:1; overflow-y:auto;
-padding:48px 40px 60px` (this is the app's `<main>` — keyboard scrolling:
+padding:48px 40px 60px` (this is the app's `<main>`, keyboard scrolling:
 ArrowUp/Down ±90, PageUp/Down/Space ±90% height, Home/End, unless focus in
 input/button). Column: `max-width:1100px; margin:0 auto`.
 
@@ -201,7 +201,7 @@ input/button). Column: `max-width:1100px; margin:0 auto`.
 - H1 `OPERATOR DASHBOARD`: Night Corp Display **400** 38px ls .06em white,
   margin 0 0 6px  ← the rebuild had 700 (faux-bold; NCD has no 700)
 - Lead: Rajdhani 16px ls .02em gray, mb 38
-- Orientation card (shows when `!anyProgress && !firstRunSeen` — session
+- Orientation card (shows when `!anyProgress && !firstRunSeen`, session
   state, resets on reload; NOT persisted): relative, border 1px
   `rgba(0,240,255,0.3)`, bg `rgba(0,240,255,0.04)`, padding 18px 20px 18px
   18px, mb 34, flex gap 14 align-start. Shard icon 26×12.3px cyan mask
@@ -212,7 +212,7 @@ input/button). Column: `max-width:1100px; margin:0 auto`.
   pad 5 9.
 - Section header `AVAILABLE COURSES [ N ]`: Fira 11px ls .16em gray,
   border-bottom 1px `rgba(136,146,176,0.25)`, pb 10 mb 24; count span cyan.
-  **Deliberate fix:** monolith shows `mods.length` (9) — a bug (label says
+  **Deliberate fix:** monolith shows `mods.length` (9), a bug (label says
   COURSES). Rebuild shows the course count (1).
 - Course grid: `grid-template-columns:repeat(auto-fill,minmax(360px,1fr))`,
   gap 22.
@@ -233,14 +233,14 @@ input/button). Column: `max-width:1100px; margin:0 auto`.
     span cyan `<done> / <total>`
   - Bar: 5px high, bg navy, border 1px cyan .2; fill
     `linear-gradient(90deg,#00f0ff,#00ff9d)` width = course fraction
-    (partial-module credit — see `partialFrac`)
+    (partial-module credit, see `partialFrac`)
   - CTA button: mt 18, 100% width, transparent bg, 1px cyan border, cyan,
     Orbitron 700 12.5px ls .16em, pad 12. Label `[ BEGIN PROGRAM ]`, or
     `[ RESUME PROGRAM ]` when any progress. Hover: solid cyan bg, navy text.
 - Relays (`margin-top:48px`): header `TRANSMISSION RELAYS // EXTERNAL LINKS`
   same style as courses header (mb 20; suffix span cyan). Links flex wrap
   gap 12; each `inline-flex` gap 10, Fira 12px ls .1em, pad 11 16, coloured
-  by kind — cyan / gold (Ko-fi) / gray (GitHub): border `rgba(<c>,0.4)`,
+  by kind, cyan / gold (Ko-fi) / gray (GitHub): border `rgba(<c>,0.4)`,
   text solid colour, bg `rgba(<c>,0.04)`. Hover INVERTS: bg solid colour,
   text navy, border solid. Icons 17-19px: map polygon SVG (stroke 2),
   Discord path (stroke 1.4, w 18), kofi.webp img 19px, GitHub octocat
@@ -260,15 +260,15 @@ input/button). Column: `max-width:1100px; margin:0 auto`.
 `migrateRecord` (port exactly): non-object → throw `invalid file`; schema
 !== `ncza-record/v1` → throw `unrecognized record schema`; else fill each
 field with type-checked default (eddies default = economy.startingBalance
-or 500). The rebuild's earlier invented `{user, progress}` shape is WRONG —
+or 500). The rebuild's earlier invented `{user, progress}` shape is WRONG;
 replace it. localStorage keys are `ncza:v1:progress:<name>` + `ncza:v1:lastUser`
 (shipped 0.1.0 users may hold these).
 
 ## Deliberate divergences from the monolith (fixes, user-approved)
 
 1. `AVAILABLE COURSES [ 9 ]` → `[ 1 ]` (label counts courses, not modules).
-2. Root favicon 404 + login input missing id/name (noted in the 0.1.0 commit)
-   — fixed in the rebuild.
+2. Root favicon 404 + login input missing id/name (noted in the 0.1.0 commit),
+   fixed in the rebuild.
 3. Hover states move from JS style-mutation to CSS `:hover` (same visual
    result; idiomatic in the rebuild's architecture).
 
@@ -281,7 +281,7 @@ replace it. localStorage keys are `ncza:v1:progress:<name>` + `ncza:v1:lastUser`
 - **Rail** `aside.player-rail`: 288px, border-right cyan .2, bg
   `rgba(10,25,47,0.85)`, own scroll, flex column.
   - Top block (pad 16 18, border-bottom cyan .15): `RETURN TO DASHBOARD`
-    button with a leading chevron — Fira 10.5px ls .12em gray, 1px gray-.5
+    button with a leading chevron: Fira 10.5px ls .12em gray, 1px gray-.5
     border, pad 7 12, full width, left-aligned; hover: bg cyan .08,
     border+text cyan.
   - `MODULE MAP` header: Orbitron 700 11px ls .14em cyan with a 3px cyan
@@ -299,7 +299,7 @@ replace it. localStorage keys are `ncza:v1:progress:<name>` + `ncza:v1:lastUser`
     Fira 10px cyan; 3px progress bar (navy bg, cyan .2 border, cyan-to-green
     fill, width = revealed/total%); `SAVE PROGRESS` button full width (bg
     cyan .08, cyan border, Orbitron 700 11px ls .14em, shard icon 22x10.4
-    currentColor, hover: solid cyan bg + navy text) — records
+    currentColor, hover: solid cyan bg + navy text); records
     `revealedBy[id] = max(revealedBy[id], revealed)` then ejects a shard;
     caption `EJECTS A SHARD WITH YOUR CURRENT PLACE` Fira 9px `#54617f`
     centred mt 8.
@@ -316,7 +316,7 @@ SYSTEM_STATUS readout: `left` animates 18px to **306px** in the player view
 Column `max-width:860px; margin:0 auto; padding:34px 40px 80px`.
 Header block (mb 26): breadcrumb `> MODULE <ID-UPPER> // CLEARANCE LEVEL <n>`
 Fira 11px ls .14em cyan mb 8; h1 = module title, NCD 400 34px ls .05em white
-margin 0 0 6px; subtitle Rajdhani 16px gray; module progress bar mt 14 —
+margin 0 0 6px; subtitle Rajdhani 16px gray; module progress bar mt 14:
 4px, navy bg, cyan .2 border, cyan-to-green fill, width = revealed/stages%,
 `transition: width .3s`.
 
@@ -346,23 +346,23 @@ smoothing `scrollTop += diff * 0.16` per frame).
 - `card(children, accent)`: 1px border (default `rgba(0,240,255,0.18)`),
   bg `rgba(17,34,64,0.55)`, blur 4, pad 22 24, mb 20.
 - `terminalBlock(lines)`: border cyan .25, bg `rgba(5,10,20,0.85)`, pad
-  16 18; each line Fira 13px lh 1.7 pre-wrap — lines starting `>` are cyan,
+  16 18; each line Fira 13px lh 1.7 pre-wrap; lines starting `>` are cyan,
   rest white (unescape `&gt;`).
 - `md(str)` markdown-lite: `**bold**` = white 700 strong; `*em*` = white em;
   backtick code = Fira 0.88em cyan on cyan-.1 bg, 1px cyan-.2 border, pad
   1 5; `[label](url)` = link (global link styles). No other syntax.
 - `sources(list)`: mt 12 flex wrap gap 8; `SOURCES:` Fira 9.5px ls .14em
-  gray; each source a Fira 10px link — kind `project` = amber with a lozenge
+  gray; each source a Fira 10px link; kind `project` = amber with a lozenge
   prefix + amber-.35 underline, else cyan with an arrow prefix.
 
-### Chunk types (renderChunk — heading optional: Orbitron 600 15px white mb 12)
+### Chunk types (renderChunk, heading optional: Orbitron 600 15px white mb 12)
 - `text`: p, gray 16px lh 1.65, md().
 - `code`: dark block (bg `rgba(5,10,20,0.9)`, cyan .2 border) with header
   row (`<LANG>` + `// SNIPPET`, Fira 10px ls .12em gray, border-bottom cyan
   .15) and pre Fira 13px lh 1.65 cyan, pad 14 16, overflow-x auto.
 - `table`: scroll wrapper (cyan .2 border), table min-width 420 collapse;
   th left, pad 10 14, Fira 10.5px ls .12em cyan on cyan-.06 bg,
-  border-bottom cyan .25; td pad 10 14, 14px — first column white Fira,
+  border-bottom cyan .25; td pad 10 14, 14px; first column white Fira,
   others gray Rajdhani; row border-bottom gray .12. Optional `body` caption
   under, gray 14px mt 10.
 - `callout`: 1px DASHED border in variant colour (info cyan / warning amber /
@@ -427,7 +427,7 @@ Prompt: white 17px 600 lh 1.4 mb 16.
   JSON pre (Fira 12.5px cyan) or `(no body)` italic gray.
 - debrief (after transmit): 2px cyan left border, pl 12, gray 14px md().
 
-### Scenario (renderScenario — the war story)
+### Scenario (renderScenario, the war story)
 Amber themed: sectionLabel `WAR STORY // <TITLE|SCENARIO>` amber; card
 accent amber .25 (green/red .3 once answered). terminalBlock(situation);
 prompt white 17px 600 margin 18 0 14; options behave exactly like mcq
@@ -447,7 +447,7 @@ md().
   colour, 560ms).
 - `completeModule` (`[ TRANSMIT FOR COMPLETION // +€$ <reward> ]`, gold
   solid button, Orbitron 800 14px ls .16em): logs a module txn, then the
-  TRANSFER overlay — fixed inset dim `rgba(5,10,20,0.72)` blur 3; 480px
+  TRANSFER overlay: fixed inset dim `rgba(5,10,20,0.72)` blur 3; 480px
   box. Phase 1 `transferring` (red): ledblink warning glyph +
   `TRANSFERRING FUNDS...` Fira 600 16px ls .16em red; 12px red progress
   bar +4% every 32ms after a 260ms delay, rising chatter tone
@@ -457,16 +457,16 @@ md().
   (900ms rAF) with gold glow; commits eddies + moduleDone, holds 1500ms,
   closes.
 - Complete stage card (when done): accent green .35; `CERTIFIED` stamp with
-  a check — NCD 400 22px ls .08em green, 2px green border, pad 8 16,
+  a check: NCD 400 22px ls .08em green, 2px green border, pad 8 16,
   rotate(-3deg), green glow; `[ SAVE TO SHARD ]` solid cyan;
   `[ RETURN TO DASHBOARD ]` brkBtn. When not yet done, the copy reads
   "All sections cleared. Transmit for completion..." (gray 15px).
 - Txn history modal exists (openTxns from the balance button; `jumpToTxn`
   deep-links to `stg-<mod>-<qid>`, reveals it and pulses a cyan box-shadow
-  for 1.4s) — full modal spec to be extracted with the Service Record slice.
+  for 1.4s); full modal spec to be extracted with the Service Record slice.
 
 ### Radio panel (expanded pill; renderMusicPlayer)
-Pill (collapsed) already specced — addition: the border and freq/track text
+Pill (collapsed) already specced; addition: the border and freq/track text
 go gray (border gray-.4) when music is muted; hover forces a solid cyan
 border.
 Expanded: fixed right 22 bottom 22, 300px (max `calc(100vw - 44px)`), bg
@@ -477,19 +477,19 @@ rgba(0,240,255,0.22)`, blur 5, Fira base.
 - Now-playing box (pad 13 15, cyan .25 border, cyan .04 bg): freq 26px 700
   cyan with 12px glow (gray, no glow, when muted/paused); station name 11px
   ls .12em white ellipsis; 10-bar EQ at 32px (same eqbar formula); track
-  title 13px 600 gold; status line 9px ls .13em gray — `PAUSED` /
-  `MUTED` / `<genre> - <bpm> BPM` with mode glyphs; track progress — 4px
+  title 13px 600 gold; status line 9px ls .13em gray: `PAUSED` /
+  `MUTED` / `<genre> - <bpm> BPM` with mode glyphs; track progress, 4px
   bar (gray-.22 track, cyan fill + glow; gray when muted/paused) with m:ss
   current/total (engine trackProgress polled every 400ms while open;
   duration from the engine, default 240s).
 - Transport row (flex gap 8 mt 14): prev / `PLAY`|`PAUSE` (big variant:
-  flex 1, cyan .1 bg, cyan border) / next — 38px high, hover cyan.
+  flex 1, cyan .1 bg, cyan border) / next: 38px high, hover cyan.
 - `TRACK n / total - STEP TRACKS` caption 9px ls .16em gray centred mt 8.
-- Station chips (flex wrap gap 6 mt 14): freq labels Fira 10px pad 5 8 —
+- Station chips (flex wrap gap 6 mt 14): freq labels Fira 10px pad 5 8,
   active solid cyan/navy 700; inactive transparent/gray with gray-.35
   border, hover cyan.
 - AUTO-ROTATE toggle: full width 32px, `AUTO-ROTATE - ON|OFF` with a loop
-  glyph, 10px ls .16em 600 — on = cyan .12 bg + cyan; off = transparent +
+  glyph, 10px ls .16em 600: on = cyan .12 bg + cyan; off = transparent +
   gray.
 - Volume rows x2 (`MUSIC` default 0.4, `SYSTEM SOUNDS` default 0.8):
   speaker mute button 24x22 (red with X lines when muted, waves otherwise),
@@ -499,7 +499,7 @@ rgba(0,240,255,0.22)`, blur 5, Fira base.
 - SFX on interactions: dial/track changes `drivehi`, play/pause `nav`,
   cycle/minimize/volume-reset `tick`.
 
-### Certificate name prompt (renderNamePrompt — for the cert slice)
+### Certificate name prompt (renderNamePrompt, for the cert slice)
 Modal (z 9999, dim blur 4, click-outside cancels): 440px navy box, cyan
 border + 44px glow; titlebar solid cyan `OPERATOR IDENTIFICATION` NCD 400
 14px ls .1em; body prompt Fira 12px gray; same input styling as boot;
@@ -507,15 +507,15 @@ border + 44px glow; titlebar solid cyan `OPERATOR IDENTIFICATION` NCD 400
 `rgba(0,240,255,0.25)` + not-allowed when empty) + `[ CANCEL ]` outline
 gray. Enter confirms, Escape cancels.
 
-### Lab data contract (GAP FIX, 2026-07-09 — diverges from the monolith)
+### Lab data contract (GAP FIX, 2026-07-09, diverges from the monolith)
 The shell (monolith included) was built against the Design sample course,
-whose only lab was conditional retrieval — so it hardcoded one
+whose only lab was conditional retrieval, so it hardcoded one
 `If-None-Match:` input onto every lab and matched only
 `if-none-match-matches`. The authored course declares a richer per-lab
 contract the monolith never implemented (user-confirmed bug: m01's lab
 could never serve anything but the default 200):
 
-- `request.editable: string[]` — which fields the operator edits;
+- `request.editable: string[]`, which fields the operator edits;
   `query.<k>` renders a `?k=` input, `headers.<k>` renders a `k:` input;
   empty = no inputs. `request.query`/`request.headers` carry base values
   (m08 has a fixed `?full=1`).
@@ -540,10 +540,10 @@ music player) and share one shell pattern:
   `max-height:calc(100vh - 112px)` (txn narrow: `calc(100vh - 40px)`).
 - Title bar (flexShrink 0, pad 12 20, solid accent bg, navy text):
   left = NCD/'Orbitron' 400 15px ls .1em title + Fira 400 11px dimmed
-  `// <sub>`; right = `[ ESC ] CLOSE` button — transparent, 1px
+  `// <sub>`; right = `[ ESC ] CLOSE` button, transparent, 1px
   `rgba(10,25,47,0.5)` border, navy, Orbitron 700 12px ls .1em,
   pad 6 12, line-height 1.
-- Escape closes (checked BEFORE the input-tag guard in the key handler —
+- Escape closes (checked BEFORE the input-tag guard in the key handler,
   works while focus is in the search input). Glossary check precedes txn.
 
 ### Field Glossary (renderGlossary / filteredGlossary)
@@ -559,32 +559,32 @@ Box 900px, 1px cyan border, glow `0 0 50px rgba(0,240,255,0.18)`. Title
   `flex:1 min-width:240px relative` with a `>` prompt (absolute left 12,
   vert-centred, gray Fira 13px); input full-width, bg navy, 1px cyan-.3
   border, white Fira 13px ls .06em, pad `11px 12px 11px 28px`,
-  placeholder `SEARCH TERMS`. Tier pills (gap 8): ALL / PROJECT / GENERAL —
+  placeholder `SEARCH TERMS`. Tier pills (gap 8): ALL / PROJECT / GENERAL,
   Fira 10.5px ls .12em pad 7 14, transition none; ON = solid cyan bg,
   navy text, cyan border; OFF = transparent, gray text, border
   `rgba(136,146,176,0.4)`.
 - Count line: Fira 11px ls .14em gray, border-bottom
-  `rgba(136,146,176,0.25)`, pb 10 mb 20 — `ENTRIES ` +
+  `rgba(136,146,176,0.25)`, pb 10 mb 20, `ENTRIES ` +
   cyan `[ shown / total ]`.
 - Entry list (flex column gap 14). Card: 1px cyan-.18 border, bg
   `rgba(17,34,64,0.5)`, backdrop blur 4, pad 18 20. Term row (flex gap 12
   mb 8): term Orbitron 700 16px ls .06em cyan + tier badge Fira 9px
-  ls .14em pad 3 8 — PROJECT amber text/border, GENERAL cyan text /
+  ls .14em pad 3 8: PROJECT amber text/border, GENERAL cyan text /
   `rgba(0,240,255,0.5)` border (tier defaults to `general`). Definition:
   white 15px lh 1.65 through md(). Sources row (same primitive as chunks).
 - Empty state: dashed `rgba(136,146,176,0.4)` border, pad 34, centred
-  Fira 13px ls .08em gray — `> NO MATCHING ENTRIES. Adjust the query or
+  Fira 13px ls .08em gray: `> NO MATCHING ENTRIES. Adjust the query or
   clear the tier filter.`
 - Filter: tier `all|project|general` against `g.tier || 'general'`; query
   lowercased substring over term OR def; sort `localeCompare` on term.
-- `glossaryQuery`/`glossaryTier` live in app state — they persist across
+- `glossaryQuery`/`glossaryTier` live in app state; they persist across
   open/close for the session and are NOT in the record.
-- Openers: the floating FAB (default placement) — open state = solid cyan
+- Openers: the floating FAB (default placement): open state = solid cyan
   bg, navy text, cyan border; hover (closed) bg `rgba(0,240,255,0.14)`.
-  `goGlossary()` (a glossary *view*) is dead code — never called.
+  `goGlossary()` (a glossary *view*) is dead code, never called.
 - Real course data: 42 entries, tiers exactly project(16)/general(26),
   fields term/tier/def/sources, all entries have sources.
-  `fieldNotes.glossaryTerms` in course data is never consumed — no feature.
+  `fieldNotes.glossaryTerms` in course data is never consumed; no feature.
 
 ### Transaction History (renderTxnHistory / openTxns / jumpToTxn)
 
@@ -616,16 +616,16 @@ global pointer tick). Box 760px, gold border, glow
   edges), pad 14 12; jumpable (has qid+moduleId) → pointer cursor + hover
   bg `rgba(255,212,0,0.06)` / border `rgba(255,212,0,0.4)`. Cells: time
   92px Fira 10px gray (`MMM dd HH:mm`, 24h); kind tag 118px centred
-  Orbitron 700 9px ls .12em pad 4 8 — `MODULE CLEARED` gold /
+  Orbitron 700 9px ls .12em pad 4 8: `MODULE CLEARED` gold /
   `rgba(255,212,0,0.5)`, `CORRECT` green /.5, `INCORRECT` red /.5; title
   flex-1 white 13.5px nowrap-ellipsis (module txn = `Certified: <title>`,
   else `qPrompt || 'Knowledge check'`) + `↳ JUMP TO ANSWER` Fira 9.5px
   gray mt 3 when jumpable; delta 96px right Fira 600 15px green/red
   `±€$ n`; `BAL €$ n` 80px right Fira 11px gray.
-- Row (narrow ≤640): column layout — tag+time row with delta right;
+- Row (narrow ≤640): column layout, tag+time row with delta right;
   title white 14px lh 1.45 wraps; bottom row `BAL` + gold
   `↳ JUMP TO ANSWER` right.
-- Empty state: dashed border, pad 34, mt 16 — `> NO TRANSACTIONS YET.
+- Empty state: dashed border, pad 34, mt 16: `> NO TRANSACTIONS YET.
   Answer a knowledge check to open your ledger.`
 - `jumpToTxn` (only when qid+moduleId): find module → buildStages → idx
   of the stage whose data id === qid → `revealed = max(resume, idx+1)`
@@ -650,12 +650,12 @@ Monolith source: `git archive f16bd4f public/` → index.html. Methods:
 `mods` = modules sorted by order; `done` = completed; `capstone` = first
 module with `capstone === true`. `certified` = capstone done if a capstone
 exists, else "every module complete" (and at least one module). Clearance
-for the view = `max(1, ...done.map(clearance||1))` or 1 — same derivation
+for the view = `max(1, ...done.map(clearance||1))` or 1, same derivation
 as the header (reuse `clearanceAndRank`).
 
 ### renderProgress (the view)
 
-Nav: header SERVICE RECORD tab (`goProgress()` — plain view switch, no
+Nav: header SERVICE RECORD tab (`goProgress()`, plain view switch, no
 extra sfx beyond the global pointer tick). Active tab styling identical to
 DASHBOARD's. Scrollable main, pad `48px 40px 60px`, inner max-width 960
 centred:
@@ -670,8 +670,8 @@ centred:
   1px `rgba(0,240,255,0.18)` border, bg `rgba(17,34,64,0.5)`, pad 18 20,
   mb 34. Input block flex-1 min 240: label `OPERATOR NAME / CALLSIGN`
   Fira 10px ls .14em cyan mb 7; input (value = LIVE state, maxLength 42,
-  onChange `_cleanNameInput` — strips control chars only, no trim while
-  typing — then debounced save) bg `#050a14`, 1px cyan-.4 border, white,
+  onChange `_cleanNameInput`: strips control chars only, no trim while
+  typing, then debounced save) bg `#050a14`, 1px cyan-.4 border, white,
   Orbitron 700 16px ls .08em, pad 12 14, placeholder `e.g. S. DORSETT`.
   Caption right (max 280, pb 12) Fira 10.5px gray: "Prints on your field
   certificate and is written to your Service Record Shard."
@@ -681,7 +681,7 @@ centred:
   `overflow-wrap:anywhere`: CLEARANCE `LVL n` cyan / RANK title cyan /
   MODULES CLEAR `d / n` green / EDDIES BALANCE `€$ n` gold (red if
   negative). Balance shows `s.eddies` (settled, not the count-up shown).
-- MODULE STATUS section (cyan): one row per module — flex gap 12, pad
+- MODULE STATUS section (cyan): one row per module: flex gap 12, pad
   12 14, mb 6; done → 1px `rgba(0,255,157,0.3)` border + bg green-.05,
   else gray-.2 border. Dot 11×11: done = solid green + glow; else
   transparent + 1px gray border. Title Rajdhani 600 15px (white done /
@@ -691,10 +691,10 @@ centred:
   `> no modules in this course.`
 - EARNED CERTIFICATIONS section (green): stamps flex gap 16 wrap mb 34
   align-start. Per done module: 2px green border, green text, pad 10 14,
-  Orbitron 700 11px, rotate(-2deg), bg green-.06 — `MODULE CLEAR` +
+  Orbitron 700 11px, rotate(-2deg), bg green-.06: `MODULE CLEAR` +
   module id uppercase Fira 9px gray. If certified, a bigger stamp is
   UNSHIFTED first: 3px border, pad 14 20, 800 16px ls .16em,
-  rotate(-4deg), bg green-.1, glow `0 0 22px rgba(0,255,157,0.25)` —
+  rotate(-4deg), bg green-.1, glow `0 0 22px rgba(0,255,157,0.25)`,
   `CERTIFIED` / `FIELD OPERATOR` (green, .8). Empty → dashed gray box:
   `> NO CERTIFICATIONS ON RECORD. Complete a module to earn your first
   stamp.`
@@ -718,7 +718,7 @@ centred:
   Fira 10.5px gray: "Wipes this terminal back to a clean record. Ejected
   shards are unaffected."
 
-NOTE: no operator list in this view — `listUsers()` is progress-adapter
+NOTE: no operator list in this view; `listUsers()` is progress-adapter
 API only (the boot screen owns operator selection). Plan's earlier
 "operator list" mention was wrong.
 
@@ -734,7 +734,7 @@ phase `ejected` (or `error` + message); `importMsg` set
 `SHARD EJECTED // <fname>` / `EJECT FAILED // <msg>`; overlay auto-clears
 after 2300ms.
 
-Overlay (z **9998** — UNDER the confirm dialogs at 9999 and the radio
+Overlay (z **9998**, UNDER the confirm dialogs at 9999 and the radio
 pill wins by DOM order): fixed inset-0 flex-centred, bg
 `rgba(5,10,20,0.78)` + blur(3px). Box 460px max 92%, 1px accent border,
 bg `rgba(5,10,20,0.97)`, glow `0 0 44px <accent-glow>`. Accent: cyan
@@ -758,11 +758,11 @@ error (`rgba(255,51,85,0.32)`).
   ejected (`transition: transform .78s cubic-bezier(.2,.85,.25,1),
   opacity .6s ease`), glow `0 0 22px accent` when out (else
   `0 0 8px rgba(0,240,255,0.3)`); error → chip opacity .35.
-- Footer (pad `0 32px 26px`): while writing — 8px bar (1px cyan border,
+- Footer (pad `0 32px 26px`): while writing: 8px bar (1px cyan border,
   bg `#0a0f14`, fill cyan + glow `0 0 10px cyan`, `width .05s linear`)
   + centred Fira 11px ls .14em gray `ENCODING RECORD  n %` (two
-  spaces); done — centred Fira 11.5px green `> <fname>` (break-all);
-  error — red `> <msg>`.
+  spaces); done: centred Fira 11.5px green `> <fname>` (break-all);
+  error: red `> <msg>`.
 
 ### importRecord / slotShard / renderSlot (slot overlay)
 
@@ -775,7 +775,7 @@ flow (already built); else if current progress non-empty
 
 `slotShard`: guard if already running; `whoosh`; phase `reading`,
 progress 0→100 over 820ms (same rAF + guard-timeout pattern). At finish:
-commit the record (REPLACE op state — never merge; set operator +
+commit the record (REPLACE op state, never merge; set operator +
 adapter user; schedule save), `chime`, phase `slotted`, auto-clear
 1700ms. Commit message: `SHARD SLOTTED // n MODULE(S) CERTIFIED
 [// m IN PROGRESS]` / `SHARD SLOTTED // PROGRESS RESTORED //
@@ -790,12 +790,12 @@ green (keeps glow); footer `DECODING RECORD  n %` → green
 
 ### renderSlotConfirm + renderPurgeConfirm (red confirm dialogs)
 
-Shared shell — z **9999**, scrim `rgba(5,10,20,0.9)` blur(4px) pad 32,
+Shared shell: z **9999**, scrim `rgba(5,10,20,0.9)` blur(4px) pad 32,
 click-outside cancels; box 460px max 100%, bg `#0a192f`, 1px red border,
 glow `0 0 44px rgba(255,51,85,0.28)`; SOLID RED title bar (`#0a0f14`
 text, pad 11 20, Night Corp Display 400 14px ls .1em); body pad
 `26px 26px 24px`: white Fira 13px lh 1.7 line (mb 10), gray 11.5px
-`> ...` detail (mb 22), then flex gap 12 buttons — solid red primary
+`> ...` detail (mb 22), then flex gap 12 buttons: solid red primary
 (flex 1, Orbitron 700 12px ls .12em pad 12 18, `#0a0f14` text) + gray
 outline `[ CANCEL ]`. NOT Escape-wired in the monolith (only
 glossary/txn are); keep that.
@@ -820,7 +820,7 @@ Monolith: rail SAVE PROGRESS = `revealedBy[id] = max(…, revealed)` then
 `exportRecord()`; the completion stage's `[ SAVE TO SHARD ]` is
 `exportRecord()` directly. Both show the full eject animation. The
 rebuild's slice-2 `saveProgress` (bare download + whoosh) predates the
-overlay — fix it to route through the shared eject flow.
+overlay; fix it to route through the shared eject flow.
 
 ## Certificate + name prompt + print CSS (extracted 2026-07-09)
 
@@ -870,13 +870,13 @@ a controls row.
     gray, mb 6
   - `CLEARANCE LEVEL <n> // <rank>` Orbitron 700 20px ls .1em cyan,
     mb 30. Clearance = max clearance of DONE modules (same as the view).
-    Rank = the LAST entry in `course.ranks` (the top rank — NOT the
+    Rank = the LAST entry in `course.ranks` (the top rank, NOT the
     earned rank; fallback `CERTIFIED FIELD OPERATOR`).
   - CERTIFIED stamp: inline-block, 3px green border, green text, pad
     14 26, Orbitron 800 26px ls .2em, rotate(-4deg), bg
     `rgba(0,255,157,0.08)`, glow `0 0 24px rgba(0,255,157,0.25)`, mb 32
   - Footer: flex between, border-top `rgba(0,240,255,0.2)`, pt 18, Fira
-    11px ls .08em gray — `ISSUED <date>` (date white; `new
+    11px ls .08em gray: `ISSUED <date>` (date white; `new
     Date().toLocaleDateString('en-US', {year:'numeric', month:'long',
     day:'numeric'})`) / `AUTH <NIGHT CORP // AUTOMATED>` (value cyan).
 
@@ -884,11 +884,11 @@ a controls row.
 (navy text, Orbitron 700 12px ls .14em, pad 12 22); `[ EDIT NAME ]` cyan
 outline; `[ CLOSE ]` gray outline.
 
-`renderCert` reads `certified` from progressStats but never checks it —
+`renderCert` reads `certified` from progressStats but never checks it,
 `certMode` is the only gate (openCert is unreachable while the button is
 disabled). Keep the same reliance.
 
-### renderNamePrompt (z 9999, cyan — not the red confirm shell)
+### renderNamePrompt (z 9999, cyan, not the red confirm shell)
 
 Scrim `rgba(5,10,20,0.9)` blur(4px) pad 32, click-outside CANCELS. Box
 440px max 100%, bg navy, 1px cyan border, glow
@@ -903,7 +903,7 @@ Scrim `rgba(5,10,20,0.9)` blur(4px) pad 32, click-outside CANCELS. Box
 - Input: autoFocus, maxLength 42, same styling as the Service Record
   identity input, mb 22. Enter → confirm; Escape → cancel (wired on the
   INPUT, not globally).
-- Buttons flex gap 12: `[ ISSUE CERTIFICATE ]` flex 1, navy text — valid
+- Buttons flex gap 12: `[ ISSUE CERTIFICATE ]` flex 1, navy text; valid
   (trimmed input non-empty): solid cyan; empty: bg `rgba(0,240,255,0.25)`,
   border cyan-.3, not-allowed. `[ CANCEL ]` gray outline.
 
@@ -918,12 +918,12 @@ Scrim `rgba(5,10,20,0.9)` blur(4px) pad 32, click-outside CANCELS. Box
 }
 ```
 
-Rebuild note: our vignette element id is `#vignette` (monolith: `#vign`) —
+Rebuild note: our vignette element id is `#vignette` (monolith: `#vign`),
 target the rebuild's ids. Visibility (not display) keeps layout so the
 absolutely-positioned cert prints at the page origin.
 
 DELIBERATE DIVERGENCE (user-signed-off 2026-07-09): the monolith's print
-output is broken — it only flips visibility, and real print dialogs strip
+output is broken: it only flips visibility, and real print dialogs strip
 `background` colours by default and darken light text, so paper output was
 neon text on white with no card, no header bar, and an invisible white
 monogram (never caught: Design's preview can't print). The rebuild adds an
@@ -933,28 +933,28 @@ black takes the grey roles, monogram → black via `filter: brightness(0)`,
 grid hidden. The titlebar stays a solid navy band with NC-white text via
 `print-color-adjust: exact` (disables both background stripping AND
 Chrome's light-text darkening; Chromium honours it with the dialog
-checkbox off) plus an inset box-shadow fill as fallback — shadows print as
+checkbox off) plus an inset box-shadow fill as fallback; shadows print as
 content ink. Verified with `page.pdf({ printBackground: false })`; note
 `emulateMediaType('print')` applies print CSS but NOT the stripping, so it
 cannot catch this bug class.
 
-### Radio panel — implementation addenda (extracted 2026-07-09)
+### Radio panel: implementation addenda (extracted 2026-07-09)
 
 - Handler SFX (host concern; the engine only swaps audio): dial/track
   changes `drivehi`; play/pause `nav`; cycle toggle, panel open AND close,
   and volume right-click reset `tick`; unmuting (music or SFX) confirms
-  with `nav` — muting is silent.
+  with `nav`; muting is silent.
 - Track progress/duration are runtime-only (NOT emitted through
   onStateChange): the monolith polls `getState().trackProgress` every
   400ms while the panel is open (`_startProgTimer`), duration
   `trackDuration || 240`.
-- Cycle button textContent is `⟳AUTO-ROTATE · ON|OFF` (no space — the
+- Cycle button textContent is `⟳AUTO-ROTATE · ON|OFF` (no space, the
   flex gap is the spacing). Caption: `TRACK n / total  ·  ⏮ ⏭ STEP TRACKS`
   (two source spaces, collapse to one on render).
 - Pill track text falls back to the STATION NAME when the track has no
   title (`T.title || ST.name`).
 - The header MUSIC/SFX toggle props (`toggleMusic`, `musicBtnStyle`,
-  `sfxBtnStyle`, titles/icons at monolith lines 2074-2081) are DEAD CODE —
+  `sfxBtnStyle`, titles/icons at monolith lines 2074-2081) are DEAD CODE,
   produced in the props bag but never consumed anywhere in the DC markup.
   The panel's volume-row speaker buttons are the only mute UI. Do not
   "restore" header buttons later.
@@ -963,10 +963,10 @@ cannot catch this bug class.
   object (line ~723) is built from LIVE state. Monolith defaults:
   sfxVol 0.8, musicVol 0.4, unmuted, cycle on.
 
-## Final parity sweep (2026-07-09) — full-monolith audit
+## Final parity sweep (2026-07-09): full-monolith audit
 
 Method: exhaustive inventory of the f16bd4f monolith cross-checked against
-the rebuild — all 139 class methods, the full initial-state field list, all
+the rebuild: all 139 class methods, the full initial-state field list, all
 13 `sc-if` markup regions, the props bag vs markup consumption, the global
 `<style>` block (keyframes, responsive tiers, print), mount/unmount
 listeners, and a file-level diff of every shared asset.
@@ -982,7 +982,7 @@ Results:
 - **Markup**: all 13 template regions built (boot incl. cursor/skip/
   welcome/first-run, dashboard, player, progress=Service Record, glossary
   floating+header variants, import msg).
-- **Global CSS**: all keyframes present except `floatup` and `flashbg` —
+- **Global CSS**: all keyframes present except `floatup` and `flashbg`,
   both defined but UNUSED in the monolith (dead CSS, not ported). All
   responsive tiers present (≤1024, ≤640 incl. drawer rail + 44px targets,
   `(hover: none)` link reset, tap-highlight/touch-action).

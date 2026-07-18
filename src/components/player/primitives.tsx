@@ -1,6 +1,6 @@
 // Stage primitives shared by every module-player stage: the card frame,
 // section label, terminal block, markdown-lite renderer, and sources row.
-// Measured spec: docs/monolith-parity-spec.md — "Stage primitives".
+// Measured spec: docs/monolith-parity-spec.md, "Stage primitives".
 import type { ReactNode } from 'react';
 import type { Source } from '../../lib/types';
 
@@ -35,7 +35,7 @@ export function TerminalBlock({ lines }: { lines: string[] }) {
   );
 }
 
-// markdown-lite: **bold**, *em*, `code`, [label](url) — nothing else.
+// markdown-lite: **bold**, *em*, `code`, [label](url); nothing else.
 export function Md({ text }: { text: string | undefined }) {
   if (text == null) return null;
   const re = /(\*\*[^*]+\*\*|\*[^*]+\*|`[^`]+`|\[[^\]]+\]\([^)]+\))/g;

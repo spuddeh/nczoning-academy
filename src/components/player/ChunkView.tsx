@@ -1,5 +1,5 @@
 // Content-chunk renderer: text / code / table / callout / terminal-log.
-// Measured spec: docs/monolith-parity-spec.md — "Chunk types".
+// Measured spec: docs/monolith-parity-spec.md, "Chunk types".
 import type { Chunk } from '../../lib/types';
 import { Md, SourcesRow, StageCard, TerminalBlock } from './primitives';
 

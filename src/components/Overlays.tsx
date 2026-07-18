@@ -1,6 +1,6 @@
 // Economy overlays: eddies flyers (award deltas flying to the balance box)
 // and the module-completion TRANSFER sequence. Timings measured from the
-// monolith (docs/monolith-parity-spec.md — "Economy + ledger").
+// monolith (docs/monolith-parity-spec.md, "Economy + ledger").
 export interface Flyer {
   id: number;
   txt: string;

@@ -2,7 +2,7 @@
 //
 // This is a general-purpose rig: launch a headless Chrome, seed a record, sign
 // in, and probe the running app. It was built to A/B the rebuild against the
-// 0.1.0 monolith, and the capture-*.mjs scripts still do that — but nothing
+// 0.1.0 monolith, and the capture-*.mjs scripts still do that, but nothing
 // here is parity-specific. Any script that needs to look at the real app in a
 // real browser (computed styles, z-index ladders, overlay geometry) should
 // import this rather than copy the boilerplate.
@@ -41,7 +41,7 @@ const PORT = Number(process.env.CHROME_DEBUG_PORT ?? 9224);
  *   1. Screenshots are ~150KB each and five scripts × two targets × many states
  *      adds up fast.
  *   2. A leftover PNG from an older run is indistinguishable from one this run
- *      produced. That is the same trap as everything else in #22 — an artefact
+ *      produced. That is the same trap as everything else in #22: an artefact
  *      that looks like evidence and isn't.
  *
  * Called with no bucket it returns the root (for `chrome-profile`), which is
@@ -135,7 +135,7 @@ export async function launchBrowser({ width = 1440, height = 900 } = {}) {
  * leaves Chrome running with every page open. Each failed capture run leaked a
  * browser that way, and with it a radio station.
  *
- * A Chrome we merely attached to belongs to someone else — disconnect, never
+ * A Chrome we merely attached to belongs to someone else: disconnect, never
  * close.
  */
 export async function closeBrowser(browser) {
@@ -144,8 +144,8 @@ export async function closeBrowser(browser) {
     if (weSpawnedChrome) {
       await browser.close();
     } else {
-      // Someone else's debug Chrome. Close only the pages WE opened — never
-      // their tabs — then let go of the browser itself.
+      // Someone else's debug Chrome. Close only the pages WE opened, never
+      // their tabs, then let go of the browser itself.
       for (const page of ourPages) {
         try { if (!page.isClosed()) await page.close(); } catch { /* already gone */ }
       }
@@ -223,7 +223,7 @@ export async function clickByText(page, selector, txt, { what } = {}) {
 /**
  * Text of the first leaf element (no element children) whose trimmed text
  * matches `reSrc`. Tolerant of the monolith's inline-styled markup.
- * Returns null when absent — callers probe for presence, so this does not throw.
+ * Returns null when absent: callers probe for presence, so this does not throw.
  */
 export const leafText = (page, reSrc) => page.evaluate((src) => {
   const re = new RegExp(src);
@@ -239,7 +239,7 @@ export const leafText = (page, reSrc) => page.evaluate((src) => {
 
 /**
  * Install the seed BEFORE the app's first document runs, via
- * `evaluateOnNewDocument` — it executes on the new document, on the right
+ * `evaluateOnNewDocument`: it executes on the new document, on the right
  * origin, ahead of any page script.
  *
  * Why not `goto` then `page.evaluate`: `localStorage` needs an origin, so the
@@ -250,13 +250,13 @@ export const leafText = (page, reSrc) => page.evaluate((src) => {
  * leave behind. Observed directly: an unseeded `capture.mjs` rendered a "fresh"
  * dashboard showing 1400 eddies and 1/9 progress.
  *
- * Seeding here makes the rebuild deterministic — verified: `RECORD_CERTIFIED`
+ * Seeding here makes the rebuild deterministic, verified: `RECORD_CERTIFIED`
  * yields 9/9 modules and an enabled VIEW CERTIFICATE.
  *
  * Do NOT "fix" this by reloading after writing. That was tried; it does not help.
  *
  * KNOWN LIMITATION (monolith only): the archived monolith does not pick up a
- * seeded certified record even installed this early — it still boots at 1/9.
+ * seeded certified record even installed this early; it still boots at 1/9.
  * Its persistence semantics were not reverse-engineered, on purpose: it is
  * frozen at f16bd4f and nothing will ship against it. See README.md.
  *
@@ -270,7 +270,7 @@ export async function installState(page, record, name) {
         localStorage.setItem(`ncza:v1:progress:${nm}`, JSON.stringify(rec));
         localStorage.setItem('ncza:v1:lastUser', nm);
       }
-    } catch { /* opaque origin (about:blank) — nothing to seed */ }
+    } catch { /* opaque origin (about:blank): nothing to seed */ }
   }, record ?? null, name);
 }
 
@@ -280,11 +280,11 @@ const CALLSIGN = 'input[placeholder="e.g. S. DORSETT"], input[type="text"]';
 /**
  * Which entry flow is this app on? Exactly two are known:
  *
- *   'lock'  — current: `/` is `.lock-screen`; LOGIN opens `/boot`.
- *   'boot'  — the 0.1.0 monolith: `/` IS the boot screen, typewriter first.
+ *   'lock' (current): `/` is `.lock-screen`; LOGIN opens `/boot`.
+ *   'boot' (the 0.1.0 monolith): `/` IS the boot screen, typewriter first.
  *
  * The monolith's roots are inline-styled and carry no class names at all, so
- * it cannot be identified by a selector — only by the callsign field appearing
+ * it cannot be identified by a selector: only by the callsign field appearing
  * once the typewriter is skipped. Anything else is a third state we do not
  * understand, and we refuse to guess at it.
  */
@@ -292,7 +292,7 @@ async function detectFlow(page) {
   if (await page.waitForSelector('.lock-screen', { timeout: 4000 }).catch(() => null)) return 'lock';
   if (await page.$('.boot-screen')) return 'boot';
 
-  // No known root. Could be the monolith mid-typewriter — prove it by skipping.
+  // No known root. Could be the monolith mid-typewriter; prove it by skipping.
   await page.keyboard.press('Space');
   if (await page.waitForSelector(CALLSIGN, { timeout: 6000 }).catch(() => null)) return 'boot';
 
@@ -304,7 +304,7 @@ async function detectFlow(page) {
  * Handles both known entry flows, so one script drives the rebuild and the
  * archived monolith. Returns the flow it took.
  *
- * `onState` is awaited at each named checkpoint — 'entry', 'boot-typing',
+ * `onState` is awaited at each named checkpoint: 'entry', 'boot-typing',
  * 'boot-form', 'welcome', 'dashboard'. That is how capture.mjs screenshots the
  * intermediate states WITHOUT re-implementing the flow. There is exactly one
  * definition of how you get into this app, and it is here. When the entry flow
@@ -315,7 +315,7 @@ export async function signIn(page, name, { onState = async () => {} } = {}) {
   await onState('entry', flow);
 
   if (flow === 'lock') {
-    // The LOGIN click is also the audio-unlock gesture — don't bypass it.
+    // The LOGIN click is also the audio-unlock gesture; don't bypass it.
     await clickByText(page, 'button', 'LOGIN', { what: 'lock screen LOGIN button' });
     await expectSelector(page, '.boot-screen', { what: 'boot screen after LOGIN' });
     await sleep(300);
@@ -346,7 +346,7 @@ export async function signIn(page, name, { onState = async () => {} } = {}) {
 /**
  * Open a page with `record` already in storage, and load the app.
  *
- * Does NOT sign in — call `signIn(page, name)` next. capture.mjs wants the
+ * Does NOT sign in: call `signIn(page, name)` next. capture.mjs wants the
  * intermediate sign-in states, so the two steps stay separate.
  *
  * `beforeGoto(page)` runs after the page exists but before navigation, for

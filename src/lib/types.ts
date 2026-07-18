@@ -166,7 +166,7 @@ export interface Course {
 }
 
 // SYSTEM BROADCAST announcement, as served by /messages.json (baseline merged
-// with KV). Every field the schema requires stays optional here — this is the
+// with KV). Every field the schema requires stays optional here: this is the
 // wire shape, and KV values arrive unvalidated (see lib/messages.ts).
 export type SysLevel = 'update' | 'info' | 'alert' | 'resolved';
 export interface SysMessage {
@@ -194,7 +194,7 @@ export interface RecordAudio {
 }
 
 // The REAL ncza-record/v1 shape, as shipped by the 0.1.0 monolith
-// (docs/monolith-parity-spec.md — "Record schema"). localStorage under
+// (docs/monolith-parity-spec.md, "Record schema"). localStorage under
 // ncza:v1:* may already hold these for live operators.
 export interface ProgressRecord {
   schema: 'ncza-record/v1';

@@ -1,6 +1,6 @@
-/* NC Zoning Academy — NC Radio engine (procedural synth + section scheduler).
+/* NC Zoning Academy: NC Radio engine (procedural synth + section scheduler).
  *
- * PORTABLE, DOM-FREE, no Progress, no ACADEMY_CONFIG. Owns MUSIC ONLY — UI sound
+ * PORTABLE, DOM-FREE, no Progress, no ACADEMY_CONFIG. Owns MUSIC ONLY: UI sound
  * effects are a separate host concern and never live here. All station/track data
  * comes in from the host (radio/stations.js → window.RADIO_STATIONS); the engine
  * holds none of its own.
@@ -19,9 +19,9 @@
  *     (host-side) visualizer running.
  * getState() exposes BOTH `paused` and `musicMuted` distinctly, plus the current
  * track's `bpm` for a tempo-locked visualizer, and `trackProgress`/`trackDuration`
- * (runtime-only — poll these; they are NOT emitted through onStateChange).
+ * (runtime-only: poll these; they are NOT emitted through onStateChange).
  *
- * AudioContext is host-owned and injected. The engine NEVER calls ac.resume() — it
+ * AudioContext is host-owned and injected. The engine NEVER calls ac.resume(); it
  * tolerates a suspended context (schedules nothing until it is running); the host
  * does the first-gesture resume(), then calls setActive(true)/play().
  *
@@ -34,7 +34,7 @@
 
   var TRACK_TARGET_SEC = 210; // derived arrangements aim for ~3.5 min (no RNG)
 
-  // Arrangement presets — each track's `form` picks one. An ordered list of section
+  // Arrangement presets: each track's `form` picks one. An ordered list of section
   // templates; each gates drum rows (k/s/c/h) + melodic voices (pad/bass/lead) and sets
   // an `e` energy multiplier (→ filter cutoff + a dedicated gain). `rep:1` = repeatable
   // middle block; `eTo` = ramp energy across the section; `keepDrums:1` (drift) = never
@@ -218,7 +218,7 @@
   Engine.prototype._energyAt = function (sec, bar) { if (sec.eTo != null) { var p = Math.max(0, Math.min(1, (bar - sec.startBar) / Math.max(1, sec.bars - 1))); return sec.e + (sec.eTo - sec.e) * p; } return sec.e; };
   Engine.prototype._applyEnergy = function (e, t, barSec) { var M = this.M, T = this._track(); if (!M || !T) return; M.energy = e; var tc = Math.max(0.15, barSec * 0.5); M.lp.frequency.setTargetAtTime(Math.max(200, T.cut * e), t, tc); if (M.energyGain) M.energyGain.gain.setTargetAtTime(e, t, tc); };
   Engine.prototype._killVoices = function () { var ac = this.ac, M = this.M; if (!ac || !M || !M.voices) return; var t = ac.currentTime; M.voices.forEach(function (v) { try { v.gain.cancelScheduledValues(t); v.gain.setTargetAtTime(0.0001, t, 0.02); } catch (e) {} }); M.voices = []; };
-  // Restart the sequencer on a fresh downbeat now — instant, no-crossfade track change.
+  // Restart the sequencer on a fresh downbeat now: instant, no-crossfade track change.
   Engine.prototype._restartSeq = function () { var ac = this.ac, M = this.M; this.pausedElapsed = null; if (ac && M) { this._killVoices(); M.step = 0; M.curSec = null; this._buildArr(); if (this.timer) M.next = ac.currentTime + 0.04; M.trackStart = ac.currentTime; } };
 
   // ---- dial navigation (instant, no-crossfade) ----

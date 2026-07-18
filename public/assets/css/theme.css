@@ -1,8 +1,8 @@
-/* NC Zoning Academy — theme tokens.
+/* NC Zoning Academy: theme tokens.
  *
  * Semantic CSS custom properties, mirroring the map's theme.css approach.
  * Default theme = Night Corp. To add a theme, define `html.theme-<name> { … }`
- * overriding the same semantic vars — nothing else in the app hardcodes colour.
+ * overriding the same semantic vars; nothing else in the app hardcodes colour.
  *
  * Palette values are the source of truth from the 0.1.0 shell's `C` object, so
  * the rebuild matches the live look pixel-for-pixel.
@@ -21,7 +21,7 @@ html.theme-night-corp {
   /* raw palette (Night Corp) */
   --navy:  #0a192f;
   --dark:  #112240;  /* no consumer: --surface/--panel-bg were deleted as dead.
-                        Kept as palette — a theme author's input vocabulary, and
+                        Kept as palette: a theme author's input vocabulary, and
                         #17 derives panel fills from it. */
   --cyan:  #00f0ff;
   --amber: #ffb300;
@@ -34,23 +34,23 @@ html.theme-night-corp {
   /* semantic roles (reference these in components, never the raw palette) */
   --bg:          var(--navy);
   --surface:     var(--dark);   /* raised panels over the bg (menus, wells, rows) */
-  --primary:     var(--cyan);   /* Zoning Cyan — links, focus, primary accents */
+  --primary:     var(--cyan);   /* Zoning Cyan: links, focus, primary accents */
   --secondary:   var(--amber);  /* warnings / secondary emphasis */
-  --tertiary:    var(--gold);   /* Academy gold — track titles, certificate */
+  --tertiary:    var(--gold);   /* Academy gold: track titles, certificate */
   --success:     var(--green);
   --danger:      var(--red);
   /* Three text tiers. Grey is for things you glance at, not things you read.
      Tier 1 headings/emphasis, Tier 2 reading copy (AAA, ~7:1+), Tier 3 metadata. */
-  --text:        var(--white);             /* Tier 1 — headings / emphasis */
-  --text-body:   #c3cfe2;                  /* Tier 2 — reading copy */
-  --text-soft:   var(--text-body);         /* legacy alias — orientation-card body copy */
-  --muted:       var(--gray);              /* Tier 3 — metadata / labels only */
+  --text:        var(--white);             /* Tier 1: headings / emphasis */
+  --text-body:   #c3cfe2;                  /* Tier 2: reading copy */
+  --text-soft:   var(--text-body);         /* legacy alias: orientation-card body copy */
+  --muted:       var(--gray);              /* Tier 3: metadata / labels only */
   --placeholder: #54617f;                  /* also dim hints (skip hint, RETURNING OPERATOR?) */
   /* Derived colours use relative colour syntax so they FOLLOW the role above.
      Re-bind --primary to red and every line, glow and tint below turns red at
-     the same alpha — no per-alpha token, no second edit. Value-identical to the
+     the same alpha; no per-alpha token, no second edit. Value-identical to the
      literals they replaced (verified: computed-style diff is empty). */
-  --primary-dim: rgb(from var(--primary) r g b / 0.55);  /* dimmed — idle button text */
+  --primary-dim: rgb(from var(--primary) r g b / 0.55);  /* dimmed: idle button text */
   --field-bg:    #050a14;                  /* near-black input background */
   --hero-a:      #0d1f3a;                  /* course-card hero gradient start */
   --hero-b:      #122a4d;                  /* course-card hero gradient end */
@@ -72,7 +72,7 @@ html.theme-night-corp {
 
   /* scanline / vignette overlays */
   --scanline:  rgb(from var(--primary) r g b / 0.035);
-  --vignette:  rgba(0, 0, 0, 0.45);   /* black — not theme-derived */
+  --vignette:  rgba(0, 0, 0, 0.45);   /* black, not theme-derived */
 
   /* typography */
   --font-display:  'Orbitron', system-ui, sans-serif;   /* headings */
@@ -81,7 +81,7 @@ html.theme-night-corp {
   --font-identity: 'Night Corp Display', var(--font-display); /* Tier-0 wordmark, titlebars, cert */
 
   /* Type roles. Same discipline as the colour roles above: components name the
-     ROLE, never a pixel size. Eight roles replaced 24 ad-hoc sizes — adjusting
+     ROLE, never a pixel size. Eight roles replaced 24 ad-hoc sizes; adjusting
      one here now moves every element that plays that part, which is the whole
      reason the CSS is split by concern.
      Sizes are not comparable across families: Orbitron at 15px and Rajdhani at
@@ -99,7 +99,7 @@ html.theme-night-corp {
           every rule inside keeps saying var(--fs-label). See .radio-pill,
           .boot-screen, .cert-scrim, .app-header.
        3. Nobody invents a role name. If a context wants a size no role names,
-          the role set is wrong — do not add --fs-heading-radio. That escape
+          the role set is wrong; do not add --fs-heading-radio. That escape
           hatch is how this became 24 ad-hoc sizes the first time.
 
      A fixed/portalled element inherits from :root, not from the view that
@@ -107,7 +107,7 @@ html.theme-night-corp {
      .shard-scrim, .sys-readout) or they silently get the base ladder. */
   --fs-title:     34px;  /* page titles, hero numerics */
   --fs-heading:   22px;  /* card headings, quiz prompts, glossary terms */
-  --fs-body:      18px;  /* reading prose — see --measure */
+  --fs-body:      18px;  /* reading prose (see --measure) */
   --fs-secondary: 16px;  /* supporting text: table cells, options, debriefs */
   --fs-ui:        14px;  /* buttons, rail rows, status lines */
   --fs-code:      13px;  /* monospace code, terminal, JSON */
@@ -115,37 +115,37 @@ html.theme-night-corp {
   --fs-micro:     10px;  /* sources, badges, captions, meta */
 
   /* 1.7, not 1.6: prose runs ~94 chars/line in the .player-body column, and a
-     long line fails on the return sweep — the eye loses its place hunting for
+     long line fails on the return sweep; the eye loses its place hunting for
      the next line's start. Extra leading is the standard mitigation. Narrow the
      measure and this can come back down. */
   --lh-body:  1.7;  /* reading prose */
   --lh-tight: 1.4;  /* headings, single-line UI */
   /* Letter-spacing scale. 158 uses sat on 17 values; tracking is in `em`, so the
-     same rendered spacing came from many value/size pairs — the numbers were not
+     same rendered spacing came from many value/size pairs; the numbers were not
      a real scale. Five rungs, chosen at the rendered result (not the grep): some
      values deliberately collapse (0.14 → 0.12, 0.06 → 0.08), which is a visual
      change, signed off on the render. Uppercase mono/display labels at --fs-micro
      need more tracking than prose, so the rung is not independent of the size. */
-  --tracking-tight: 0.04em; /* subtle — larger display text, mixed-case */
+  --tracking-tight: 0.04em; /* subtle: larger display text, mixed-case */
   --tracking-label: 0.08em; /* default label tracking */
-  --tracking-mid:   0.12em; /* the dense cluster — nav, section labels */
+  --tracking-mid:   0.12em; /* the dense cluster: nav, section labels */
   --tracking-caps:  0.16em; /* uppercase display labels, small caps */
-  --tracking-wide:  0.20em; /* widest — rare, hero eyebrows */
+  --tracking-wide:  0.20em; /* widest: rare, hero eyebrows */
 
   /* measure: width of the prose itself. Containers add their own padding on
      top (see .player-body, .modal-box.cyan), so prose fills its card rather
      than leaving a ragged gutter down the right.
      Not expressed in `ch`: that unit is the width of `0`, and Rajdhani's
-     tabular zero is 27% wider than its average glyph — 68ch renders 81 chars. */
+     tabular zero is 27% wider than its average glyph; 68ch renders 81 chars. */
   --measure: 732px;
 
-  /* geometry — Night Corp is sharp: no rounded corners */
+  /* geometry. Night Corp is sharp: no rounded corners */
   --radius: 0;
 
   /* layout */
   --header-h: 62px; /* measured; monolith header is 62, not 64 */
 
-  /* z-index ladder — the whole stacking order in one place, bottom to top.
+  /* z-index ladder: the whole stacking order in one place, bottom to top.
      Values are preserved exactly (this is a pure refactor); where two selectors
      share a token, they share a tier ON PURPOSE. The big jump from 60 to 9100
      is the monolith's: in-flow chrome lives below 100, fixed/portalled overlays
@@ -163,7 +163,7 @@ html.theme-night-corp {
   --z-scanlines:   9990;    /* CRT scanlines, just above the vignette */
   --z-overlay:     9995;    /* modal scrim + radio pill/panel share this tier;
                                the radio wins the tie on DOM order (MusicPlayer
-                               renders last in App.tsx) — do NOT split them */
+                               renders last in App.tsx); do NOT split them */
   --z-transfer:    9996;    /* eddies transfer overlay */
   --z-flyer:       9997;    /* eddies flyer animation */
   --z-scrim:       9998;    /* cert + shard overlays, under the confirms */
@@ -173,7 +173,7 @@ html.theme-night-corp {
      1) A 2px-step numeric scale over the dense region (≤24px), mirroring the
         map's --space-* naming. 88% of all spacing is this. Values on the scale
         are unchanged; a few odd values snap 1px to the nearest rung (signed off
-        on the render). Sub-4px values are optical nudges, NOT spacing — they
+        on the render). Sub-4px values are optical nudges, NOT spacing; they
         stay literal, which is also where the map's scale starts. */
   --space-2xs:  4px;
   --space-xs:   6px;
@@ -188,7 +188,7 @@ html.theme-night-corp {
   --space-6xl: 24px;
 
   /*  2) Named layout tokens for the large values that repeat by MEANING, not as
-        scale steps — putting them on the numeric ladder would be false
+        scale steps; putting them on the numeric ladder would be false
         uniformity. Everything else >24px (page-frame top/bottom padding, the
         26–30px medium band, true one-offs like the 80px player runway) stays
         literal: frequent is not the same as a shared role. */

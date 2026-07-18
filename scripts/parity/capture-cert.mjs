@@ -1,4 +1,4 @@
-// Parity capture — certificate + name prompt + print CSS. Seeds a fully
+// Parity capture: certificate + name prompt + print CSS. Seeds a fully
 // CERTIFIED record (all 9 modules incl. the m09 capstone), signs in, then
 // drives: SERVICE RECORD → VIEW CERTIFICATE → print-media emulation probe →
 // EDIT NAME → clear (ISSUE disabled) → new name → Enter (reissued) → CLOSE.

@@ -1,6 +1,6 @@
 // Service Record view: operator identity, standing stat cards, module
 // status, certification stamps, and shard I/O (eject / slot / purge).
-// Measured spec: docs/monolith-parity-spec.md — "Service Record view".
+// Measured spec: docs/monolith-parity-spec.md, "Service Record view".
 // The balance card shows the SETTLED eddies (op state), not the header's
 // count-up value. <main> so the global keyboard scrolling targets it.
 import { useRef } from 'react';

@@ -1,8 +1,8 @@
-// Field certificate (z 9998). Closes via its button only — no click-outside,
+// Field certificate (z 9998). Closes via its button only: no click-outside,
 // no Escape (matching the monolith). The cert's rank is the TOP course rank
 // (last in ranks[]), not the earned one; clearance is earned (max of done).
 // Print CSS in cert.css makes #cert-print the whole printed page.
-// Measured spec: docs/monolith-parity-spec.md — "Certificate + name prompt".
+// Measured spec: docs/monolith-parity-spec.md, "Certificate + name prompt".
 import type { Course } from '../lib/types';
 import { IDENTITY, progressStats, sanitizeName } from '../lib/academy';
 

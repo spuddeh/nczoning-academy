@@ -1,9 +1,9 @@
 // Dashboard view: terminal line, H1, orientation card, course card (blueprint
 // hero, chips, progress bar, CTA), and the transmission relays. Measured spec:
-// docs/monolith-parity-spec.md — "Dashboard view".
+// docs/monolith-parity-spec.md, "Dashboard view".
 //
 // Deliberate fix vs the monolith: the courses counter shows the number of
-// courses (1), not modules — the monolith shows mods.length under an
+// courses (1), not modules; the monolith shows mods.length under an
 // "AVAILABLE COURSES" label, which is a bug.
 import { useState } from 'react';
 import { sortedModules } from '../lib/academy';

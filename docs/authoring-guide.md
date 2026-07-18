@@ -1,4 +1,4 @@
-# NC Zoning Academy — Content Rulebook
+# NC Zoning Academy: Content Rulebook
 
 The standard for every course and module. If a rule here conflicts with an old
 module, the module is wrong; fix it. Keep this file updated as new rules are
@@ -53,7 +53,7 @@ contributor being onboarded with no prior knowledge of it**.
   use commas, colons, parentheses, or a rewrite. (Verbatim quotes from external
   docs keep their original punctuation.)
 - **Markdown-lite only** in body text: `**bold**`, `*italic*`, `` `code` ``,
-  `[link](url)`. No headings, lists, tables, or images inside a body string —
+  `[link](url)`. No headings, lists, tables, or images inside a body string;
   use the dedicated chunk types for those.
 
 ## 4. Module anatomy (fixed order)
@@ -78,17 +78,17 @@ Keep each chunk to one concept, roughly 90 seconds / 250 words.
 
 A module's scenario earns its place only if ALL THREE hold:
 
-1. It **hinges on the module's core concept** — getting the concept wrong is
+1. It **hinges on the module's core concept**: getting the concept wrong is
    what causes the bad outcome.
 2. The learner walks away with a **transferable rule** (a decision rule or
    failure mode), not trivia.
-3. It is **grounded in real system behavior**, even if the specific event is
+3. It is **grounded in real system behaviour**, even if the specific event is
    constructed.
 
 If no real incident fits, **construct one** that satisfies 1-3 (label it as
-constructed in the debrief and cite the real behavior it rests on). Reject "an
+constructed in the debrief and cite the real behaviour it rests on). Reject "an
 interesting thing that happened" that fails the test. (Example of a failure:
-the scrapped Nexus-v3 investigation — it was about Nexus's product, not our
+the scrapped Nexus-v3 investigation: it was about Nexus's product, not our
 contract, and taught no rule.)
 
 ## 6. Labs
@@ -124,13 +124,13 @@ contract, and taught no rule.)
   sets the level. Module map shows a status **LED** (never colour-only; pair
   with shape/label).
 - **Eddies economy** (`economy`), in-game eurodollars, symbol `€$`:
-  - `startingBalance` — a small signing balance.
-  - `moduleReward` — credited on module completion, shown as the in-game
+  - `startingBalance`: a small signing balance.
+  - `moduleReward`: credited on module completion, shown as the in-game
     two-phase money **TRANSFER** animation (red "TRANSFERRING FUNDS…" progress
     bar → amber "TRANSFER €$ N" with the balance counting up).
-  - `rightReward` — credited per correct quiz/scenario answer (quick green flash
+  - `rightReward`: credited per correct quiz/scenario answer (quick green flash
     + `+€$ N`).
-  - `wrongPenalty` — debited per wrong answer (quick red flash + `-€$ N`).
+  - `wrongPenalty`: debited per wrong answer (quick red flash + `-€$ N`).
   - **The balance may go negative** (in debt to Night Corp); do not clamp it.
 - Capstone awards a **CERTIFIED** stamp + printable certificate.
 - Current course values live in `economy` in the course JSON and are tunable in
@@ -138,8 +138,8 @@ contract, and taught no rule.)
 
 ## 10. Two-tier glossary
 
-- `tier: "project"` — terms specific to this system (envelope, dataset_version,
-  slim list). `tier: "general"` — standard web terms (ETag, CORS, JSON).
+- `tier: "project"`: terms specific to this system (envelope, dataset_version,
+  slim list). `tier: "general"`: standard web terms (ETag, CORS, JSON).
 - Define terms **in-body on first use as well**; do not rely on the glossary
   alone to carry a definition.
 

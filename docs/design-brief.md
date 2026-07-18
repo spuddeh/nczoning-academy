@@ -1,4 +1,4 @@
-# NC Zoning Academy — Claude Design Handover Brief (Document A)
+# NC Zoning Academy: Claude Design Handover Brief (Document A)
 
 You are building the **app shell** for the NC Zoning Academy: a single-user,
 static micro-learning site that renders course content supplied as JSON. Build
@@ -18,7 +18,7 @@ constraints, accessibility rules, and what is out of scope.
 **Product**: a personal, free, single-user LMS ("NC Zoning Academy") that teaches
 the maintainer, and onboards new contributors, about the NC Zoning Board project's
 own systems. The first course is "The Data API". Future courses are new JSON files
-rendered by this same shell — so the shell must be **content-driven and generic**,
+rendered by this same shell, so the shell must be **content-driven and generic**,
 never hard-coded to one course.
 
 **Audience**: one learner at a time. Someone curious and technical-ish but not
@@ -40,7 +40,7 @@ Night Corp is Richard Night's legacy: the "silent, watchful guardian" of Night
 City's infrastructure. The interface should feel **bureaucratic but high-tech**
 (clean lines, structured data, corporate authority), **civic-minded** (managing
 the city for the public good), and **secretive and protected** (strictly
-authorized access). It is the calm, controlled counterpoint to the neon chaos of
+authorised access). It is the calm, controlled counterpoint to the neon chaos of
 the rest of the city.
 
 ### 2.2 The 10-rule voice guide
@@ -65,7 +65,7 @@ the rest of the city.
 10. **Sharp, controlled, trustworthy.** Nothing soft, rounded, bouncy or playful.
     The restraint is the aesthetic.
 
-### 2.3 Palette (discrepancies already resolved — use these exact values)
+### 2.3 Palette (discrepancies already resolved; use these exact values)
 
 | Token | Hex | Use |
 | --- | --- | --- |
@@ -97,7 +97,7 @@ background is faintly visible beneath, as on the live site.
 
 - **Sharp corners.** 0px radius by default (Night Corp does not do soft). Tiny
   2px radii are acceptable on small chips at most.
-- **1px borders** in cyan or muted gray, often with **`[ ]` corner brackets** —
+- **1px borders** in cyan or muted gray, often with **`[ ]` corner brackets**:
   both textually on buttons (`[ TRANSMIT ]`) and optionally as drawn corner
   framing on panels (your call).
 - **Colour-inversion hovers**: e.g. navy panel with a cyan border flips to a solid
@@ -106,7 +106,7 @@ background is faintly visible beneath, as on the live site.
 - **Scanline overlay**: a subtle CRT scanline texture over the whole screen is
   on-brand. Keep it faint, and disable it under reduced motion.
 - **Status LEDs**: small dots that encode state (see 5.2). Never colour-only.
-- **Markers/vectors**: geometric — diamonds, hexagons, sharp squares — minimalist
+- **Markers/vectors**: geometric (diamonds, hexagons, sharp squares), minimalist
   line-art SVG, never rounded map-pin blobs. (Relevant if you draw any iconography.)
 
 ### 2.6 Known discrepancies, resolved
@@ -123,22 +123,22 @@ background is faintly visible beneath, as on the live site.
 
 **Primary brand anchor**: feed the live site into your web-capture input:
 **https://nczoning.net** (it loads in the default Night Corp theme). That rendered
-page is the truest statement of the brand — spacing, glow, borders, type. Use it.
+page is the truest statement of the brand: spacing, glow, borders, type. Use it.
 
 Supplementary targeted screenshots ship alongside this brief in
 [`design-brief-assets/`](design-brief-assets/) for states a single capture misses:
 
-- **[01-full-viewport.png](design-brief-assets/01-full-viewport.png)** — the whole
+- **[01-full-viewport.png](design-brief-assets/01-full-viewport.png)**, the whole
   interface: header with logo + `[SYSTEM_STATUS: NOMINAL]` status strip, sidebar
   section headers (`FILTER BY CATEGORY`, uppercase, cyan), category pills
   (NEW LOCATION = amber, OVERHAUL = cyan, OTHER = gray), frosted overlays panel,
   bottom control bar. This is your layout and colour bible.
-- **[02-welcome-modal.png](design-brief-assets/02-welcome-modal.png)** — the boot
+- **[02-welcome-modal.png](design-brief-assets/02-welcome-modal.png)**, the boot
   gate. Cyan title bar `NIGHT CORP // INTERNAL ACCESS`, a terminal log
   (`> INITIALIZING...`, `> ACCESS GRANTED: INTERNAL_ACCESS_LEVEL_2`), body copy,
   amber dashed-border notices, a full-width `[ I ACKNOWLEDGE ]` button. **The
   Academy boot splash mirrors this exactly** (see view 1).
-- **[03-mod-popup.png](design-brief-assets/03-mod-popup.png)** — a content card:
+- **[03-mod-popup.png](design-brief-assets/03-mod-popup.png)**, a content card:
   image, category corner-tab, title with underline, cyan author badge, a tag pill,
   and cyan action buttons. Use its card treatment for course cards and lab panels.
 
@@ -148,20 +148,20 @@ Supplementary targeted screenshots ship alongside this brief in
 
 Build these seven views. The shell is a single-page app; navigation is internal.
 
-### View 1 — Boot splash (skippable)
+### View 1: Boot splash (skippable)
 Mirrors the live welcome modal (screenshot 02). A typed terminal log boots the
 terminal: `NIGHT CORP // URBAN PLANNING DIVISION`, `Terminal ID: NC-ACAD-01`,
 `> ACCESS GRANTED: OPERATOR CLEARANCE LEVEL <n>`, a one-line mission, then
 `[ ACCESS TERMINAL ]`. Typing animation is skippable (click/key) and disabled
 under reduced motion. Leads to the dashboard.
 
-### View 2 — Dashboard
+### View 2: Dashboard
 Frosted **course cards** (one per course; the POC has one), each showing title,
 subtitle, estimated time, and progress. A persistent **status bar** shows the
 Operator's **clearance rank badge** and **eddies balance** (gold, `€$` prefix).
 Selecting a course enters the module player.
 
-### View 3 — Module player
+### View 3: Module player
 A **left rail = the module map**: an ordered list of modules, each with a
 **status LED** (see 5.2) and its clearance level. The main pane renders the
 selected module through its anatomy, chunk by chunk, advanced with `[ CONTINUE ]`:
@@ -169,7 +169,7 @@ hook (terminal-log) → objectives (bracketed list) → chunks → lab → knowl
 check → war-story scenario → recap → field notes. At the end, a completion action
 pays the module's eddies reward (see 5.3) and flips the LED to solid.
 
-### View 4 — Lab runner
+### View 4: Lab runner
 An embedded request/response console. Shows the request (`GET /v1/meta`), any
 **editable fields** (e.g. an `If-None-Match` header), and a `[ TRANSMIT ]` button.
 On transmit it shows the response: a **status line** (colour-coded: green 2xx,
@@ -177,7 +177,7 @@ amber 3xx, red 4xx/5xx), **headers of interest**, and **pretty-printed JSON body
 A prominent **SIMULATION MODE** banner appears whenever the response is canned
 (always, in preview). See 6.4 for how canned responses are selected.
 
-### View 5 — Quiz and scenario interactions
+### View 5: Quiz and scenario interactions
 Questions render as bracketed options. Four types: single-choice (`mcq`),
 multi-select (`multi`), order-the-steps (`order`, with reorder controls), and
 spot-the-wrong-statement (`spot-wrong`). On answer: **immediate per-option
@@ -185,11 +185,11 @@ feedback** with any citation links, a **green** treatment for correct and **red*
 for wrong, and an **eddies credit or debit** (see 5.3). Scenarios are a terminal-log
 situation followed by one question and a debrief.
 
-### View 6 — Glossary
+### View 6: Glossary
 A searchable list of glossary terms with a **tier filter** (PROJECT vs GENERAL).
 Each term shows its definition and citation links.
 
-### View 7 — Progress / export
+### View 7: Progress / export
 The Operator's record: clearance rank, module status LEDs, eddies balance,
 earned stamps, and (on capstone completion) the **CERTIFIED** stamp. Provides
 `[ EXPORT RECORD ]` and `[ IMPORT RECORD ]` (JSON download/upload of progress),
@@ -229,7 +229,7 @@ Cloudflare Access email, with no view changes.
   A module's `clearance` sets the level it awards. Show the current rank badge.
 - **Status LED** per module: not-started = dim/hollow; in-progress = amber
   (blinking, blink disabled under reduced motion); complete = solid cyan (or
-  green). **Never encode state by colour alone** — pair with shape/fill/label.
+  green). **Never encode state by colour alone**: pair with shape/fill/label.
 
 ### 5.3 Eddies economy (in-game currency)
 Config comes from the course JSON `economy` block: `symbol` (`€$`),
@@ -247,7 +247,7 @@ Config comes from the course JSON `economy` block: `symbol` (`€$`),
 2. **Transfer** (amber/gold): switches to `TRANSFER   €$ <amount>` with a bright
    underline, and the running balance below **counting up** by the amount.
 Both phases are monospace, uppercase, over a dark panel. Under reduced motion,
-skip straight to the final numbers. (This is a distinctive, high-value moment —
+skip straight to the final numbers. (This is a distinctive, high-value moment;
 give it care.)
 
 ### 5.4 Capstone
@@ -520,7 +520,7 @@ mute state and the current station persist in the Service Record (the progress
 object / shard, see 5.1).
 
 **Hard contract: stations are DATA, not code.** The engine must read its stations
-from an **external source** — a `window.RADIO_STATIONS` array (loaded from a
+from an **external source**: a `window.RADIO_STATIONS` array (loaded from a
 separate `radio/stations.js` or `radio/stations.json`), never inline objects baked
 into the engine. This keeps the synthesis engine generic and lets stations be
 authored, validated and added in the repo without touching engine code, the same
@@ -546,7 +546,7 @@ Array order = dial order; track order = rotation order within a station.
 kick/snare/clap/hat are step INDICES 0..15 (not a 16-slot 0/1 mask); note-names
 are sharps-only `^[A-G]#?[0-8]$`; `bass`/`lead`/`pad`/`style` from fixed enums;
 `prog` is exactly 4 bars. **Engine (as shipped).** Keep a current-track index per station and read all
-musical fields off the current track. **Track changes are instant** — a
+musical fields off the current track. **Track changes are instant**: a
 next/prev/dial change restarts the sequencer on a fresh downbeat, silences any
 ringing pad/bass voices (no tail), and snaps the filter/echo retune (no
 cue-and-crossfade). **Next/prev step through the current station's TRACKS**
@@ -561,10 +561,10 @@ track memory, cycle state (paused/track-progress are runtime-only).
 **Track length + song structure (radio-station/v2, Tier 2 direction).** Each
 track carries a required `form` preset (`drift`/`build`/`groove`/`anthem`/`haze`)
 the engine expands into an arrangement of sections (intro/build/peak/breakdown/
-outro) that gate voices/drums and drive an energy/filter envelope — so a track
+outro) that gate voices/drums and drive an energy/filter envelope, so a track
 has a beginning, middle and end, not a flat loop. **Track LENGTH is engine-derived
 from the expanded arrangement + bpm** (`length = totalBars × 60/bpm × beatsPerBar`),
-NOT authored as seconds — this replaces the interim random 180-300s duration and
+NOT authored as seconds; this replaces the interim random 180-300s duration and
 guarantees a track can only end on a downbeat at a phrase end. Arrangements are
 **deterministic (Fixed)**: each `form` expands the same way every play, so tuning
 is reproducible. Presets live in the engine; the data carries only `form`. See
@@ -573,7 +573,7 @@ inline as the `window.RADIO_STATIONS` global (works offline, no fetch); hosting
 reads the same global from a repo file. **Division of labour**: Design owns the
 engine and the radio UI; the station data is authored and validated in the repo
 (Claude Code) against a `radio-station/v2` schema + validator. Keep realism
-**procedural** — humanized timing and a synthesized-impulse convolution reverb
+**procedural**: humanised timing and a synthesised-impulse convolution reverb
 are the levers; no audio samples, to preserve the zero-asset property.
 
 ---

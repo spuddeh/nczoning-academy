@@ -21,7 +21,7 @@ This raised the question of whether to implement real users/accounts.
    (same spirit as the map's "visibility, not claiming"), not access control.
 
 2. **All progress goes through a single persistence adapter** (`Progress.*`) over
-   **one serializable, username-keyed progress object**. No view touches
+   **one serialisable, username-keyed progress object**. No view touches
    `localStorage` directly.
 
 3. **Progress is namespaced by username**: `ncza:v1:progress:<username>`, plus
@@ -48,7 +48,7 @@ This raised the question of whether to implement real users/accounts.
 - The shell stays static and free; no auth, database or cost added now.
 - **If real accounts are ever needed** (cross-device sync, or an admin view of
   who has completed onboarding), swap the one adapter to call a Worker keyed by a
-  **Cloudflare Access** email — same interface, no view changes. The username
+  **Cloudflare Access** email: same interface, no view changes. The username
   session is the stepping stone, not a throwaway.
 
 ## Trigger to revisit

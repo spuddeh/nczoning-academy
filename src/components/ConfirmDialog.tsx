@@ -1,7 +1,7 @@
 // Red destructive-action confirm (slot overwrite / purge). Click-outside
 // cancels; deliberately NOT Escape-wired (the monolith wires Escape only for
 // the glossary and ledger modals). Measured spec:
-// docs/monolith-parity-spec.md — "renderSlotConfirm + renderPurgeConfirm".
+// docs/monolith-parity-spec.md, "renderSlotConfirm + renderPurgeConfirm".
 
 interface ConfirmDialogProps {
   title: string;

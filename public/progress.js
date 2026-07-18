@@ -1,7 +1,7 @@
-/* NC Zoning Academy — Service Record storage adapter.
+/* NC Zoning Academy: Service Record storage adapter.
  *
  * The ONE module that touches localStorage. No DOM, no ACADEMY_CONFIG lookups of
- * its own — every environment-specific decision is injected by the host:
+ * its own; every environment-specific decision is injected by the host:
  *
  *   window.Progress.create({
  *     persistEnabled: () => boolean,   // gate ALL storage (host reads ACADEMY_CONFIG.persist)
@@ -17,7 +17,7 @@
  * throws) in a sandboxed preview or when persist is false.
  *
  * Repointing at a real backend (e.g. a Cloudflare Worker for accounts) is a change
- * to THIS file only — swap the store()/save/load/listUsers internals; the host API
+ * to THIS file only: swap the store()/save/load/listUsers internals; the host API
  * and the injected callbacks stay the same.
  */
 (function () {
@@ -51,7 +51,7 @@
 
       setUser: function (name) { this._user = sanitize(name); return this._user; },
 
-      // The shard payload — serialization of live app state, provided by the host.
+      // The shard payload: serialization of live app state, provided by the host.
       snapshot: function () { return buildSnapshot(); },
 
       save: function () {

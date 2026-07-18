@@ -1,6 +1,6 @@
-/* NC Zoning Academy — lock / standby screen (pre-boot landing).
+/* NC Zoning Academy: lock / standby screen (pre-boot landing).
  * Same house style as boot.css: navy ground, cyan halo, sharp corners, caps.
- * References the semantic tokens in theme.css only — no hardcoded colour.
+ * References the semantic tokens in theme.css only; no hardcoded colour.
  */
 
 .lock-screen {
@@ -151,7 +151,7 @@
 }
 
 /* ---- SYSTEM BROADCAST feed ----
-   The panel itself is the SHARED .broadcast component (style.css, issue #10 —
+   The panel itself is the SHARED .broadcast component (style.css, issue #10;
    also rendered on the dashboard). Only the lock-context sizing lives here. */
 .lock-stack .broadcast {
   width: 100%;
@@ -159,7 +159,7 @@
   text-align: left;
 }
 
-/* the one action — solid cyan, matching the boot ACCESS button's ready state */
+/* the one action: solid cyan, matching the boot ACCESS button's ready state */
 .lock-login {
   width: 100%;
   text-align: center;

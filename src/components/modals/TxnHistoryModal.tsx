@@ -3,7 +3,7 @@
 // the answered question in the player (jump handled by App).
 // Narrow (≤640px) swaps the row DOM to a stacked layout, like the
 // monolith's vw-tracked branch.
-// Measured spec: docs/monolith-parity-spec.md — "Transaction History".
+// Measured spec: docs/monolith-parity-spec.md, "Transaction History".
 import { useSyncExternalStore } from 'react';
 import type { Txn } from '../../lib/types';
 import { ModalShell } from './ModalShell';

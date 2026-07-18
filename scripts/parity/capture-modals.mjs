@@ -1,4 +1,4 @@
-// Parity capture — glossary + transaction-history modals. Seeds an m01 record,
+// Parity capture: glossary + transaction-history modals. Seeds an m01 record,
 // signs in, then drives: glossary open → search → tier filter → Escape, ledger
 // open → jump-to-answer. Numeric probes alongside the screenshots.
 // See scripts/parity/README.md.

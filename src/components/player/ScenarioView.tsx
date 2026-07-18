@@ -1,6 +1,6 @@
 // The war story: amber-themed scenario with a single-select question whose
 // answer state is keyed by the SCENARIO id (not the inner question's).
-// Measured spec: docs/monolith-parity-spec.md — "Scenario".
+// Measured spec: docs/monolith-parity-spec.md, "Scenario".
 import type { Scenario } from '../../lib/types';
 import { Md, SectionLabel, SourcesRow, StageCard, TerminalBlock } from './primitives';
 import { SingleSelect } from './QuizView';

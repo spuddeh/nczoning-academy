@@ -1,11 +1,11 @@
-/* NC Zoning Academy — dashboard view: hero, orientation card, course grid,
+/* NC Zoning Academy, dashboard view: hero, orientation card, course grid,
  * transmission relays.
  * Geometry and colour are measured from the 0.1.0 monolith
  * (docs/monolith-parity-spec.md). Type comes from the --fs-* roles, re-bound
  * for this view on .dash-scroll below.
  *
  * The app header and the fixed satellites (glossary FAB, SYSTEM_STATUS
- * readout) render on EVERY view — they live in style.css, not here.
+ * readout) render on EVERY view; they live in style.css, not here.
  */
 
 /* ---- dashboard content ---- */
@@ -38,7 +38,7 @@
 }
 .dash-h1 {
   font-family: var(--font-identity);
-  font-weight: 400; /* Night Corp Display has no 700 — bold renders faux */
+  font-weight: 400; /* Night Corp Display has no 700; bold renders faux */
   font-size: var(--fs-title);
   letter-spacing: var(--tracking-label);
   color: var(--text);
@@ -172,7 +172,7 @@
   position: relative;
   font-family: var(--font-display);
   font-weight: 900;
-  /* a translucent decorative numeral behind the card, not text — no type role */
+  /* a translucent decorative numeral behind the card, not text; no type role */
   font-size: 26px;
   letter-spacing: var(--tracking-mid);
   color: rgb(from var(--primary) r g b / 0.18);

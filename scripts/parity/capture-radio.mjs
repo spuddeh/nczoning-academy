@@ -1,4 +1,4 @@
-// Parity capture — NC Radio pill + expanded panel. Seeds a record whose audio
+// Parity capture: NC Radio pill + expanded panel. Seeds a record whose audio
 // prefs pin the station (login otherwise randomises it), signs in, then drives:
 // pill → open panel → pause/play → next track → station chip → music mute →
 // volume slider + right-click reset → SFX mute → muted pill → persisted-audio
@@ -30,7 +30,7 @@ const clickSpeaker = (page, idx) => page.evaluate((i) => {
   return false;
 }, idx);
 
-// Panel state probe — texts + the computed colours that flip with state.
+// Panel state probe: texts + the computed colours that flip with state.
 // Scoped to the fixed 300px panel box (the dashboard behind it also has
 // 26px leaf divs that would shadow the freq element).
 const panelProbe = (page) => page.evaluate(() => {
@@ -97,7 +97,7 @@ const pillProbe = (page) => page.evaluate(() => {
   };
 });
 
-// React-safe range setter (both apps are React — go through the native
+// React-safe range setter (both apps are React, go through the native
 // value setter so the synthetic onChange fires).
 const setRange = (page, idx, v) => page.evaluate((i, val) => {
   const r = [...document.querySelectorAll('input[type="range"]')][i];

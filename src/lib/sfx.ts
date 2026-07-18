@@ -1,5 +1,5 @@
-// Subtle UI audio — a WebAudio synth with no assets, ported 1:1 from the
-// monolith (docs/monolith-parity-spec.md — "Sounds"). Square/saw tones give
+// Subtle UI audio: a WebAudio synth with no assets, ported 1:1 from the
+// monolith (docs/monolith-parity-spec.md, "Sounds"). Square/saw tones give
 // the dry 80s-terminal timbre; filtered white noise gives drive-seek texture.
 //
 // One instance for the app's lifetime. Gain is scaled by sfxVol and gated on

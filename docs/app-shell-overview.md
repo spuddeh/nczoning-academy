@@ -1,7 +1,7 @@
-# NC Zoning Academy — App Shell Overview
+# NC Zoning Academy: App Shell Overview
 
 A single-page shell rendering the whole training experience in the Night Corp
-house style. Built as one Design Component — `NC Zoning Academy.dc.html` — that
+house style. Built as one Design Component (`NC Zoning Academy.dc.html`) that
 opens directly in a browser and exports as vanilla HTML/CSS/JS with no build
 step.
 
@@ -11,7 +11,7 @@ step.
   0px corners, uppercase letter-spaced labels, frosted panels, terminal/log
   framing, scanline overlay.
 - **Display type:** a self-hosted **Night Corp Display** face (`@font-face` from
-  `assets/font/`, no external dependency) sets the Tier 0 identity strings —
+  `assets/font/`, no external dependency) sets the Tier 0 identity strings:
   the ZONING ACADEMY wordmark, the boot and modal titlebars, and the
   certificate heading. Titlebars run at a uniform 12px so
   `NIGHT CORP // URBAN PLANNING DIVISION` fits the boot and certificate cards
@@ -19,8 +19,8 @@ step.
   stack.
 - **Favicons:** NC-monogram marks derived from the corp logo, one per property
   and accent (Map = cyan, Academy = gold), in `assets/`.
-- **Config-driven:** reads `window.ACADEMY_CONFIG` and honors the two preview
-  constraints — `liveMode:false` (renders the inlined SAMPLE_COURSE, no network
+- **Config-driven:** reads `window.ACADEMY_CONFIG` and honours the two preview
+  constraints: `liveMode:false` (renders the inlined SAMPLE_COURSE, no network
   fetch) and `persist:false` (in-memory only). All `localStorage` access is
   gated on the `persist` flag and wrapped in try/catch, so it degrades to
   in-memory without breaking in a sandboxed preview.
@@ -28,7 +28,7 @@ step.
 
 ## The views
 
-- **Lock / standby (`/`)** — the landing page, in front of boot. States what
+- **Lock / standby (`/`)**: the landing page, in front of boot. States what
   the Academy is and renders a SYSTEM BROADCAST announcements feed from
   `public/messages.json` (fetched `no-store`, so posts go live without a
   rebuild; empty hides the panel, a failed fetch shows an evergreen fallback).
@@ -36,26 +36,26 @@ step.
   builds the radio engine, so boot inherits a running context instead of
   playing silently. The clock reports Night City's year (2077). See
   [`decisions/lock-screen-and-audio-gate.md`](decisions/lock-screen-and-audio-gate.md).
-- **Boot splash / login (`/boot`)** — terminal boot sequence with a floppy-read
+- **Boot splash / login (`/boot`)**: terminal boot sequence with a floppy-read
   tick sound; a pseudo-login where you enter an operator name (defaults to
-  "S. Dorsett") before you can access the terminal — that name carries through
+  "S. Dorsett") before you can access the terminal; that name carries through
   to the certificate and the service record; plus a "SLOT SERVICE RECORD
   SHARD" import path that takes you straight in. Hard-guarded: reached only by
   passing through the lock, so a refresh or direct hit redirects to `/`.
-- **Dashboard** — operator standing, eddies balance, course list, and quick
+- **Dashboard**: operator standing, eddies balance, course list, and quick
   links (map, Discord, Ko-fi, GitHub repos) with custom SVG icons; animated
   `SYSTEM_STATUS` telemetry sits in the bottom-left readout.
-- **Module player** — left module map (collapses to a drawer on phone), streamed
+- **Module player**: left module map (collapses to a drawer on phone), streamed
   content blocks with keep-scrolled-to-bottom follow, all four quiz types (MCQ,
   multi-select, scenario, ordering), the lab runner, and a save/eject point both
   mid-module and at completion. The ordering/sequence quiz supports lift-and-carry
   drag reordering (pointer events, works on mouse and touch) alongside ▲/▼ arrow
   buttons kept for accessibility; the arrows flash the row that moved.
-- **Glossary** — a modal (floating book-icon button top-right; drops into the
+- **Glossary**: a modal (floating book-icon button top-right; drops into the
   mobile nav row) accessible from any view.
-- **Progress / Service Record** — the single source of truth for all storage,
+- **Progress / Service Record**: the single source of truth for all storage,
   with username editing, volume/mute prefs, and import/export.
-- **Certificate** — name-gated (uses the login/operator name, with an inline
+- **Certificate**: name-gated (uses the login/operator name, with an inline
   prompt as fallback and an edit option), thematically stamped, exported with
   the record.
 
@@ -81,7 +81,7 @@ animation. All progress lives in one Progress module:
 - The operator name is sanitized (control chars/newlines stripped, whitespace
   collapsed, 42-char cap) before it reaches the certificate.
 - CERTIFIED status and stamps are **derived** from module completion at render
-  time, not stored as independent flags — so a slotted shard restores them with
+  time, not stored as independent flags, so a slotted shard restores them with
   no extra snapshot fields.
 - Auto-saves to `localStorage` on every change when `persist` is on, and resumes
   on boot; the shard stays the portable backup/transfer copy.
@@ -112,7 +112,7 @@ tracks.
   envelope (applied to the filter cutoff and a dedicated gain node, gliding at
   each bar boundary). Track length is **derived** from bars × bpm and chosen
   deterministically (~210s target; same track = same arrangement every play).
-  `drift` never gates the beat to silence — it only swells and recedes. The
+  `drift` never gates the beat to silence; it only swells and recedes. The
   arrangement presets live in the engine; `stations.js` carries only the
   per-track `form` choice.
 - **Levels:** separate MUSIC and SYSTEM SOUNDS sliders + mute toggles (speaker
@@ -128,17 +128,17 @@ tap/active equivalents.
 
 ## Files
 
-- `NC Zoning Academy.dc.html` — the app shell (template + logic).
-- `radio/stations.js` — the 5-station radio data (`window.RADIO_STATIONS`),
+- `NC Zoning Academy.dc.html`: the app shell (template + logic).
+- `radio/stations.js`: the 5-station radio data (`window.RADIO_STATIONS`),
   loaded before the engine.
-- `support.js` — Design Component runtime (do not edit).
-- `assets/` — icons, SVGs, and the property/accent favicons.
-- `assets/font/` — the self-hosted Night Corp Display face (woff2 + otf).
+- `support.js`: Design Component runtime (do not edit).
+- `assets/`: icons, SVGs, and the property/accent favicons.
+- `assets/font/`: the self-hosted Night Corp Display face (woff2 + otf).
 
-## Constraints honored (brief §7)
+## Constraints honoured (brief §7)
 
-1. Reads `window.ACADEMY_CONFIG`; in preview `liveMode:false` + `persist:false`
-   — no network fetch, no localStorage; renders inlined SAMPLE_COURSE, progress
+1. Reads `window.ACADEMY_CONFIG`; in preview `liveMode:false` + `persist:false`:
+   no network fetch, no localStorage; renders inlined SAMPLE_COURSE, progress
    in memory.
 2. Labs return canned responses only, with a SIMULATION MODE banner.
 3. Exports as vanilla HTML/CSS/JS, no build step.
