@@ -1,9 +1,9 @@
-// Shared browser driver for the capture scripts.
+// Shared browser driver for the style differ and any ad-hoc probe.
 //
 // This is a general-purpose rig: launch a headless Chrome, seed a record, sign
 // in, and probe the running app. It was built to A/B the rebuild against the
-// 0.1.0 monolith, and the capture-*.mjs scripts still do that, but nothing
-// here is parity-specific. Any script that needs to look at the real app in a
+// 0.1.0 monolith; that job is done and the capture scripts are retired, but
+// nothing here is parity-specific. Any script that needs to look at the real app in a
 // real browser (computed styles, z-index ladders, overlay geometry) should
 // import this rather than copy the boilerplate.
 //
@@ -132,7 +132,7 @@ export async function launchBrowser({ width = 1440, height = 900 } = {}) {
  * Release the browser.
  *
  * `disconnect()` is NOT enough for one we spawned: it detaches the client and
- * leaves Chrome running with every page open. Each failed capture run leaked a
+ * leaves Chrome running with every page open. Each failed run leaked a
  * browser that way, and with it a radio station.
  *
  * A Chrome we merely attached to belongs to someone else: disconnect, never
@@ -246,8 +246,8 @@ export const leafText = (page, reSrc) => page.evaluate((src) => {
  * obvious order is to navigate first and write after. But the app has already
  * read its record into memory by then. The debug Chrome also reuses ONE profile
  * across runs, so `localStorage` survives between scripts. Together that means
- * a capture could run against whatever record the previous script happened to
- * leave behind. Observed directly: an unseeded `capture.mjs` rendered a "fresh"
+ * a run could pick up whatever record the previous script happened to
+ * leave behind. Observed directly: an unseeded run rendered a "fresh"
  * dashboard showing 1400 eddies and 1/9 progress.
  *
  * Seeding here makes the rebuild deterministic, verified: `RECORD_CERTIFIED`
@@ -305,7 +305,7 @@ async function detectFlow(page) {
  * archived monolith. Returns the flow it took.
  *
  * `onState` is awaited at each named checkpoint: 'entry', 'boot-typing',
- * 'boot-form', 'welcome', 'dashboard'. That is how capture.mjs screenshots the
+ * 'boot-form', 'welcome', 'dashboard'. That is how a probe can screenshot the
  * intermediate states WITHOUT re-implementing the flow. There is exactly one
  * definition of how you get into this app, and it is here. When the entry flow
  * changes again, this function is the only thing that changes.
@@ -346,11 +346,11 @@ export async function signIn(page, name, { onState = async () => {} } = {}) {
 /**
  * Open a page with `record` already in storage, and load the app.
  *
- * Does NOT sign in: call `signIn(page, name)` next. capture.mjs wants the
+ * Does NOT sign in: call `signIn(page, name)` next. A probe may want the
  * intermediate sign-in states, so the two steps stay separate.
  *
  * `beforeGoto(page)` runs after the page exists but before navigation, for
- * things like a CDP session (see capture-record.mjs denying downloads).
+ * things like a CDP session (e.g. denying downloads via CDP).
  */
 export async function openApp(browser, { url, label, record = null, name, beforeGoto }) {
   const page = await newPage(browser);
