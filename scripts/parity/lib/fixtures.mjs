@@ -1,4 +1,4 @@
-// Seeded records shared by the capture scripts.
+// Seeded records shared by the harness scripts (the style differ and any probe).
 //
 // Timestamps are fixed, never `Date.now()`: both apps must render identical
 // times or the screenshot pair diffs on the clock rather than on the layout.
