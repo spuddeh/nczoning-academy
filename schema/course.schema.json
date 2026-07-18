@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://nczoning.net/schema/academy-course/v1.json",
   "title": "academy-course/v1",
-  "description": "NC Zoning Academy course document. One file per course under public/courses/. Built from docs/plan.md skeleton.",
+  "description": "NC Zoning Academy course document. One file per course under public/courses/.",
   "type": "object",
   "additionalProperties": false,
   "required": ["schemaVersion", "id", "title", "estMinutes", "contentAudit", "modules"],

@@ -1,9 +1,8 @@
 # NC Zoning Academy: App Shell Overview
 
 A single-page shell rendering the whole training experience in the Night Corp
-house style. Built as one Design Component (`NC Zoning Academy.dc.html`) that
-opens directly in a browser and exports as vanilla HTML/CSS/JS with no build
-step.
+house style. The live app is a React + TypeScript + Vite build, rebuilt in-repo
+from the original Claude Design monolith at verified parity.
 
 ## The frame
 
@@ -19,11 +18,10 @@ step.
   stack.
 - **Favicons:** NC-monogram marks derived from the corp logo, one per property
   and accent (Map = cyan, Academy = gold), in `assets/`.
-- **Config-driven:** reads `window.ACADEMY_CONFIG` and honours the two preview
-  constraints: `liveMode:false` (renders the inlined SAMPLE_COURSE, no network
-  fetch) and `persist:false` (in-memory only). All `localStorage` access is
-  gated on the `persist` flag and wrapped in try/catch, so it degrades to
-  in-memory without breaking in a sandboxed preview.
+- **Config-driven:** reads `window.ACADEMY_CONFIG` (`public/config.js`).
+  `liveMode` selects the live course fetch over the inlined SAMPLE_COURSE;
+  `persist` gates all `localStorage` access (wrapped in try/catch, so it
+  degrades to in-memory).
 - **Labs** return canned responses only, behind a SIMULATION MODE banner.
 
 ## The views
@@ -34,8 +32,7 @@ step.
   rebuild; empty hides the panel, a failed fetch shows an evergreen fallback).
   The LOGIN click is the audio gate: it resumes the shared `AudioContext` and
   builds the radio engine, so boot inherits a running context instead of
-  playing silently. The clock reports Night City's year (2077). See
-  [`decisions/lock-screen-and-audio-gate.md`](decisions/lock-screen-and-audio-gate.md).
+  playing silently. The clock reports Night City's year (2077).
 - **Boot splash / login (`/boot`)**: terminal boot sequence with a floppy-read
   tick sound; a pseudo-login where you enter an operator name (defaults to
   "S. Dorsett") before you can access the terminal; that name carries through
@@ -128,17 +125,10 @@ tap/active equivalents.
 
 ## Files
 
-- `NC Zoning Academy.dc.html`: the app shell (template + logic).
-- `radio/stations.js`: the 5-station radio data (`window.RADIO_STATIONS`),
-  loaded before the engine.
-- `support.js`: Design Component runtime (do not edit).
-- `assets/`: icons, SVGs, and the property/accent favicons.
-- `assets/font/`: the self-hosted Night Corp Display face (woff2 + otf).
-
-## Constraints honoured (brief §7)
-
-1. Reads `window.ACADEMY_CONFIG`; in preview `liveMode:false` + `persist:false`:
-   no network fetch, no localStorage; renders inlined SAMPLE_COURSE, progress
-   in memory.
-2. Labs return canned responses only, with a SIMULATION MODE banner.
-3. Exports as vanilla HTML/CSS/JS, no build step.
+The live app is React + TypeScript under `src/` (`App.tsx`, `views/`,
+`components/`, `lib/`), built by Vite. Static data and styles are `public/`
+passthrough: course JSON under `public/courses/`, the radio data at
+`public/radio/stations.js` (`window.RADIO_STATIONS`), the procedural engine at
+`public/radio-engine.js`, the Progress adapter at `public/progress.js`, and
+per-view CSS under `public/assets/css/`. The README's repo layout has the full
+tree.
