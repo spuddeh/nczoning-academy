@@ -11,7 +11,8 @@
       "changes": [
         "Re-audited against nc-zoning-board 1.6.0 (archive-detection API 1.5.0 plus cron freshness alert and self-heal 1.6.0); pinned commit moved to 916caf1.",
         "New material: the archives install-detection field on every record (m01, m08), the /v1/health cron heartbeat (last_refresh_at, refresh_age_seconds) and the wedged-vs-failed distinction (m03, m04, m09), and the workflow_dispatch self-heal (m06).",
-        "Corrected now-false claims: /v1/health carries Cache-Control no-store and reads the meta record (m03 quiz); the site has NO client-side fallback and is a deliberate canary (m08 glossary, callout, quiz, recap); API_VERSION is a static deploy marker, not bumped per release (glossary, m06).",
+        "Corrected now-false claims: /v1/health carries Cache-Control no-store and reads the meta record (m03 quiz); the site has NO client-side fallback and is a deliberate canary (m08 glossary, callout, quiz, recap).",
+    "API_VERSION is now SemVer for the API surface, not a static marker (glossary, m03, m06, m09): nc-zoning-board 1.7.0 backfilled it to 1.3.0 and added a CI guard that fails a shape change without a bump. Reported values updated from 0.1.0 to 1.3.0 throughout, including canned lab responses and the openapi sample.",
         "All canned lab responses re-captured live 2026-07-22 (dataset cc90d381, 296 records); every project citation re-pinned and line-verified against 916caf1."
       ]
     },
@@ -93,7 +94,7 @@
     { "term": "hash-gate", "tier": "project", "def": "The rule that the refresh saves new data only when its content fingerprint (hash) has changed, so unchanged data keeps a stable dataset_version and ETag.", "sources": [ { "kind": "project", "label": "worker/src/refresh.js L225-237", "url": "https://github.com/spuddeh/nc-zoning-board/blob/916caf15fc9c25f17c3efa4a78c8d07bf36a8aa6/worker/src/refresh.js#L225-L237" } ] },
     { "term": "cron heartbeat", "tier": "project", "def": "A liveness stamp the refresh job writes on EVERY cron cycle (last_refresh_at), served at /v1/health with a server-computed refresh_age_seconds. Because it moves every cycle, unlike generated_at (which only moves when the content changes), a heartbeat that stops advancing reveals a wedged cron that is still serving but silently going stale, a failure discovery_stale cannot catch. refresh_age_seconds also gives the clockless in-game consumer a freshness read.", "sources": [ { "kind": "project", "label": "worker/src/index.js L114-132 (/v1/health serves the heartbeat)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/916caf15fc9c25f17c3efa4a78c8d07bf36a8aa6/worker/src/index.js#L114-L132" }, { "kind": "project", "label": "worker/src/refresh.js L253 (last_refresh_at stamped every cycle)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/916caf15fc9c25f17c3efa4a78c8d07bf36a8aa6/worker/src/refresh.js#L253" } ] },
     { "term": "account_id", "tier": "project", "def": "The Cloudflare account identifier, set in wrangler.jsonc. Not secret; setting it lets the deploy's scoped token skip an account-lookup step.", "sources": [ { "kind": "project", "label": "worker/wrangler.jsonc L18-21", "url": "https://github.com/spuddeh/nc-zoning-board/blob/916caf15fc9c25f17c3efa4a78c8d07bf36a8aa6/worker/wrangler.jsonc#L18-L21" } ] },
-    { "term": "API_VERSION", "tier": "project", "def": "A version label set by hand in wrangler.jsonc and reported at /v1/health as data.version, used as a deploy marker (proof a given deploy landed). It is NOT the release version and is not bumped on every release: the contract's real version signals are the /v1 path (bumped only on a breaking change) and dataset_version (which tracks the data). It has stood at 0.1.0 across releases.", "sources": [ { "kind": "project", "label": "worker/wrangler.jsonc L30-34", "url": "https://github.com/spuddeh/nc-zoning-board/blob/916caf15fc9c25f17c3efa4a78c8d07bf36a8aa6/worker/wrangler.jsonc#L30-L34" } ] },
+    { "term": "API_VERSION", "tier": "project", "def": "SemVer for the API SURFACE, set by hand in wrangler.jsonc and reported at /v1/health as data.version. MINOR when a field or route is added, MAJOR on a breaking change (which also moves /v1 to /v2), PATCH on a behavior fix. It does double duty: proof that a given deploy landed, and the signal that tells a consumer whether the field it wants exists yet. It is not the site's release version, not dataset_version (which tracks the data, not the shape), and not the in-game ApiVersion() integer (which gates only on breaking changes, so the two numbers will not match). It stood at 0.1.0 across three additive changes until nc-zoning-board 1.7.0 backfilled it to 1.3.0 and added a CI guard.", "sources": [ { "kind": "project", "label": "worker/wrangler.jsonc L30-34", "url": "https://github.com/spuddeh/nc-zoning-board/blob/916caf15fc9c25f17c3efa4a78c8d07bf36a8aa6/worker/wrangler.jsonc#L30-L34" } ] },
     { "term": "503 Service Unavailable", "tier": "general", "def": "A status code meaning the server is not ready to handle the request (a temporary condition). Here it is the not_ready response before the first dataset build, and it carries Retry-After.", "sources": [ { "kind": "official", "label": "MDN - 503 Service Unavailable", "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/503" } ] },
     { "term": "Retry-After", "tier": "general", "def": "A response header saying how long to wait before retrying, given as seconds or a date. Used with 503 and 429.", "sources": [ { "kind": "official", "label": "MDN - Retry-After", "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Retry-After" } ] },
     { "term": "rate limiting", "tier": "general", "def": "Capping how many requests a client may send in a time window; here 100 per 10 seconds per IP, enforced at Cloudflare's edge.", "sources": [ { "kind": "official", "label": "Cloudflare - Rate limiting rules", "url": "https://developers.cloudflare.com/waf/rate-limiting-rules/" } ] },
@@ -727,11 +728,11 @@
               "generated_at": null,
               "dataset_version": null,
               "recently_updated_days": 7,
-              "data": { "status": "ok", "version": "0.1.0", "last_refresh_at": "2026-07-21T22:00:06.803Z", "refresh_age_seconds": 149 }
+              "data": { "status": "ok", "version": "1.3.0", "last_refresh_at": "2026-07-21T22:00:06.803Z", "refresh_age_seconds": 149 }
             }
           }
         ],
-        "debrief": "Health returns the envelope with null generated_at and dataset_version because it reads no served dataset - status and version are a pure liveness and deploy check. It is not cacheable content, so it carries no ETag; and it is marked Cache-Control: no-store so a probe always reaches origin, never a stale edge copy. The one thing it DOES read is the small meta record, for the cron heartbeat: last_refresh_at is when the 5-minute refresh cron last ran (stamped every cycle), and refresh_age_seconds is its age. Watch that age: if it climbs past a few minutes the cron has wedged (module 04). data.version is API_VERSION, a hand-set deploy marker (module 06). Captured live 2026-07-22.",
+        "debrief": "Health returns the envelope with null generated_at and dataset_version because it reads no served dataset - status and version are a pure liveness and deploy check. It is not cacheable content, so it carries no ETag; and it is marked Cache-Control: no-store so a probe always reaches origin, never a stale edge copy. The one thing it DOES read is the small meta record, for the cron heartbeat: last_refresh_at is when the 5-minute refresh cron last ran (stamped every cycle), and refresh_age_seconds is its age. Watch that age: if it climbs past a few minutes the cron has wedged (module 04). data.version is API_VERSION, SemVer for the API surface and a deploy marker (module 06). Captured live 2026-07-22.",
         "sources": [
           { "kind": "project", "label": "worker/src/index.js L114-132", "url": "https://github.com/spuddeh/nc-zoning-board/blob/916caf15fc9c25f17c3efa4a78c8d07bf36a8aa6/worker/src/index.js#L114-L132" },
           { "kind": "project", "label": "worker/openapi.json L14-33 (health: 'Uncached')", "url": "https://github.com/spuddeh/nc-zoning-board/blob/916caf15fc9c25f17c3efa4a78c8d07bf36a8aa6/worker/openapi.json#L14-L33" }
@@ -1065,7 +1066,7 @@
             "when": "default",
             "status": 200,
             "headers": { "Content-Type": "application/json; charset=utf-8" },
-            "body": { "schema": 1, "generated_at": null, "dataset_version": null, "recently_updated_days": 7, "data": { "status": "ok", "version": "0.1.0" } }
+            "body": { "schema": 1, "generated_at": null, "dataset_version": null, "recently_updated_days": 7, "data": { "status": "ok", "version": "1.3.0" } }
           },
           {
             "when": "rate-limited",
@@ -1158,7 +1159,7 @@
           "> subject: how a git push becomes a live API",
           "> [ci] push to main (worker/**) -> run tests",
           "> [ci] tests passed -> wrangler deploy (production)",
-          "> [ci] deployed. /v1/health version: 0.1.0",
+          "> [ci] deployed. /v1/health version: 1.3.0",
           "> begin."
         ]
       },
@@ -1202,7 +1203,7 @@
           "id": "m06-c4",
           "type": "text",
           "heading": "The deploy marker",
-          "body": "How do you know a deploy actually landed? `API_VERSION` is a plain label set by hand in `wrangler.jsonc`, which the Worker reports at `/v1/health` as `data.version`. Read it right after a deploy: if it is the value you shipped, your code is serving; if it is the old one, the deploy did not take. Treat it as a deploy MARKER, not a release version. It is bumped only when someone chooses to, and has in fact stood at `0.1.0` across releases, because the contract's real version signals live elsewhere: the `/v1` path (which changes only on a breaking change) and `dataset_version` (which tracks the data). Even standing still, it is the cheapest possible smoke test that your deploy is live.",
+          "body": "How do you know a deploy actually landed? `API_VERSION` is set by hand in `wrangler.jsonc`, and the Worker reports it at `/v1/health` as `data.version`. Read it right after a deploy: if it is the value you shipped, your code is serving; if it is the old one, the deploy did not take. It is SemVer for the API SURFACE, not the site's release version: MINOR when a field or route is added, MAJOR on a breaking change (which also moves `/v1` to `/v2`), PATCH on a behavior fix. That makes it two tools in one: the cheapest possible deploy smoke test, and the signal a consumer reads to tell whether the field it wants exists yet. Worth knowing why it works that way: the marker sat at `0.1.0` through three additive changes because nothing forced a bump, so CI now fails any change to the API's shape that forgets to move it.",
           "sources": [
             { "kind": "project", "label": "worker/wrangler.jsonc L30-34 (API_VERSION var)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/916caf15fc9c25f17c3efa4a78c8d07bf36a8aa6/worker/wrangler.jsonc#L30-L34" },
             { "kind": "project", "label": "worker/src/index.js L114-132 (/v1/health reports env.API_VERSION)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/916caf15fc9c25f17c3efa4a78c8d07bf36a8aa6/worker/src/index.js#L114-L132" }
@@ -1236,10 +1237,10 @@
             "when": "default",
             "status": 200,
             "headers": { "Content-Type": "application/json; charset=utf-8" },
-            "body": { "schema": 1, "generated_at": null, "dataset_version": null, "recently_updated_days": 7, "data": { "status": "ok", "version": "0.1.0" } }
+            "body": { "schema": 1, "generated_at": null, "dataset_version": null, "recently_updated_days": 7, "data": { "status": "ok", "version": "1.3.0" } }
           }
         ],
-        "debrief": "data.version is 0.1.0, the current API_VERSION. Because the deploy only runs after the test gate passes, seeing the expected version here means tests passed AND the deploy landed. A version other than the one you expected means the deploy did not take, time to check the pipeline.",
+        "debrief": "data.version is 1.3.0, the current API_VERSION. Because the deploy only runs after the test gate passes, seeing the expected version here means tests passed AND the deploy landed. A version other than the one you expected means the deploy did not take, time to check the pipeline. The 1.3.0 reads as three additive changes on top of the original /v1 surface: recently_updated, then archives, then the cron heartbeat.",
         "sources": [
           { "kind": "project", "label": "worker/src/index.js L114-132", "url": "https://github.com/spuddeh/nc-zoning-board/blob/916caf15fc9c25f17c3efa4a78c8d07bf36a8aa6/worker/src/index.js#L114-L132" }
         ]
@@ -1389,7 +1390,7 @@
             "headers": { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "public, max-age=300" },
             "body": {
               "openapi": "3.1.0",
-              "info": { "title": "NC Zoning Data API", "version": "0.1.0" },
+              "info": { "title": "NC Zoning Data API", "version": "1.3.0" },
               "paths": {
                 "/v1/health": { "get": { "summary": "Liveness + deployed version + cron heartbeat" } },
                 "/v1/locations": { "get": { "summary": "All locations", "parameters": [ { "name": "full", "in": "query", "schema": { "enum": ["1"] } } ], "responses": { "200": {}, "304": {}, "503": {} } } },
@@ -1736,7 +1737,7 @@
           "options": [
             { "text": "Store the ETag and send If-None-Match; a 304 means unchanged, a 200 with a new ETag means it changed.", "correct": true, "feedback": "Correct. That is the conditional GET; the ETag is the dataset_version, so it changes only when the data does." },
             { "text": "Download the full list every minute and diff it.", "correct": false, "feedback": "Wasteful. The whole point of the ETag/304 mechanism is to avoid re-downloading unchanged data." },
-            { "text": "Poll /v1/health and watch the version.", "correct": false, "feedback": "version is the deploy marker (API_VERSION), not the data version. Data changes are tracked by dataset_version / ETag." }
+            { "text": "Poll /v1/health and watch the version.", "correct": false, "feedback": "version is API_VERSION: it moves when the API's SHAPE changes (a new field or route), not when the data does. Data changes are tracked by dataset_version / ETag." }
           ],
           "sources": [
             { "kind": "project", "label": "worker/src/index.js L79-99; worker/src/store.js L33-38", "url": "https://github.com/spuddeh/nc-zoning-board/blob/916caf15fc9c25f17c3efa4a78c8d07bf36a8aa6/worker/src/index.js#L79-L99" }
@@ -1789,7 +1790,7 @@
         "situation": [
           "> reports: 'the map data looks a little behind'",
           "> GET /v1/meta -> 200, discovery_stale: true, generated_at is ~30 min ago",
-          "> GET /v1/health -> 200, version 0.1.0 (the expected release)",
+          "> GET /v1/health -> 200, version 1.3.0 (the expected release)",
           "> users are loading the map fine; pins are present"
         ],
         "question": {
