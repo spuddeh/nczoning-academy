@@ -92,7 +92,7 @@ export function LabView({ lab }: { lab: Lab }) {
       <SectionLabel text={`LAB // ${lab.title ?? 'CONSOLE'}`} />
       <div className="lab-sim">
         <span className="lab-sim-led ledblink" />
-        <span className="lab-sim-text">SIMULATION MODE — RESPONSES ARE CANNED, NO LIVE NETWORK</span>
+        <span className="lab-sim-text">SIMULATION MODE // RESPONSES ARE CANNED, NO LIVE NETWORK</span>
       </div>
       {lab.briefing && <div className="lab-brief"><Md text={lab.briefing} /></div>}
 

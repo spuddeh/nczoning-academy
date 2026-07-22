@@ -11,17 +11,34 @@ file records what a visitor receives.
 
 ## [Unreleased]
 
+## 0.9.2 - 2026-07-22
+
+### Changed
+
+- House style: em dashes removed from the course and the shell UI (authoring
+  guide rule 3). The lab banner now reads `SIMULATION MODE // RESPONSES ARE
+  CANNED`, and pending modules on the Service Record read `○ PENDING`.
+
+### Fixed
+
+- The course's own v2.1.0 changelog claimed the re-audit landed on
+  nc-zoning-board 1.6.0 at `916caf1`. It landed on 1.7.0 at `fef978a`, which is
+  what all 114 project citations are pinned to. The 0.9.1 entry below is
+  corrected the same way: it also described `API_VERSION` as a static deploy
+  marker, the reading 1.7.0 superseded and the shipped course already replaced.
+
 ## 0.9.1 - 2026-07-22
 
 ### Changed
 
 - TRANSMISSION PROTOCOLS course v2.1.0: re-audited against nc-zoning-board
-  1.6.0. Adds the `archives` install-detection field (m01, m08) and the
+  1.7.0. Adds the `archives` install-detection field (m01, m08) and the
   `/v1/health` cron heartbeat with the wedged-vs-failed distinction (m03, m04,
   m09); corrects the now-false "client-side fallback" story to the site's
-  no-fallback canary posture (m08) and clarifies `API_VERSION` as a static
-  deploy marker (m06). Lab captures re-recorded live; every citation re-pinned
-  to 916caf1.
+  no-fallback canary posture (m08) and reworks `API_VERSION` from a static
+  deploy marker into SemVer for the API surface, now 1.3.0 behind a CI drift
+  guard (glossary, m03, m06, m09). Lab captures re-recorded live; every citation
+  re-pinned to `fef978a`.
 
 ## 0.9.0 - 2026-07-16
 

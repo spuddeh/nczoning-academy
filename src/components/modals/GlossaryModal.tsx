@@ -48,7 +48,7 @@ export function GlossaryModal({ course, query, tier, onQuery, onTier, onClose }:
       <div className="gloss-body">
         <div className="gloss-index-line">&gt; INDEXING FIELD TERMINOLOGY...</div>
         <div className="gloss-intro">
-          Reference terminology cited across the coursework. Open anytime — filter by clearance tier or search the index.
+          Reference terminology cited across the coursework. Open anytime: filter by clearance tier or search the index.
         </div>
         <div className="gloss-controls">
           <div className="gloss-search">

@@ -96,7 +96,7 @@ export function ServiceRecord({
                     CLR {m.clearance ?? 1} // {m.capstone ? 'CAPSTONE // ' : ''}{md ? 'COMPLETE' : 'NOT STARTED'}
                   </div>
                 </div>
-                <span className="record-mod-status">{md ? '✓ CERTIFIED' : '— PENDING'}</span>
+                <span className="record-mod-status">{md ? '✓ CERTIFIED' : '○ PENDING'}</span>
               </div>
             );
           }) : <div className="record-no-mods">&gt; no modules in this course.</div>}

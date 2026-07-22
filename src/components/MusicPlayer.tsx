@@ -142,7 +142,7 @@ export function MusicPlayer({
         <button
           className="radio-pill standby"
           type="button"
-          title="The browser pauses audio across a refresh — any click or key reconnects it"
+          title="The browser pauses audio across a refresh; any click or key reconnects it"
           onClick={onToggleOpen}
         >
           <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" style={{ display: 'block' }} aria-hidden="true">
@@ -235,7 +235,7 @@ export function MusicPlayer({
         <button
           className={`radio-cycle${st.cycle ? ' on' : ''}`}
           type="button"
-          title={st.cycle ? 'Auto-advancing through this station’s tracks' : 'Holding this track — click to auto-advance tracks'}
+          title={st.cycle ? 'Auto-advancing through this station’s tracks' : 'Holding this track. Click to auto-advance tracks'}
           onClick={onToggleCycle}
         >
           {/* no JSX space: the flex gap is the spacing, as in the monolith */}

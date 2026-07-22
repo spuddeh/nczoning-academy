@@ -274,7 +274,7 @@ function OrderQuiz({ q, api }: { q: Question; api: QuizApi }) {
       </div>
       {st.answered ? (
         <div className={`quiz-result${st.correct ? '' : ' wrong'}`}>
-          {st.correct ? '// SEQUENCE CORRECT' : '// SEQUENCE INCORRECT — correct order shown by numbering'}
+          {st.correct ? '// SEQUENCE CORRECT' : '// SEQUENCE INCORRECT: correct order shown by numbering'}
         </div>
       ) : (
         <div>

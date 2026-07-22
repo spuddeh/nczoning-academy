@@ -2,6 +2,7 @@
 // Validate every course under public/courses/ against schema/course.schema.json.
 //
 // - Schema errors -> non-zero exit (blocks CI).
+// - Em dashes anywhere in a course JSON -> non-zero exit (authoring guide rule 3).
 // - Content sources[] that are empty on chunk/lab/quiz/scenario -> WARNING only
 //   (nudges the P2 accuracy mandate without failing the P1 scaffold).
 //
@@ -22,6 +23,34 @@ const readJson = (p) => JSON.parse(readFileSync(p, "utf8"));
 
 const errors = [];
 const warnings = [];
+
+// --- house style: no em dashes (authoring guide rule 3) ---------------------
+// Rule 3 forbids U+2014 outright; its one exemption (verbatim quotes from
+// external docs) has never been used, so there is deliberately no escape hatch.
+// Add one the day a real quote needs it, not before. Walks every string in the
+// file, including changelog and contentAudit prose, which no schema rule covers.
+const EM_DASH = "—";
+
+const lintNoEmDash = (rel, node, path = "") => {
+  if (typeof node === "string") {
+    if (node.includes(EM_DASH)) {
+      const at = node.indexOf(EM_DASH);
+      const excerpt = node.slice(Math.max(0, at - 30), at + 31).replace(/\s+/g, " ");
+      errors.push(
+        `${rel}: em dash at ${path || "/"} (rule 3: use a comma, colon, ` +
+          `parentheses, or a rewrite) ...${excerpt}...`,
+      );
+    }
+    return;
+  }
+  if (Array.isArray(node)) {
+    node.forEach((v, i) => lintNoEmDash(rel, v, `${path}/${i}`));
+    return;
+  }
+  if (node && typeof node === "object") {
+    for (const [k, v] of Object.entries(node)) lintNoEmDash(rel, v, `${path}/${k}`);
+  }
+};
 
 // --- load + compile schema --------------------------------------------------
 const ajv = new Ajv({ allErrors: true, strict: false });
@@ -46,6 +75,7 @@ const index = readJson(indexPath);
 if (!Array.isArray(index.courses)) {
   errors.push("courses/index.json: `courses` must be an array");
 }
+lintNoEmDash("courses/index.json", index);
 
 const registered = new Set();
 for (const entry of index.courses ?? []) {
@@ -80,9 +110,12 @@ for (const entry of index.courses ?? []) {
   try {
     course = readJson(join(coursesDir, rel));
   } catch (e) {
-    errors.push(`${rel}: invalid JSON — ${e.message}`);
+    errors.push(`${rel}: invalid JSON: ${e.message}`);
     continue;
   }
+
+  // style lint first: it does not depend on the shape being valid
+  lintNoEmDash(rel, course);
 
   if (!validate(course)) {
     for (const err of validate.errors) {
