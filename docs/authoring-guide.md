@@ -156,7 +156,7 @@ contract, and taught no rule.)
 
 ## 12. Staying current (re-audit procedure)
 
-Code changes; the course must not silently rot. Two guards keep it honest:
+Code changes; the course must not silently rot. Three guards keep it honest:
 
 - **Pinned commits.** `contentAudit.repos` lists every source repo and the exact
   commit its project claims were verified against. Every `kind: project`
@@ -169,6 +169,13 @@ Code changes; the course must not silently rot. Two guards keep it honest:
   course actually cites, naming the modules that cite it. A cited file changing
   fails the run; that failure email is the "content may be stale" alarm. Files
   that changed but are not cited are ignored.
+- **The audit-SHA agreement check.** `npm run validate` fails if a citation URL
+  is pinned to anything other than its repo's `contentAudit` commit, or if a SHA
+  written in `changelog` / `auditNote` prose next to a pin cue ("pinned",
+  "commit", "verified against") disagrees with a real pin. It needs no network,
+  so it runs on the PR rather than on the weekly cron. It exists because v2.1.0
+  shipped a changelog claiming a `916caf1` pin while every other copy of that
+  fact said `fef978a`.
 
 When it reports STALE:
 1. Read the diff of each flagged file (`gh api repos/<repo>/compare/<pinned>...<HEAD>`).

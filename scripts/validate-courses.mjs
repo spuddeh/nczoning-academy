@@ -3,6 +3,7 @@
 //
 // - Schema errors -> non-zero exit (blocks CI).
 // - Em dashes anywhere in a course JSON -> non-zero exit (authoring guide rule 3).
+// - An audit SHA that disagrees with contentAudit -> non-zero exit.
 // - Content sources[] that are empty on chunk/lab/quiz/scenario -> WARNING only
 //   (nudges the P2 accuracy mandate without failing the P1 scaffold).
 //
@@ -96,6 +97,86 @@ for (const f of readdirSync(coursesDir)) {
   if (!registered.has(f)) warnings.push(`${f} exists on disk but is not listed in index.json`);
 }
 
+// --- the audit SHA must agree with itself everywhere it appears -------------
+// Course v2.1.0 shipped a changelog saying the re-audit landed on board 1.6.0
+// at 916caf1 while contentAudit and all 114 citation URLs said 1.7.0 /
+// fef978a. The re-pin updated every MECHANICAL copy (greppable) and missed the
+// one restated in prose. check-freshness.mjs reads contentAudit.repos[].commit
+// alone, so it stayed green over the contradiction.
+//
+// This check lives here, not in check-freshness.mjs, on purpose: it needs no
+// network, so it can run on the PR that introduces the drift instead of on the
+// weekly cron that runs long after.
+//
+// Two parts, because "every hex token must be a pin" is not viable: the course
+// legitimately carries 21 non-commit hex runs (location UUIDs, Nexus CDN
+// filenames, ETag hashes, dataset_version). So:
+//   A. citation URLs  -> exact, complete. The SHA sits in a known URL position.
+//   B. prose          -> a net, not a proof. Only hex near a pin cue word is
+//                        judged, which is where a stale restatement lives.
+const SHA_RE = /\b[0-9a-f]{7,40}\b/g;
+const PIN_CUE_RE = /\b(?:re-)?pinned\b|\bpin\b|\bcommit\b|\bverified against\b|\baudited against\b/gi;
+const CUE_WINDOW = 60; // chars after a cue in which a SHA is taken to be the pin
+
+const blobSha = (url) =>
+  String(url).match(/^https:\/\/github\.com\/([^/]+\/[^/]+)\/blob\/([^/]+)\//);
+
+const lintAuditSha = (rel, course) => {
+  const audit = course.contentAudit;
+  if (!audit) return;
+
+  const pinByRepo = new Map((audit.repos ?? []).map((r) => [r.repo, r.commit]));
+  // projectCommit usually duplicates a repos[] entry; dedupe so the error
+  // message does not list the same SHA twice
+  const pins = [...new Set([...pinByRepo.values(), audit.projectCommit].filter(Boolean))];
+  if (!pins.length) return;
+
+  // A. every citation URL is pinned to its repo's audited commit
+  const eachUrl = (obj, where) => {
+    for (const s of obj?.sources ?? []) {
+      const m = blobSha(s.url);
+      if (!m) continue;
+      const [, repo, sha] = m;
+      const pin = pinByRepo.get(repo);
+      if (pin === undefined) {
+        errors.push(`${rel}: ${where} cites ${repo} but contentAudit.repos does not pin it`);
+      } else if (sha !== pin) {
+        errors.push(
+          `${rel}: ${where} cites ${repo} at ${sha.slice(0, 7)} but contentAudit ` +
+            `pins ${pin.slice(0, 7)} (a re-pin missed this URL)`,
+        );
+      }
+    }
+  };
+  for (const m of course.modules ?? []) {
+    (m.chunks ?? []).forEach((c) => eachUrl(c, `${m.id}/${c.id}`));
+    if (m.lab) eachUrl(m.lab, `${m.id}/${m.lab.id}`);
+    (m.quiz ?? []).forEach((q) => eachUrl(q, `${m.id}/${q.id}`));
+    if (m.scenario) eachUrl(m.scenario, `${m.id}/${m.scenario.id}`);
+  }
+  (course.glossary ?? []).forEach((g) => eachUrl(g, `glossary/${g.term}`));
+
+  // B. a SHA written in prose next to a pin cue must agree with a real pin
+  const proseSha = (text, path) => {
+    for (const cue of text.matchAll(PIN_CUE_RE)) {
+      const window = text.slice(cue.index, cue.index + cue[0].length + CUE_WINDOW);
+      for (const hex of window.matchAll(SHA_RE)) {
+        if (pins.some((p) => p.startsWith(hex[0]) || hex[0].startsWith(p))) continue;
+        errors.push(
+          `${rel}: ${path} says "${cue[0]} … ${hex[0]}" but no audited commit ` +
+            `matches (pinned: ${pins.map((p) => p.slice(0, 7)).join(", ")})`,
+        );
+      }
+    }
+  };
+  (course.changelog ?? []).forEach((entry, i) =>
+    (entry.changes ?? []).forEach((line, j) =>
+      proseSha(line, `/changelog/${i}/changes/${j}`),
+    ),
+  );
+  if (audit.auditNote) proseSha(audit.auditNote, "/contentAudit/auditNote");
+};
+
 // --- validate each registered course ----------------------------------------
 const emptySources = (label, obj, path) => {
   if (Array.isArray(obj?.sources) && obj.sources.length === 0) {
@@ -116,6 +197,7 @@ for (const entry of index.courses ?? []) {
 
   // style lint first: it does not depend on the shape being valid
   lintNoEmDash(rel, course);
+  lintAuditSha(rel, course);
 
   if (!validate(course)) {
     for (const err of validate.errors) {
