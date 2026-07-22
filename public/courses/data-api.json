@@ -59,23 +59,23 @@
     "wrongPenalty": 250
   },
   "contentAudit": {
-    "projectCommit": "916caf15fc9c25f17c3efa4a78c8d07bf36a8aa6",
+    "projectCommit": "fef978ae3e89e6fcd3557f79274be5d973c9bcca",
     "auditedAt": "2026-07-22",
     "repos": [
-      { "repo": "spuddeh/nc-zoning-board", "commit": "916caf15fc9c25f17c3efa4a78c8d07bf36a8aa6" },
+      { "repo": "spuddeh/nc-zoning-board", "commit": "fef978ae3e89e6fcd3557f79274be5d973c9bcca" },
       { "repo": "spuddeh/nc-zoning-core", "commit": "08c45f77f97e02f8745062c576928134ed844d70" }
     ],
-    "auditNote": "Course v2.1.0: re-audit against nc-zoning-board 1.6.0 (archive-detection API plus cron freshness alert and self-heal), pinned at 916caf1. Project claims cite file+line pinned to the repos above (nc-zoning-board worker/site at 916caf1; nc-zoning-core in-game consumer unchanged at 08c45f7), and every line range was re-verified 2026-07-22. New or changed since v2.0.0: the archives field, the /v1/health cron heartbeat, the site's no-fallback canary posture, and the API_VERSION deploy-marker clarification. General concepts cite official docs (MDN, developers.cloudflare.com, docs.github.com, learn.openapis.org) verified via WebFetch on 2026-07-06 (not re-fetched this pass). Healthy lab responses captured live from api.nczoning.net 2026-07-22; failure-state responses (stale meta, 503, 429) reconstructed from code/config and labelled as such. Module 05 (rate limit plus Bot Fight Mode) is Cloudflare EDGE CONFIG, dashboard-confirmed 2026-07-06, NOT in any repo, and cited that way. Run `npm run freshness` to check the pinned commits against current default branches."
+    "auditNote": "Course v2.1.0: re-audit against nc-zoning-board 1.7.0 (archive-detection API, cron freshness alert and self-heal, then the API_VERSION SemVer policy), pinned at fef978a. Project claims cite file+line pinned to the repos above (nc-zoning-board worker/site at fef978a; nc-zoning-core in-game consumer unchanged at 08c45f7), and every line range was re-verified 2026-07-22. New or changed since v2.0.0: the archives field, the /v1/health cron heartbeat, the site's no-fallback canary posture, and API_VERSION as SemVer for the API surface (1.3.0), which supersedes the static-deploy-marker reading this course carried mid-audit. Note the wrangler.jsonc citations moved (L30-34 to L30-39, L46-52 to L50-56): the API_VERSION var gained a policy comment block, which pushed the cron trigger block down four lines. General concepts cite official docs (MDN, developers.cloudflare.com, docs.github.com, learn.openapis.org) verified via WebFetch on 2026-07-06 (not re-fetched this pass). Healthy lab responses captured live from api.nczoning.net 2026-07-22; failure-state responses (stale meta, 503, 429) reconstructed from code/config and labelled as such. Module 05 (rate limit plus Bot Fight Mode) is Cloudflare EDGE CONFIG, dashboard-confirmed 2026-07-06, NOT in any repo, and cited that way. Run `npm run freshness` to check the pinned commits against current default branches."
   },
   "glossary": [
-    { "term": "envelope", "tier": "project", "def": "The fixed wrapper every API response uses: { schema, generated_at, dataset_version, recently_updated_days, data }. The payload always lives under data, so consumers parse one stable shape regardless of endpoint.", "sources": [ { "kind": "project", "label": "worker/src/index.js L40-48", "url": "https://github.com/spuddeh/nc-zoning-board/blob/916caf15fc9c25f17c3efa4a78c8d07bf36a8aa6/worker/src/index.js#L40-L48" } ] },
-    { "term": "dataset_version", "tier": "project", "def": "A SHA-256 content hash of the dataset. It is written to KV only when the content changes, and it doubles as the ETag on every read route.", "sources": [ { "kind": "project", "label": "worker/src/store.js L33-38", "url": "https://github.com/spuddeh/nc-zoning-board/blob/916caf15fc9c25f17c3efa4a78c8d07bf36a8aa6/worker/src/store.js#L33-L38" } ] },
-    { "term": "location record", "tier": "project", "def": "The single shape /v1/locations serves: every field on every entry (identity, coordinates, tags, description, credits, image URLs, recently_updated). There is no slim variant; ?full=1 is accepted as a no-op alias for older consumers.", "sources": [ { "kind": "project", "label": "worker/src/index.js L134-142", "url": "https://github.com/spuddeh/nc-zoning-board/blob/916caf15fc9c25f17c3efa4a78c8d07bf36a8aa6/worker/src/index.js#L134-L142" } ] },
-    { "term": "recently_updated", "tier": "project", "def": "A server-computed boolean on every location record: true when the mod's Nexus update falls within the recency window. The server computes it because the in-game consumer has no clock to compute it with.", "sources": [ { "kind": "project", "label": "worker/openapi.json L184-198 (LocationFull.recently_updated)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/916caf15fc9c25f17c3efa4a78c8d07bf36a8aa6/worker/openapi.json#L184-L198" } ] },
-    { "term": "recency window", "tier": "project", "def": "The number of days behind recently_updated, published on every envelope as recently_updated_days (currently 7). Consumers read the rule from the envelope instead of hardcoding it.", "sources": [ { "kind": "project", "label": "worker/openapi.json L155-165 (Envelope.recently_updated_days)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/916caf15fc9c25f17c3efa4a78c8d07bf36a8aa6/worker/openapi.json#L155-L165" } ] },
-    { "term": "archives", "tier": "project", "def": "The install files a mod ships, published on every location record: its .archive load files AND .xl (ArchiveXL) files, both of which land in the game's archive/pc/mod/ folder and are readable by another mod (.xl is the only fingerprint a removal-only mod has). Bare filenames, not paths. An in-game consumer matches them against a player's installed files to tell which location mods are present. Empty when a mod's files cannot be read (a WIP/Dummy entry with no Nexus page, an AMM-only mod, or not yet fetched), never 'ships nothing'.", "sources": [ { "kind": "project", "label": "worker/openapi.json L184-198 (LocationFull.archives)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/916caf15fc9c25f17c3efa4a78c8d07bf36a8aa6/worker/openapi.json#L184-L198" }, { "kind": "project", "label": "worker/src/nexus.js L178-221 (archive detection: .archive + .xl)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/916caf15fc9c25f17c3efa4a78c8d07bf36a8aa6/worker/src/nexus.js#L178-L221" } ] },
-    { "term": "stable id", "tier": "project", "def": "A location's permanent identifier: a UUID for manual entries, or nexus-<nexus_id> for auto-discovered ones. Frozen by contract so consumers can key on it.", "sources": [ { "kind": "project", "label": "worker/src/merge.js L75-82", "url": "https://github.com/spuddeh/nc-zoning-board/blob/916caf15fc9c25f17c3efa4a78c8d07bf36a8aa6/worker/src/merge.js#L75-L82" } ] },
-    { "term": "RedData DTO", "tier": "project", "def": "The in-game Cyberpunk JSON reader the API must stay mappable to. It turns a response into a DTO (Data Transfer Object, a plain data record with named fields), and it is strict: no arrays-of-arrays, and property names are case-sensitive. This constraint shapes the whole contract.", "sources": [ { "kind": "project", "label": "worker/src/index.js L5-14", "url": "https://github.com/spuddeh/nc-zoning-board/blob/916caf15fc9c25f17c3efa4a78c8d07bf36a8aa6/worker/src/index.js#L5-L14" } ] },
+    { "term": "envelope", "tier": "project", "def": "The fixed wrapper every API response uses: { schema, generated_at, dataset_version, recently_updated_days, data }. The payload always lives under data, so consumers parse one stable shape regardless of endpoint.", "sources": [ { "kind": "project", "label": "worker/src/index.js L40-48", "url": "https://github.com/spuddeh/nc-zoning-board/blob/fef978ae3e89e6fcd3557f79274be5d973c9bcca/worker/src/index.js#L40-L48" } ] },
+    { "term": "dataset_version", "tier": "project", "def": "A SHA-256 content hash of the dataset. It is written to KV only when the content changes, and it doubles as the ETag on every read route.", "sources": [ { "kind": "project", "label": "worker/src/store.js L33-38", "url": "https://github.com/spuddeh/nc-zoning-board/blob/fef978ae3e89e6fcd3557f79274be5d973c9bcca/worker/src/store.js#L33-L38" } ] },
+    { "term": "location record", "tier": "project", "def": "The single shape /v1/locations serves: every field on every entry (identity, coordinates, tags, description, credits, image URLs, recently_updated). There is no slim variant; ?full=1 is accepted as a no-op alias for older consumers.", "sources": [ { "kind": "project", "label": "worker/src/index.js L134-142", "url": "https://github.com/spuddeh/nc-zoning-board/blob/fef978ae3e89e6fcd3557f79274be5d973c9bcca/worker/src/index.js#L134-L142" } ] },
+    { "term": "recently_updated", "tier": "project", "def": "A server-computed boolean on every location record: true when the mod's Nexus update falls within the recency window. The server computes it because the in-game consumer has no clock to compute it with.", "sources": [ { "kind": "project", "label": "worker/openapi.json L184-198 (LocationFull.recently_updated)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/fef978ae3e89e6fcd3557f79274be5d973c9bcca/worker/openapi.json#L184-L198" } ] },
+    { "term": "recency window", "tier": "project", "def": "The number of days behind recently_updated, published on every envelope as recently_updated_days (currently 7). Consumers read the rule from the envelope instead of hardcoding it.", "sources": [ { "kind": "project", "label": "worker/openapi.json L155-165 (Envelope.recently_updated_days)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/fef978ae3e89e6fcd3557f79274be5d973c9bcca/worker/openapi.json#L155-L165" } ] },
+    { "term": "archives", "tier": "project", "def": "The install files a mod ships, published on every location record: its .archive load files AND .xl (ArchiveXL) files, both of which land in the game's archive/pc/mod/ folder and are readable by another mod (.xl is the only fingerprint a removal-only mod has). Bare filenames, not paths. An in-game consumer matches them against a player's installed files to tell which location mods are present. Empty when a mod's files cannot be read (a WIP/Dummy entry with no Nexus page, an AMM-only mod, or not yet fetched), never 'ships nothing'.", "sources": [ { "kind": "project", "label": "worker/openapi.json L184-198 (LocationFull.archives)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/fef978ae3e89e6fcd3557f79274be5d973c9bcca/worker/openapi.json#L184-L198" }, { "kind": "project", "label": "worker/src/nexus.js L178-221 (archive detection: .archive + .xl)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/fef978ae3e89e6fcd3557f79274be5d973c9bcca/worker/src/nexus.js#L178-L221" } ] },
+    { "term": "stable id", "tier": "project", "def": "A location's permanent identifier: a UUID for manual entries, or nexus-<nexus_id> for auto-discovered ones. Frozen by contract so consumers can key on it.", "sources": [ { "kind": "project", "label": "worker/src/merge.js L75-82", "url": "https://github.com/spuddeh/nc-zoning-board/blob/fef978ae3e89e6fcd3557f79274be5d973c9bcca/worker/src/merge.js#L75-L82" } ] },
+    { "term": "RedData DTO", "tier": "project", "def": "The in-game Cyberpunk JSON reader the API must stay mappable to. It turns a response into a DTO (Data Transfer Object, a plain data record with named fields), and it is strict: no arrays-of-arrays, and property names are case-sensitive. This constraint shapes the whole contract.", "sources": [ { "kind": "project", "label": "worker/src/index.js L5-14", "url": "https://github.com/spuddeh/nc-zoning-board/blob/fef978ae3e89e6fcd3557f79274be5d973c9bcca/worker/src/index.js#L5-L14" } ] },
     { "term": "API", "tier": "general", "def": "Application Programming Interface: how one program asks another for data through software, instead of a person using a screen.", "sources": [ { "kind": "official", "label": "MDN - API", "url": "https://developer.mozilla.org/en-US/docs/Glossary/API" } ] },
     { "term": "endpoint", "tier": "general", "def": "A specific address on an API you can call, such as /v1/locations. Each endpoint returns one kind of data.", "sources": [ { "kind": "official", "label": "MDN - An overview of HTTP", "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/Overview" } ] },
     { "term": "JSON", "tier": "general", "def": "JavaScript Object Notation: a plain-text data format of names and values (objects and arrays) that most languages, browsers, and the game can read.", "sources": [ { "kind": "official", "label": "MDN - JSON", "url": "https://developer.mozilla.org/en-US/docs/Glossary/JSON" } ] },
@@ -89,12 +89,12 @@
     { "term": "Cloudflare Worker", "tier": "general", "def": "A serverless function running on Cloudflare's global edge network, with no infrastructure to manage. Handles each request in its fetch() handler.", "sources": [ { "kind": "official", "label": "Cloudflare - Workers", "url": "https://developers.cloudflare.com/workers/" } ] },
     { "term": "Workers KV", "tier": "general", "def": "A global, low-latency key-value data store optimized for high reads and infrequent writes. The API serves the whole dataset from KV.", "sources": [ { "kind": "official", "label": "Cloudflare - Workers KV", "url": "https://developers.cloudflare.com/kv/" } ] },
     { "term": "cron trigger", "tier": "general", "def": "A Cloudflare feature that maps a cron expression to a Worker's scheduled() handler so it runs on a schedule.", "sources": [ { "kind": "official", "label": "Cloudflare - Cron Triggers", "url": "https://developers.cloudflare.com/workers/configuration/cron-triggers/" } ] },
-    { "term": "discovery_stale", "tier": "project", "def": "A flag on /v1/meta. true means the last refresh failed and you are being served the last-known-good data; false means the data is fresh.", "sources": [ { "kind": "project", "label": "worker/src/refresh.js L258-279", "url": "https://github.com/spuddeh/nc-zoning-board/blob/916caf15fc9c25f17c3efa4a78c8d07bf36a8aa6/worker/src/refresh.js#L258-L279" } ] },
-    { "term": "last-known-good", "tier": "project", "def": "The safety rule: if a refresh fails, keep serving the last dataset that built cleanly rather than an empty or partial one.", "sources": [ { "kind": "project", "label": "worker/src/refresh.js L258-279", "url": "https://github.com/spuddeh/nc-zoning-board/blob/916caf15fc9c25f17c3efa4a78c8d07bf36a8aa6/worker/src/refresh.js#L258-L279" } ] },
-    { "term": "hash-gate", "tier": "project", "def": "The rule that the refresh saves new data only when its content fingerprint (hash) has changed, so unchanged data keeps a stable dataset_version and ETag.", "sources": [ { "kind": "project", "label": "worker/src/refresh.js L225-237", "url": "https://github.com/spuddeh/nc-zoning-board/blob/916caf15fc9c25f17c3efa4a78c8d07bf36a8aa6/worker/src/refresh.js#L225-L237" } ] },
-    { "term": "cron heartbeat", "tier": "project", "def": "A liveness stamp the refresh job writes on EVERY cron cycle (last_refresh_at), served at /v1/health with a server-computed refresh_age_seconds. Because it moves every cycle, unlike generated_at (which only moves when the content changes), a heartbeat that stops advancing reveals a wedged cron that is still serving but silently going stale, a failure discovery_stale cannot catch. refresh_age_seconds also gives the clockless in-game consumer a freshness read.", "sources": [ { "kind": "project", "label": "worker/src/index.js L114-132 (/v1/health serves the heartbeat)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/916caf15fc9c25f17c3efa4a78c8d07bf36a8aa6/worker/src/index.js#L114-L132" }, { "kind": "project", "label": "worker/src/refresh.js L253 (last_refresh_at stamped every cycle)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/916caf15fc9c25f17c3efa4a78c8d07bf36a8aa6/worker/src/refresh.js#L253" } ] },
-    { "term": "account_id", "tier": "project", "def": "The Cloudflare account identifier, set in wrangler.jsonc. Not secret; setting it lets the deploy's scoped token skip an account-lookup step.", "sources": [ { "kind": "project", "label": "worker/wrangler.jsonc L18-21", "url": "https://github.com/spuddeh/nc-zoning-board/blob/916caf15fc9c25f17c3efa4a78c8d07bf36a8aa6/worker/wrangler.jsonc#L18-L21" } ] },
-    { "term": "API_VERSION", "tier": "project", "def": "SemVer for the API SURFACE, set by hand in wrangler.jsonc and reported at /v1/health as data.version. MINOR when a field or route is added, MAJOR on a breaking change (which also moves /v1 to /v2), PATCH on a behavior fix. It does double duty: proof that a given deploy landed, and the signal that tells a consumer whether the field it wants exists yet. It is not the site's release version, not dataset_version (which tracks the data, not the shape), and not the in-game ApiVersion() integer (which gates only on breaking changes, so the two numbers will not match). It stood at 0.1.0 across three additive changes until nc-zoning-board 1.7.0 backfilled it to 1.3.0 and added a CI guard.", "sources": [ { "kind": "project", "label": "worker/wrangler.jsonc L30-34", "url": "https://github.com/spuddeh/nc-zoning-board/blob/916caf15fc9c25f17c3efa4a78c8d07bf36a8aa6/worker/wrangler.jsonc#L30-L34" } ] },
+    { "term": "discovery_stale", "tier": "project", "def": "A flag on /v1/meta. true means the last refresh failed and you are being served the last-known-good data; false means the data is fresh.", "sources": [ { "kind": "project", "label": "worker/src/refresh.js L258-279", "url": "https://github.com/spuddeh/nc-zoning-board/blob/fef978ae3e89e6fcd3557f79274be5d973c9bcca/worker/src/refresh.js#L258-L279" } ] },
+    { "term": "last-known-good", "tier": "project", "def": "The safety rule: if a refresh fails, keep serving the last dataset that built cleanly rather than an empty or partial one.", "sources": [ { "kind": "project", "label": "worker/src/refresh.js L258-279", "url": "https://github.com/spuddeh/nc-zoning-board/blob/fef978ae3e89e6fcd3557f79274be5d973c9bcca/worker/src/refresh.js#L258-L279" } ] },
+    { "term": "hash-gate", "tier": "project", "def": "The rule that the refresh saves new data only when its content fingerprint (hash) has changed, so unchanged data keeps a stable dataset_version and ETag.", "sources": [ { "kind": "project", "label": "worker/src/refresh.js L225-237", "url": "https://github.com/spuddeh/nc-zoning-board/blob/fef978ae3e89e6fcd3557f79274be5d973c9bcca/worker/src/refresh.js#L225-L237" } ] },
+    { "term": "cron heartbeat", "tier": "project", "def": "A liveness stamp the refresh job writes on EVERY cron cycle (last_refresh_at), served at /v1/health with a server-computed refresh_age_seconds. Because it moves every cycle, unlike generated_at (which only moves when the content changes), a heartbeat that stops advancing reveals a wedged cron that is still serving but silently going stale, a failure discovery_stale cannot catch. refresh_age_seconds also gives the clockless in-game consumer a freshness read.", "sources": [ { "kind": "project", "label": "worker/src/index.js L114-132 (/v1/health serves the heartbeat)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/fef978ae3e89e6fcd3557f79274be5d973c9bcca/worker/src/index.js#L114-L132" }, { "kind": "project", "label": "worker/src/refresh.js L253 (last_refresh_at stamped every cycle)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/fef978ae3e89e6fcd3557f79274be5d973c9bcca/worker/src/refresh.js#L253" } ] },
+    { "term": "account_id", "tier": "project", "def": "The Cloudflare account identifier, set in wrangler.jsonc. Not secret; setting it lets the deploy's scoped token skip an account-lookup step.", "sources": [ { "kind": "project", "label": "worker/wrangler.jsonc L18-21", "url": "https://github.com/spuddeh/nc-zoning-board/blob/fef978ae3e89e6fcd3557f79274be5d973c9bcca/worker/wrangler.jsonc#L18-L21" } ] },
+    { "term": "API_VERSION", "tier": "project", "def": "SemVer for the API SURFACE, set by hand in wrangler.jsonc and reported at /v1/health as data.version. MINOR when a field or route is added, MAJOR on a breaking change (which also moves /v1 to /v2), PATCH on a behavior fix. It does double duty: proof that a given deploy landed, and the signal that tells a consumer whether the field it wants exists yet. It is not the site's release version, not dataset_version (which tracks the data, not the shape), and not the in-game ApiVersion() integer (which gates only on breaking changes, so the two numbers will not match). It stood at 0.1.0 across three additive changes until nc-zoning-board 1.7.0 backfilled it to 1.3.0 and added a CI guard.", "sources": [ { "kind": "project", "label": "worker/wrangler.jsonc L30-39", "url": "https://github.com/spuddeh/nc-zoning-board/blob/fef978ae3e89e6fcd3557f79274be5d973c9bcca/worker/wrangler.jsonc#L30-L39" } ] },
     { "term": "503 Service Unavailable", "tier": "general", "def": "A status code meaning the server is not ready to handle the request (a temporary condition). Here it is the not_ready response before the first dataset build, and it carries Retry-After.", "sources": [ { "kind": "official", "label": "MDN - 503 Service Unavailable", "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/503" } ] },
     { "term": "Retry-After", "tier": "general", "def": "A response header saying how long to wait before retrying, given as seconds or a date. Used with 503 and 429.", "sources": [ { "kind": "official", "label": "MDN - Retry-After", "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Retry-After" } ] },
     { "term": "rate limiting", "tier": "general", "def": "Capping how many requests a client may send in a time window; here 100 per 10 seconds per IP, enforced at Cloudflare's edge.", "sources": [ { "kind": "official", "label": "Cloudflare - Rate limiting rules", "url": "https://developers.cloudflare.com/waf/rate-limiting-rules/" } ] },
@@ -106,11 +106,11 @@
     { "term": "GitHub Actions secret", "tier": "general", "def": "An encrypted value stored on GitHub (e.g. CLOUDFLARE_API_TOKEN) that a workflow can use without exposing it in the code or the logs.", "sources": [ { "kind": "official", "label": "GitHub Docs - Using secrets in GitHub Actions", "url": "https://docs.github.com/en/actions/security-for-github-actions/security-guides/using-secrets-in-github-actions" } ] },
     { "term": "Cloudflare API token", "tier": "general", "def": "A credential scoped to only the permissions it needs (least privilege), used by the deploy to prove it may act on Cloudflare.", "sources": [ { "kind": "official", "label": "Cloudflare - Create an API token", "url": "https://developers.cloudflare.com/fundamentals/api/get-started/create-token/" } ] },
     { "term": "OpenAPI", "tier": "general", "def": "A standard, language-neutral format for describing an HTTP API so people and machines can understand it without reading the code. This API's description lives at /openapi.json.", "sources": [ { "kind": "official", "label": "OpenAPI Initiative - Learn OpenAPI", "url": "https://learn.openapis.org/" } ] },
-    { "term": "drift guard", "tier": "project", "def": "A test that fails CI if the OpenAPI spec and the routes the Worker actually serves disagree in either direction (undocumented route, or a documented path that is no longer served).", "sources": [ { "kind": "project", "label": "worker/test/openapi.test.js L24-36", "url": "https://github.com/spuddeh/nc-zoning-board/blob/916caf15fc9c25f17c3efa4a78c8d07bf36a8aa6/worker/test/openapi.test.js#L24-L36" } ] },
-    { "term": "Scalar", "tier": "general", "def": "An API-documentation renderer. The API root page (GET /) uses it to turn openapi.json into browsable, interactive docs.", "sources": [ { "kind": "project", "label": "worker/src/docs.js L1-29", "url": "https://github.com/spuddeh/nc-zoning-board/blob/916caf15fc9c25f17c3efa4a78c8d07bf36a8aa6/worker/src/docs.js#L1-L29" } ] },
-    { "term": "consumer", "tier": "general", "def": "Any program that calls the API. Here there are two: the in-game mod (NCZoningCore) and the website — both read the same /v1/locations records and derive what they need locally.", "sources": [ { "kind": "project", "label": "assets/js/services.js L19-98", "url": "https://github.com/spuddeh/nc-zoning-board/blob/916caf15fc9c25f17c3efa4a78c8d07bf36a8aa6/assets/js/services.js#L19-L98" } ] },
-    { "term": "canary", "tier": "project", "def": "The website's failure posture: it has NO client-side fallback. If the Data API call fails in any way (network, non-2xx, malformed, or a slim payload), the site throws and shows a loud 'map data unavailable' state instead of a silent empty map. That makes the public site a canary for API outages, because the API's other consumer, in-game mods, has no fallback either.", "sources": [ { "kind": "project", "label": "assets/js/services.js L8-18 (the only data path; deliberately no fallback)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/916caf15fc9c25f17c3efa4a78c8d07bf36a8aa6/assets/js/services.js#L8-L18" }, { "kind": "project", "label": "assets/js/services.js L44-65 (throws on failure; slim-payload guard)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/916caf15fc9c25f17c3efa4a78c8d07bf36a8aa6/assets/js/services.js#L44-L65" } ] },
-    { "term": "composite UID", "tier": "project", "def": "The packed identifier Nexus needs for images: (gameId << 32) + modId as a single number, NOT 'gameId:modId'. A wrong format makes Nexus silently return no images.", "sources": [ { "kind": "project", "label": "worker/src/nexus.js L95-103", "url": "https://github.com/spuddeh/nc-zoning-board/blob/916caf15fc9c25f17c3efa4a78c8d07bf36a8aa6/worker/src/nexus.js#L95-L103" } ] },
+    { "term": "drift guard", "tier": "project", "def": "A test that fails CI if the OpenAPI spec and the routes the Worker actually serves disagree in either direction (undocumented route, or a documented path that is no longer served).", "sources": [ { "kind": "project", "label": "worker/test/openapi.test.js L24-36", "url": "https://github.com/spuddeh/nc-zoning-board/blob/fef978ae3e89e6fcd3557f79274be5d973c9bcca/worker/test/openapi.test.js#L24-L36" } ] },
+    { "term": "Scalar", "tier": "general", "def": "An API-documentation renderer. The API root page (GET /) uses it to turn openapi.json into browsable, interactive docs.", "sources": [ { "kind": "project", "label": "worker/src/docs.js L1-29", "url": "https://github.com/spuddeh/nc-zoning-board/blob/fef978ae3e89e6fcd3557f79274be5d973c9bcca/worker/src/docs.js#L1-L29" } ] },
+    { "term": "consumer", "tier": "general", "def": "Any program that calls the API. Here there are two: the in-game mod (NCZoningCore) and the website — both read the same /v1/locations records and derive what they need locally.", "sources": [ { "kind": "project", "label": "assets/js/services.js L19-98", "url": "https://github.com/spuddeh/nc-zoning-board/blob/fef978ae3e89e6fcd3557f79274be5d973c9bcca/assets/js/services.js#L19-L98" } ] },
+    { "term": "canary", "tier": "project", "def": "The website's failure posture: it has NO client-side fallback. If the Data API call fails in any way (network, non-2xx, malformed, or a slim payload), the site throws and shows a loud 'map data unavailable' state instead of a silent empty map. That makes the public site a canary for API outages, because the API's other consumer, in-game mods, has no fallback either.", "sources": [ { "kind": "project", "label": "assets/js/services.js L8-18 (the only data path; deliberately no fallback)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/fef978ae3e89e6fcd3557f79274be5d973c9bcca/assets/js/services.js#L8-L18" }, { "kind": "project", "label": "assets/js/services.js L44-65 (throws on failure; slim-payload guard)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/fef978ae3e89e6fcd3557f79274be5d973c9bcca/assets/js/services.js#L44-L65" } ] },
+    { "term": "composite UID", "tier": "project", "def": "The packed identifier Nexus needs for images: (gameId << 32) + modId as a single number, NOT 'gameId:modId'. A wrong format makes Nexus silently return no images.", "sources": [ { "kind": "project", "label": "worker/src/nexus.js L95-103", "url": "https://github.com/spuddeh/nc-zoning-board/blob/fef978ae3e89e6fcd3557f79274be5d973c9bcca/worker/src/nexus.js#L95-L103" } ] },
     { "term": "ApiVersion handshake", "tier": "project", "def": "The in-game mod's compatibility contract: ApiVersion() returns an integer that only increments on a breaking change, so a dependent mod can gate on it at runtime (if ApiVersion() < 1 return). redscript cannot otherwise check a dependency's version.", "sources": [ { "kind": "project", "label": "nc-zoning-core Api.reds L17-27", "url": "https://github.com/spuddeh/nc-zoning-core/blob/08c45f77f97e02f8745062c576928134ed844d70/r6/scripts/NCZoningCore/Api.reds#L17-L27" } ] },
     { "term": "threading invariant", "tier": "project", "def": "NCZoningCore parses network responses off the game thread and marshals results back onto the game thread before firing any signal, so every callback and read a consumer sees runs on the game thread.", "sources": [ { "kind": "project", "label": "nc-zoning-core docs/consumer-guide.md L322-324", "url": "https://github.com/spuddeh/nc-zoning-core/blob/08c45f77f97e02f8745062c576928134ed844d70/docs/consumer-guide.md#L322-L324" } ] }
   ],
@@ -178,8 +178,8 @@
           "heading": "One envelope, every response",
           "body": "Every response is a JSON object wrapped in the **same five-field envelope**: `schema`, `generated_at`, `dataset_version`, `recently_updated_days`, and `data`. The part you asked for (the **payload**) always sits under `data`, so a program reads one predictable shape whether it requested a location, a district, or even an error. (`recently_updated_days` publishes the recency window — module 02 shows what it drives.) Why fix the shape? Because the Cyberpunk game itself is a consumer, and its built-in JSON reader (called **RedData**) maps each response onto a **DTO** (Data Transfer Object, a plain data record with named fields). That reader is strict: no arrays inside arrays, and field names are case-sensitive (so `nexus_id` is not the same as `Nexus_Id`). The envelope keeps every response friendly to that reader.",
           "sources": [
-            { "kind": "project", "label": "worker/src/index.js L40-48 (envelope())", "url": "https://github.com/spuddeh/nc-zoning-board/blob/916caf15fc9c25f17c3efa4a78c8d07bf36a8aa6/worker/src/index.js#L40-L48" },
-            { "kind": "project", "label": "worker/src/index.js L5-14 (contract rules)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/916caf15fc9c25f17c3efa4a78c8d07bf36a8aa6/worker/src/index.js#L5-L14" }
+            { "kind": "project", "label": "worker/src/index.js L40-48 (envelope())", "url": "https://github.com/spuddeh/nc-zoning-board/blob/fef978ae3e89e6fcd3557f79274be5d973c9bcca/worker/src/index.js#L40-L48" },
+            { "kind": "project", "label": "worker/src/index.js L5-14 (contract rules)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/fef978ae3e89e6fcd3557f79274be5d973c9bcca/worker/src/index.js#L5-L14" }
           ]
         },
         {
@@ -189,8 +189,8 @@
           "heading": "The envelope, live",
           "body": "GET /v1/meta HTTP/1.1\nHost: api.nczoning.net\n\nHTTP/1.1 200 OK\nContent-Type: application/json; charset=utf-8\nCache-Control: public, max-age=300, stale-while-revalidate=3600\nETag: \"cc90d381ee82cde1bc1229aa4d8cccdd219826587261041249245b9405d36912\"\n\n{\n  \"schema\": 1,\n  \"generated_at\": \"2026-07-21T08:05:06.803Z\",\n  \"dataset_version\": \"cc90d381ee82cde1bc1229aa4d8cccdd219826587261041249245b9405d36912\",\n  \"recently_updated_days\": 7,\n  \"data\": { \"discovery_stale\": false, \"skipped\": [ { \"nexus_id\": \"31383\", \"name\": \"watson warehouse apartment and garage\" } ] }\n}",
           "sources": [
-            { "kind": "project", "label": "captured live: GET /v1/meta (2026-07-22)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/916caf15fc9c25f17c3efa4a78c8d07bf36a8aa6/worker/src/index.js#L152-L156" },
-            { "kind": "project", "label": "worker/openapi.json (Envelope schema)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/916caf15fc9c25f17c3efa4a78c8d07bf36a8aa6/worker/openapi.json#L155-L165" }
+            { "kind": "project", "label": "captured live: GET /v1/meta (2026-07-22)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/fef978ae3e89e6fcd3557f79274be5d973c9bcca/worker/src/index.js#L152-L156" },
+            { "kind": "project", "label": "worker/openapi.json (Envelope schema)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/fef978ae3e89e6fcd3557f79274be5d973c9bcca/worker/openapi.json#L155-L165" }
           ]
         },
         {
@@ -208,8 +208,8 @@
           ],
           "body": "A **representation** is just the shape of the data you get back, and this API has exactly **one**: every entry on `/v1/locations` carries every field. (`?full=1` in the address is accepted as a harmless no-op alias, kept so older consumers that used to ask for a 'full' variant keep working.) There are no precomputed statistics anywhere: a consumer that wants per-district counts or a category breakdown **derives them by grouping these records** — every consumer holds the whole registry anyway, and one source of truth cannot disagree with itself.",
           "sources": [
-            { "kind": "project", "label": "worker/src/index.js L134-142 (one representation, ?full=1 no-op)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/916caf15fc9c25f17c3efa4a78c8d07bf36a8aa6/worker/src/index.js#L134-L142" },
-            { "kind": "project", "label": "worker/openapi.json (Location / LocationFull)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/916caf15fc9c25f17c3efa4a78c8d07bf36a8aa6/worker/openapi.json#L184-L198" }
+            { "kind": "project", "label": "worker/src/index.js L134-142 (one representation, ?full=1 no-op)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/fef978ae3e89e6fcd3557f79274be5d973c9bcca/worker/src/index.js#L134-L142" },
+            { "kind": "project", "label": "worker/openapi.json (Location / LocationFull)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/fef978ae3e89e6fcd3557f79274be5d973c9bcca/worker/openapi.json#L184-L198" }
           ]
         },
         {
@@ -219,8 +219,8 @@
           "heading": "Frozen: ids and the /v1 prefix",
           "body": "Two things never change under you. **Stable ids**: manual entries keep their **UUID** (Universally Unique Identifier, a long one-off random string), and auto-discovered ones use `nexus-<nexus_id>`. Either way, the id is safe to store and look up by. **Path versioning**: every endpoint lives under `/v1/`, changes inside it are *additive* (new fields appear; fields something reads are never removed or renamed), and a breaking change would ship as a new `/v2/`, never as a silent change to `/v1/`. One honest asterisk on 'additive': in 1.4.0 the maintainers **removed** `meta.counts` from `/v1` without a version bump - but only after auditing every consumer (the website discarded `/meta`, the in-game mod derives counts from records, and both monitors read only the health flags) and proving nothing read it. That is the real-world rule: the contract protects **consumers**, not field names. A field something reads is frozen; a field nothing reads is dead code wearing a contract's uniform, and it can be buried once you have *verified* - not assumed - that no one attends the funeral.",
           "sources": [
-            { "kind": "project", "label": "worker/src/index.js L5-14 (path-based versioning, additive only)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/916caf15fc9c25f17c3efa4a78c8d07bf36a8aa6/worker/src/index.js#L5-L14" },
-            { "kind": "project", "label": "worker/src/merge.js L75-82 (nexus-<id> stable id)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/916caf15fc9c25f17c3efa4a78c8d07bf36a8aa6/worker/src/merge.js#L75-L82" }
+            { "kind": "project", "label": "worker/src/index.js L5-14 (path-based versioning, additive only)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/fef978ae3e89e6fcd3557f79274be5d973c9bcca/worker/src/index.js#L5-L14" },
+            { "kind": "project", "label": "worker/src/merge.js L75-82 (nexus-<id> stable id)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/fef978ae3e89e6fcd3557f79274be5d973c9bcca/worker/src/merge.js#L75-L82" }
           ]
         }
       ],
@@ -324,7 +324,7 @@
         ],
         "debrief": "The two responses are byte-for-byte identical: one representation, one ETag, and ?full=1 is a no-op alias kept for older consumers. In the previous API the flag selected a bigger body with its own -full ETag; that split is gone, which is one less way for a cache to hand you the wrong shape. Real captures truncated here to the first of 296 entries.",
         "sources": [
-          { "kind": "project", "label": "worker/src/index.js L134-142", "url": "https://github.com/spuddeh/nc-zoning-board/blob/916caf15fc9c25f17c3efa4a78c8d07bf36a8aa6/worker/src/index.js#L134-L142" }
+          { "kind": "project", "label": "worker/src/index.js L134-142", "url": "https://github.com/spuddeh/nc-zoning-board/blob/fef978ae3e89e6fcd3557f79274be5d973c9bcca/worker/src/index.js#L134-L142" }
         ]
       },
       "quiz": [
@@ -339,7 +339,7 @@
             { "text": "data", "correct": false, "feedback": "That is the payload itself; diffing it every time is exactly what dataset_version lets you avoid." }
           ],
           "sources": [
-            { "kind": "project", "label": "worker/src/store.js L33-38, L21-22", "url": "https://github.com/spuddeh/nc-zoning-board/blob/916caf15fc9c25f17c3efa4a78c8d07bf36a8aa6/worker/src/store.js#L33-L38" }
+            { "kind": "project", "label": "worker/src/store.js L33-38, L21-22", "url": "https://github.com/spuddeh/nc-zoning-board/blob/fef978ae3e89e6fcd3557f79274be5d973c9bcca/worker/src/store.js#L33-L38" }
           ]
         },
         {
@@ -354,7 +354,7 @@
             { "text": "district can be null for locations outside every district polygon.", "correct": false, "feedback": "No - district is never null; anywhere outside every polygon is Badlands, the game's own default." }
           ],
           "sources": [
-            { "kind": "project", "label": "worker/openapi.json (Envelope / LocationFull)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/916caf15fc9c25f17c3efa4a78c8d07bf36a8aa6/worker/openapi.json#L155-L198" }
+            { "kind": "project", "label": "worker/openapi.json (Envelope / LocationFull)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/fef978ae3e89e6fcd3557f79274be5d973c9bcca/worker/openapi.json#L155-L198" }
           ]
         },
         {
@@ -368,7 +368,7 @@
             { "text": "\"New fields may be added inside /v1 without a version bump.\"", "correct": false, "feedback": "Safe. /v1 changes are additive; a breaking change would be /v2." }
           ],
           "sources": [
-            { "kind": "project", "label": "worker/src/merge.js L96-99 (sort by name), L123-141", "url": "https://github.com/spuddeh/nc-zoning-board/blob/916caf15fc9c25f17c3efa4a78c8d07bf36a8aa6/worker/src/merge.js#L96-L99" }
+            { "kind": "project", "label": "worker/src/merge.js L96-99 (sort by name), L123-141", "url": "https://github.com/spuddeh/nc-zoning-board/blob/fef978ae3e89e6fcd3557f79274be5d973c9bcca/worker/src/merge.js#L96-L99" }
           ]
         }
       ],
@@ -393,8 +393,8 @@
         },
         "debrief": "What the contract guarantees: every entry has a stable id (a UUID for manual mods, nexus-<nexus_id> for auto-discovered ones), and the list is sorted by name, so it changes as mods come and go. data[3] is a moving target; the id is not. The rule: key on the id, never on array position. (This is a constructed scenario, but the sort-by-name and the id guarantee it hinges on are both real, in the code below.)",
         "sources": [
-          { "kind": "project", "label": "worker/src/merge.js L96-99 (list sorted by name)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/916caf15fc9c25f17c3efa4a78c8d07bf36a8aa6/worker/src/merge.js#L96-L99" },
-          { "kind": "project", "label": "worker/src/merge.js L75-82 (stable nexus-<id>)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/916caf15fc9c25f17c3efa4a78c8d07bf36a8aa6/worker/src/merge.js#L75-L82" }
+          { "kind": "project", "label": "worker/src/merge.js L96-99 (list sorted by name)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/fef978ae3e89e6fcd3557f79274be5d973c9bcca/worker/src/merge.js#L96-L99" },
+          { "kind": "project", "label": "worker/src/merge.js L75-82 (stable nexus-<id>)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/fef978ae3e89e6fcd3557f79274be5d973c9bcca/worker/src/merge.js#L75-L82" }
         ]
       },
       "recap": [
@@ -436,8 +436,8 @@
           "heading": "The ETag is the content hash",
           "body": "An **ETag** (entity tag) is, in MDN's words, 'an identifier for a specific version of a resource'. Here it is not arbitrary: the ETag *is* the `dataset_version`, which is a **SHA-256 hash** of the dataset (a short fingerprint of the content: identical content always produces the same fingerprint, and any change produces a different one). The background job that rebuilds the data saves a new copy only when that fingerprint changes, so a stable ETag genuinely means 'nothing changed'. On a read, the API compares the `If-None-Match` value you send against the current ETag before it ever reads the large payload.",
           "sources": [
-            { "kind": "project", "label": "worker/src/index.js L79-99 (ETag compare / 304)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/916caf15fc9c25f17c3efa4a78c8d07bf36a8aa6/worker/src/index.js#L79-L99" },
-            { "kind": "project", "label": "worker/src/store.js L33-38 (contentHash)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/916caf15fc9c25f17c3efa4a78c8d07bf36a8aa6/worker/src/store.js#L33-L38" },
+            { "kind": "project", "label": "worker/src/index.js L79-99 (ETag compare / 304)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/fef978ae3e89e6fcd3557f79274be5d973c9bcca/worker/src/index.js#L79-L99" },
+            { "kind": "project", "label": "worker/src/store.js L33-38 (contentHash)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/fef978ae3e89e6fcd3557f79274be5d973c9bcca/worker/src/store.js#L33-L38" },
             { "kind": "official", "label": "MDN - ETag (definition)", "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/ETag" }
           ]
         },
@@ -448,7 +448,7 @@
           "heading": "The conditional handshake",
           "body": "# First fetch: you get the ETag\nGET /v1/meta HTTP/1.1\n\nHTTP/1.1 200 OK\nETag: \"cc90d381...5d36912\"\n\n# Next fetch: hand the ETag back\nGET /v1/meta HTTP/1.1\nIf-None-Match: \"cc90d381...5d36912\"\n\nHTTP/1.1 304 Not Modified\nETag: \"cc90d381...5d36912\"\nCache-Control: public, max-age=300, stale-while-revalidate=3600\n(no body)",
           "sources": [
-            { "kind": "project", "label": "captured live: 304 to conditional GET /v1/meta (2026-07-06)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/916caf15fc9c25f17c3efa4a78c8d07bf36a8aa6/worker/src/index.js#L86-L91" },
+            { "kind": "project", "label": "captured live: 304 to conditional GET /v1/meta (2026-07-06)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/fef978ae3e89e6fcd3557f79274be5d973c9bcca/worker/src/index.js#L86-L91" },
             { "kind": "official", "label": "MDN - Conditional requests (Cache update)", "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/Conditional_requests" },
             { "kind": "official", "label": "MDN - 304 Not Modified (no body)", "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/304" }
           ]
@@ -460,8 +460,8 @@
           "heading": "The clock can change the ETag",
           "body": "Here is a subtlety the recency flag forces. `recently_updated` depends on **today's date**: a mod updated 7 days ago is `true` this morning and `false` tomorrow, with no change on Nexus at all. But the ETag only changes when the *content* hash changes - so if the flag were computed on read, the body could change while the ETag stayed put, and a conditional GET would wrongly answer `304` with a stale flag baked into your cache. The fix: the flag is computed **at rebuild time and folded into the hashed content**, so a mod ageing out of the window genuinely changes `dataset_version` (and your ETag) even though nothing on Nexus moved. The honest side effect: the ETag can now change on a quiet day. That is not noise - it is the recency boundary sweeping past a mod.",
           "sources": [
-            { "kind": "project", "label": "worker/src/merge.js L123-141 (recency rides the rehashed content)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/916caf15fc9c25f17c3efa4a78c8d07bf36a8aa6/worker/src/merge.js#L123-L141" },
-            { "kind": "project", "label": "worker/src/refresh.js L225-237 (the hash the ETag comes from)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/916caf15fc9c25f17c3efa4a78c8d07bf36a8aa6/worker/src/refresh.js#L225-L237" }
+            { "kind": "project", "label": "worker/src/merge.js L123-141 (recency rides the rehashed content)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/fef978ae3e89e6fcd3557f79274be5d973c9bcca/worker/src/merge.js#L123-L141" },
+            { "kind": "project", "label": "worker/src/refresh.js L225-237 (the hash the ETag comes from)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/fef978ae3e89e6fcd3557f79274be5d973c9bcca/worker/src/refresh.js#L225-L237" }
           ]
         },
         {
@@ -476,7 +476,7 @@
           ],
           "body": "So a client never blocks on a refresh: within the hour after expiry it gets an instant (stale) answer while the cache quietly checks for a new version.",
           "sources": [
-            { "kind": "project", "label": "worker/src/index.js L30-32 (DATA_CACHE)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/916caf15fc9c25f17c3efa4a78c8d07bf36a8aa6/worker/src/index.js#L30-L32" },
+            { "kind": "project", "label": "worker/src/index.js L30-32 (DATA_CACHE)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/fef978ae3e89e6fcd3557f79274be5d973c9bcca/worker/src/index.js#L30-L32" },
             { "kind": "official", "label": "MDN - Cache-Control (Response Directives)", "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Cache-Control" }
           ]
         }
@@ -537,7 +537,7 @@
         ],
         "debrief": "The 304 carries the ETag and Cache-Control but no body - exactly what MDN says a 304 must do. The client keeps its cached copy; you moved a few hundred header bytes instead of the whole dataset. This 304 was captured live on 2026-07-22.",
         "sources": [
-          { "kind": "project", "label": "worker/src/index.js L86-91 (304 branch)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/916caf15fc9c25f17c3efa4a78c8d07bf36a8aa6/worker/src/index.js#L86-L91" },
+          { "kind": "project", "label": "worker/src/index.js L86-91 (304 branch)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/fef978ae3e89e6fcd3557f79274be5d973c9bcca/worker/src/index.js#L86-L91" },
           { "kind": "official", "label": "MDN - 304 Not Modified", "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/304" }
         ]
       },
@@ -555,7 +555,7 @@
           ],
           "sources": [
             { "kind": "official", "label": "MDN - Conditional requests", "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/Conditional_requests" },
-            { "kind": "project", "label": "worker/src/index.js L79-99", "url": "https://github.com/spuddeh/nc-zoning-board/blob/916caf15fc9c25f17c3efa4a78c8d07bf36a8aa6/worker/src/index.js#L79-L99" }
+            { "kind": "project", "label": "worker/src/index.js L79-99", "url": "https://github.com/spuddeh/nc-zoning-board/blob/fef978ae3e89e6fcd3557f79274be5d973c9bcca/worker/src/index.js#L79-L99" }
           ]
         },
         {
@@ -606,8 +606,8 @@
         },
         "debrief": "What the config actually dictates: propagation is bounded by the 5-minute prod cron plus a 300 s max-age (with a 3600 s SWR tail a shared cache may use). A 3-minute wait is expected, not an incident. NOTE: this is a constructed training scenario built from the cited cron + cache values, not a recorded incident - if there is a real cache-TTL episode you want represented here, point me to it and I will swap in the true debrief.",
         "sources": [
-          { "kind": "project", "label": "worker/src/index.js L30-32 (cache window)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/916caf15fc9c25f17c3efa4a78c8d07bf36a8aa6/worker/src/index.js#L30-L32" },
-          { "kind": "project", "label": "worker/wrangler.jsonc L46-52 (prod cron */5)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/916caf15fc9c25f17c3efa4a78c8d07bf36a8aa6/worker/wrangler.jsonc#L46-L52" }
+          { "kind": "project", "label": "worker/src/index.js L30-32 (cache window)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/fef978ae3e89e6fcd3557f79274be5d973c9bcca/worker/src/index.js#L30-L32" },
+          { "kind": "project", "label": "worker/wrangler.jsonc L50-56 (prod cron */5)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/fef978ae3e89e6fcd3557f79274be5d973c9bcca/worker/wrangler.jsonc#L50-L56" }
         ]
       },
       "recap": [
@@ -648,7 +648,7 @@
           "heading": "A function at the edge",
           "body": "There is no server for us to run or patch. The API is a **Cloudflare Worker**, which Cloudflare describes as 'a serverless platform for building, deploying, and scaling apps across Cloudflare's global network... no infrastructure to manage'. **Serverless** means we write only the function that answers a request, and Cloudflare runs it for us. It runs at the **edge**: Cloudflare's servers spread around the world, close to whoever is calling. Each request enters the Worker's `fetch()` function, which deals with the browser's **CORS** (Cross-Origin Resource Sharing) preflight and method checks, then looks the path up in a small route table (`GET /v1/health`, `GET /v1/locations`, and so on). A path that matches nothing returns a 404 (not found).",
           "sources": [
-            { "kind": "project", "label": "worker/src/index.js L167-193 (fetch handler + routing)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/916caf15fc9c25f17c3efa4a78c8d07bf36a8aa6/worker/src/index.js#L167-L193" },
+            { "kind": "project", "label": "worker/src/index.js L167-193 (fetch handler + routing)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/fef978ae3e89e6fcd3557f79274be5d973c9bcca/worker/src/index.js#L167-L193" },
             { "kind": "official", "label": "Cloudflare - Workers", "url": "https://developers.cloudflare.com/workers/" }
           ]
         },
@@ -658,7 +658,7 @@
           "heading": "The store is KV",
           "body": "The Worker holds no data itself. It reads everything from **Workers KV**, which Cloudflare describes as 'a global, low-latency, key-value data store'. A **key-value store** is the simplest kind of database: you save a value under a name (its **key**) and read it straight back by that name. The dataset is served from four keys: `dataset:v1:full` (the location records, keyed by id - `/v1/locations` serves its values and `/v1/locations/{id}` reads one entry), `dataset:v1:districts`, `dataset:v1:tags` and `dataset:v1:meta`. (A fifth key, `dataset:v1:archives`, is an internal cross-run cache the rebuild keeps of each mod's install files, not a served route.) A read route just fetches its served key and wraps it in the envelope. That imbalance is the whole design: the rebuild writes occasionally, the world reads constantly.",
           "sources": [
-            { "kind": "project", "label": "worker/src/store.js L1-31 (KV keys: four served + the archives cache)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/916caf15fc9c25f17c3efa4a78c8d07bf36a8aa6/worker/src/store.js#L1-L31" },
+            { "kind": "project", "label": "worker/src/store.js L1-31 (KV keys: four served + the archives cache)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/fef978ae3e89e6fcd3557f79274be5d973c9bcca/worker/src/store.js#L1-L31" },
             { "kind": "official", "label": "Cloudflare - Workers KV", "url": "https://developers.cloudflare.com/kv/" }
           ]
         },
@@ -669,8 +669,8 @@
           "heading": "One writer, many readers",
           "body": "The same Worker has two entry points. `fetch()` answers requests (reading from KV). `scheduled()` runs on a **cron trigger**: a schedule, written in the standard cron format, that Cloudflare uses to run the Worker's `scheduled()` function at fixed times. It rebuilds the dataset into KV every 5 minutes in production. Requests and the rebuild never block each other.",
           "sources": [
-            { "kind": "project", "label": "worker/src/index.js L168-171 (scheduled handler)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/916caf15fc9c25f17c3efa4a78c8d07bf36a8aa6/worker/src/index.js#L168-L171" },
-            { "kind": "project", "label": "worker/wrangler.jsonc L46-52 (crons */5 prod)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/916caf15fc9c25f17c3efa4a78c8d07bf36a8aa6/worker/wrangler.jsonc#L46-L52" },
+            { "kind": "project", "label": "worker/src/index.js L168-171 (scheduled handler)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/fef978ae3e89e6fcd3557f79274be5d973c9bcca/worker/src/index.js#L168-L171" },
+            { "kind": "project", "label": "worker/wrangler.jsonc L50-56 (crons */5 prod)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/fef978ae3e89e6fcd3557f79274be5d973c9bcca/worker/wrangler.jsonc#L50-L56" },
             { "kind": "official", "label": "Cloudflare - Cron Triggers", "url": "https://developers.cloudflare.com/workers/configuration/cron-triggers/" }
           ]
         },
@@ -681,8 +681,8 @@
           "heading": "The liveness probe, and the cron heartbeat",
           "body": "GET /v1/health HTTP/1.1\nHost: api.nczoning.net\n\nHTTP/1.1 200 OK\nContent-Type: application/json; charset=utf-8\nCache-Control: no-store\n\n{ \"schema\": 1, \"generated_at\": null, \"dataset_version\": null, \"recently_updated_days\": 7, \"data\": { \"status\": \"ok\", \"version\": \"0.1.0\", \"last_refresh_at\": \"2026-07-21T22:00:06.803Z\", \"refresh_age_seconds\": 149 } }\n\n# status/version: liveness + deploy marker (data is null: health reads no dataset)\n# last_refresh_at + refresh_age_seconds: the cron heartbeat (see below)\n# Cache-Control: no-store, so the probe always reads origin, never an edge copy",
           "sources": [
-            { "kind": "project", "label": "worker/src/index.js L114-132 (/v1/health)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/916caf15fc9c25f17c3efa4a78c8d07bf36a8aa6/worker/src/index.js#L114-L132" },
-            { "kind": "project", "label": "captured live: GET /v1/health (2026-07-22)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/916caf15fc9c25f17c3efa4a78c8d07bf36a8aa6/worker/openapi.json#L14-L33" }
+            { "kind": "project", "label": "worker/src/index.js L114-132 (/v1/health)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/fef978ae3e89e6fcd3557f79274be5d973c9bcca/worker/src/index.js#L114-L132" },
+            { "kind": "project", "label": "captured live: GET /v1/health (2026-07-22)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/fef978ae3e89e6fcd3557f79274be5d973c9bcca/worker/openapi.json#L14-L33" }
           ]
         },
         {
@@ -692,8 +692,8 @@
           "heading": "The heartbeat catches a cron that stopped",
           "body": "Module 04 introduces `discovery_stale`, which flips to `true` when a refresh RUNS and FAILS. But what if the 5-minute cron stops firing at all? Then no refresh runs, nothing fails, `discovery_stale` stays `false`, and the API keeps serving the last good snapshot: silently stale, every health flag green. That is the gap the heartbeat closes. `last_refresh_at` is stamped on EVERY cron cycle (a content change, a no-change tick, or a failure), so it advances even when `generated_at` (which moves only on a content change) does not. `refresh_age_seconds` is its age. If that age climbs past one cron interval, the cron has wedged, even though `discovery_stale` never noticed. The same number is also a freshness read for the in-game consumer, which has no clock of its own to compute one.",
           "sources": [
-            { "kind": "project", "label": "worker/src/refresh.js L253 (last_refresh_at stamped every cycle, #849)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/916caf15fc9c25f17c3efa4a78c8d07bf36a8aa6/worker/src/refresh.js#L253" },
-            { "kind": "project", "label": "worker/src/index.js L114-132 (/v1/health computes refresh_age_seconds)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/916caf15fc9c25f17c3efa4a78c8d07bf36a8aa6/worker/src/index.js#L114-L132" }
+            { "kind": "project", "label": "worker/src/refresh.js L253 (last_refresh_at stamped every cycle, #849)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/fef978ae3e89e6fcd3557f79274be5d973c9bcca/worker/src/refresh.js#L253" },
+            { "kind": "project", "label": "worker/src/index.js L114-132 (/v1/health computes refresh_age_seconds)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/fef978ae3e89e6fcd3557f79274be5d973c9bcca/worker/src/index.js#L114-L132" }
           ]
         }
       ],
@@ -734,8 +734,8 @@
         ],
         "debrief": "Health returns the envelope with null generated_at and dataset_version because it reads no served dataset - status and version are a pure liveness and deploy check. It is not cacheable content, so it carries no ETag; and it is marked Cache-Control: no-store so a probe always reaches origin, never a stale edge copy. The one thing it DOES read is the small meta record, for the cron heartbeat: last_refresh_at is when the 5-minute refresh cron last ran (stamped every cycle), and refresh_age_seconds is its age. Watch that age: if it climbs past a few minutes the cron has wedged (module 04). data.version is API_VERSION, SemVer for the API surface and a deploy marker (module 06). Captured live 2026-07-22.",
         "sources": [
-          { "kind": "project", "label": "worker/src/index.js L114-132", "url": "https://github.com/spuddeh/nc-zoning-board/blob/916caf15fc9c25f17c3efa4a78c8d07bf36a8aa6/worker/src/index.js#L114-L132" },
-          { "kind": "project", "label": "worker/openapi.json L14-33 (health: 'Uncached')", "url": "https://github.com/spuddeh/nc-zoning-board/blob/916caf15fc9c25f17c3efa4a78c8d07bf36a8aa6/worker/openapi.json#L14-L33" }
+          { "kind": "project", "label": "worker/src/index.js L114-132", "url": "https://github.com/spuddeh/nc-zoning-board/blob/fef978ae3e89e6fcd3557f79274be5d973c9bcca/worker/src/index.js#L114-L132" },
+          { "kind": "project", "label": "worker/openapi.json L14-33 (health: 'Uncached')", "url": "https://github.com/spuddeh/nc-zoning-board/blob/fef978ae3e89e6fcd3557f79274be5d973c9bcca/worker/openapi.json#L14-L33" }
         ]
       },
       "quiz": [
@@ -749,7 +749,7 @@
             { "text": "It queries a SQL database.", "correct": false, "feedback": "There is no database; the store is Workers KV." }
           ],
           "sources": [
-            { "kind": "project", "label": "worker/src/index.js L144-145; worker/src/store.js L25-31", "url": "https://github.com/spuddeh/nc-zoning-board/blob/916caf15fc9c25f17c3efa4a78c8d07bf36a8aa6/worker/src/store.js#L25-L31" }
+            { "kind": "project", "label": "worker/src/index.js L144-145; worker/src/store.js L25-31", "url": "https://github.com/spuddeh/nc-zoning-board/blob/fef978ae3e89e6fcd3557f79274be5d973c9bcca/worker/src/store.js#L25-L31" }
           ]
         },
         {
@@ -762,8 +762,8 @@
             { "text": "Health is slower, so caching it would be dangerous.", "correct": false, "feedback": "Speed is not the reason. no-store is about always reading a live value, not about performance." }
           ],
           "sources": [
-            { "kind": "project", "label": "worker/src/index.js L114-132 (health: no-store, reads meta for the heartbeat)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/916caf15fc9c25f17c3efa4a78c8d07bf36a8aa6/worker/src/index.js#L114-L132" },
-            { "kind": "project", "label": "worker/openapi.json L14-33 (health spec: Uncached, heartbeat fields)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/916caf15fc9c25f17c3efa4a78c8d07bf36a8aa6/worker/openapi.json#L14-L33" }
+            { "kind": "project", "label": "worker/src/index.js L114-132 (health: no-store, reads meta for the heartbeat)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/fef978ae3e89e6fcd3557f79274be5d973c9bcca/worker/src/index.js#L114-L132" },
+            { "kind": "project", "label": "worker/openapi.json L14-33 (health spec: Uncached, heartbeat fields)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/fef978ae3e89e6fcd3557f79274be5d973c9bcca/worker/openapi.json#L14-L33" }
           ]
         },
         {
@@ -777,7 +777,7 @@
             { "text": "scheduled() answers user requests when fetch() is busy.", "correct": false, "feedback": "No - scheduled() is not a request handler; it is invoked by the cron, not by users." }
           ],
           "sources": [
-            { "kind": "project", "label": "worker/src/index.js L167-193 (fetch + scheduled)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/916caf15fc9c25f17c3efa4a78c8d07bf36a8aa6/worker/src/index.js#L167-L193" }
+            { "kind": "project", "label": "worker/src/index.js L167-193 (fetch + scheduled)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/fef978ae3e89e6fcd3557f79274be5d973c9bcca/worker/src/index.js#L167-L193" }
           ]
         }
       ],
@@ -801,7 +801,7 @@
         },
         "debrief": "The route table maps GET /v1/tags to a handler that reads KEYS.tags ('dataset:v1:tags') from KV and wraps it in the envelope. Same pattern for every dataset route: match path, read key, wrap. Reconnaissance complete.",
         "sources": [
-          { "kind": "project", "label": "worker/src/index.js L147-148; worker/src/store.js L25-31", "url": "https://github.com/spuddeh/nc-zoning-board/blob/916caf15fc9c25f17c3efa4a78c8d07bf36a8aa6/worker/src/index.js#L147-L148" }
+          { "kind": "project", "label": "worker/src/index.js L147-148; worker/src/store.js L25-31", "url": "https://github.com/spuddeh/nc-zoning-board/blob/fef978ae3e89e6fcd3557f79274be5d973c9bcca/worker/src/index.js#L147-L148" }
         ]
       },
       "recap": [
@@ -845,8 +845,8 @@
           "heading": "The refresh job",
           "body": "The data you read is not edited live. Every 5 minutes a background job (the **cron**, from module 03) rebuilds the whole dataset: it fetches the source files (`mods.json`, `tags.json`, `subdistricts.json`) and the auto-discovered Nexus mods, merges them, and saves the result to storage (KV). The read routes you have been using just serve whatever that last rebuild produced.",
           "sources": [
-            { "kind": "project", "label": "worker/src/refresh.js L178-280 (runRefresh)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/916caf15fc9c25f17c3efa4a78c8d07bf36a8aa6/worker/src/refresh.js#L178-L280" },
-            { "kind": "project", "label": "worker/wrangler.jsonc L46-52 (crons */5 prod)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/916caf15fc9c25f17c3efa4a78c8d07bf36a8aa6/worker/wrangler.jsonc#L46-L52" }
+            { "kind": "project", "label": "worker/src/refresh.js L178-280 (runRefresh)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/fef978ae3e89e6fcd3557f79274be5d973c9bcca/worker/src/refresh.js#L178-L280" },
+            { "kind": "project", "label": "worker/wrangler.jsonc L50-56 (crons */5 prod)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/fef978ae3e89e6fcd3557f79274be5d973c9bcca/worker/wrangler.jsonc#L50-L56" }
           ]
         },
         {
@@ -856,8 +856,8 @@
           "heading": "Two rules that keep bad data out",
           "body": "**Hash-gate**: the job computes a fingerprint (hash) of the new data and only saves it if that fingerprint changed. No change means no write, so the `dataset_version` (and your ETag) stays stable when nothing really moved. **Last-known-good**: if any source fails (Nexus is down, a file will not load), the job keeps the last good dataset, flags it, and alerts. It NEVER serves an empty or half-built dataset.",
           "sources": [
-            { "kind": "project", "label": "worker/src/refresh.js L225-237 (hash-gate: write only if changed)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/916caf15fc9c25f17c3efa4a78c8d07bf36a8aa6/worker/src/refresh.js#L225-L237" },
-            { "kind": "project", "label": "worker/src/refresh.js L258-279 (last-known-good on failure)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/916caf15fc9c25f17c3efa4a78c8d07bf36a8aa6/worker/src/refresh.js#L258-L279" }
+            { "kind": "project", "label": "worker/src/refresh.js L225-237 (hash-gate: write only if changed)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/fef978ae3e89e6fcd3557f79274be5d973c9bcca/worker/src/refresh.js#L225-L237" },
+            { "kind": "project", "label": "worker/src/refresh.js L258-279 (last-known-good on failure)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/fef978ae3e89e6fcd3557f79274be5d973c9bcca/worker/src/refresh.js#L258-L279" }
           ]
         },
         {
@@ -866,9 +866,9 @@
           "heading": "The freshness flag: discovery_stale",
           "body": "When a refresh fails, the job sets `discovery_stale` to `true` on the meta record, keeps serving the last good data, and posts an alert. When a later refresh succeeds, it clears the flag and posts an all-clear. So `discovery_stale` in `/v1/meta` is your honest signal: `false` means the data is fresh, `true` means you are looking at the last-known-good copy while something upstream is being fixed. One honest limit: `discovery_stale` only catches a refresh that RAN and failed. If the cron stops firing altogether, no refresh runs, the flag stays `false`, and the data goes stale silently. That case is what the `/v1/health` cron heartbeat from module 03 exists to catch, so read the two together: `discovery_stale` for a failed refresh, `refresh_age_seconds` for a missing one.",
           "sources": [
-            { "kind": "project", "label": "worker/src/refresh.js L258-272 (mark discovery_stale + alert)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/916caf15fc9c25f17c3efa4a78c8d07bf36a8aa6/worker/src/refresh.js#L258-L272" },
-            { "kind": "project", "label": "worker/src/refresh.js L69-93 (recovery all-clear)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/916caf15fc9c25f17c3efa4a78c8d07bf36a8aa6/worker/src/refresh.js#L69-L93" },
-            { "kind": "project", "label": "worker/src/index.js L114-132 (heartbeat catches the missing-refresh case discovery_stale cannot)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/916caf15fc9c25f17c3efa4a78c8d07bf36a8aa6/worker/src/index.js#L114-L132" }
+            { "kind": "project", "label": "worker/src/refresh.js L258-272 (mark discovery_stale + alert)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/fef978ae3e89e6fcd3557f79274be5d973c9bcca/worker/src/refresh.js#L258-L272" },
+            { "kind": "project", "label": "worker/src/refresh.js L69-93 (recovery all-clear)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/fef978ae3e89e6fcd3557f79274be5d973c9bcca/worker/src/refresh.js#L69-L93" },
+            { "kind": "project", "label": "worker/src/index.js L114-132 (heartbeat catches the missing-refresh case discovery_stale cannot)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/fef978ae3e89e6fcd3557f79274be5d973c9bcca/worker/src/index.js#L114-L132" }
           ]
         },
         {
@@ -878,7 +878,7 @@
           "heading": "Why a half-page is worse than no page",
           "body": "Auto-discovery reads the Nexus results one page at a time. If a page fails partway through, the code **throws an error** instead of using what it managed to get. Why so strict? Because a truncated list looks exactly like a complete one: 40 mods when there are really 55 would silently drop 15 pins from the map, with no error anywhere. Throwing turns a silent data loss into a visible failure, which then triggers last-known-good. A partial answer you cannot tell apart from a full one is worse than a clean failure.",
           "sources": [
-            { "kind": "project", "label": "worker/src/nexus.js L45-93 (throw on any page failure)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/916caf15fc9c25f17c3efa4a78c8d07bf36a8aa6/worker/src/nexus.js#L45-L93" }
+            { "kind": "project", "label": "worker/src/nexus.js L45-93 (throw on any page failure)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/fef978ae3e89e6fcd3557f79274be5d973c9bcca/worker/src/nexus.js#L45-L93" }
           ]
         }
       ],
@@ -915,7 +915,7 @@
         ],
         "debrief": "The healthy case is a real capture. The stale case (discovery_stale=true, an older generated_at) and the 503 not_ready case are reconstructed exactly from the code, because they cannot be captured safely while the API is healthy. Note the 503 carries Retry-After: 60 and no dataset yet; it means 'built nothing so far, try again shortly', which is different from the 429 you will meet in module 05.",
         "sources": [
-          { "kind": "project", "label": "worker/src/index.js L66-72 (notReady 503 + Retry-After)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/916caf15fc9c25f17c3efa4a78c8d07bf36a8aa6/worker/src/index.js#L66-L72" },
+          { "kind": "project", "label": "worker/src/index.js L66-72 (notReady 503 + Retry-After)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/fef978ae3e89e6fcd3557f79274be5d973c9bcca/worker/src/index.js#L66-L72" },
           { "kind": "official", "label": "MDN - 503 Service Unavailable", "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/503" }
         ]
       },
@@ -930,7 +930,7 @@
             { "text": "Your cached copy is stale and you must send If-None-Match.", "correct": false, "feedback": "That is a caching concern (module 02). discovery_stale is about the server-side rebuild, not your cache." }
           ],
           "sources": [
-            { "kind": "project", "label": "worker/src/refresh.js L258-279", "url": "https://github.com/spuddeh/nc-zoning-board/blob/916caf15fc9c25f17c3efa4a78c8d07bf36a8aa6/worker/src/refresh.js#L258-L279" }
+            { "kind": "project", "label": "worker/src/refresh.js L258-279", "url": "https://github.com/spuddeh/nc-zoning-board/blob/fef978ae3e89e6fcd3557f79274be5d973c9bcca/worker/src/refresh.js#L258-L279" }
           ]
         },
         {
@@ -945,7 +945,7 @@
             "Write to KV only if the fingerprint changed; on any source failure, keep last-known-good and flag discovery_stale"
           ],
           "sources": [
-            { "kind": "project", "label": "worker/src/refresh.js L178-280", "url": "https://github.com/spuddeh/nc-zoning-board/blob/916caf15fc9c25f17c3efa4a78c8d07bf36a8aa6/worker/src/refresh.js#L178-L280" }
+            { "kind": "project", "label": "worker/src/refresh.js L178-280", "url": "https://github.com/spuddeh/nc-zoning-board/blob/fef978ae3e89e6fcd3557f79274be5d973c9bcca/worker/src/refresh.js#L178-L280" }
           ]
         }
       ],
@@ -969,8 +969,8 @@
         },
         "debrief": "What the code does: the Nexus fetch throws on any page failure, so a truncated tag population can never be mistaken for the full set. That error triggers last-known-good and discovery_stale, and the next cron tick retries. The rule: treat a partial fetch as a failure, never as a smaller success.",
         "sources": [
-          { "kind": "project", "label": "worker/src/nexus.js L45-93 (throw on partial page)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/916caf15fc9c25f17c3efa4a78c8d07bf36a8aa6/worker/src/nexus.js#L45-L93" },
-          { "kind": "project", "label": "worker/src/refresh.js L1-14 (failure posture)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/916caf15fc9c25f17c3efa4a78c8d07bf36a8aa6/worker/src/refresh.js#L1-L14" }
+          { "kind": "project", "label": "worker/src/nexus.js L45-93 (throw on partial page)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/fef978ae3e89e6fcd3557f79274be5d973c9bcca/worker/src/nexus.js#L45-L93" },
+          { "kind": "project", "label": "worker/src/refresh.js L1-14 (failure posture)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/fef978ae3e89e6fcd3557f79274be5d973c9bcca/worker/src/refresh.js#L1-L14" }
         ]
       },
       "recap": [
@@ -1046,7 +1046,7 @@
           "heading": "Reading an edge block",
           "body": "A diagnosis rule from that incident: if BOTH production and staging fail at once, with an edge-level status code (a 403 from a challenge, a 429 from the rate limit) and no JSON envelope, the problem is almost certainly Cloudflare configuration, not the Worker code. One environment failing points at your code; both at once, at the shared edge in front of them.",
           "sources": [
-            { "kind": "project", "label": "worker/.github monitor rationale: in-game mods have no fallback, so a silent edge block must page (monitor-api-health.yml L1-6)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/916caf15fc9c25f17c3efa4a78c8d07bf36a8aa6/.github/workflows/monitor-api-health.yml#L1-L6" }
+            { "kind": "project", "label": "worker/.github monitor rationale: in-game mods have no fallback, so a silent edge block must page (monitor-api-health.yml L1-6)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/fef978ae3e89e6fcd3557f79274be5d973c9bcca/.github/workflows/monitor-api-health.yml#L1-L6" }
           ]
         }
       ],
@@ -1131,7 +1131,7 @@
         "debrief": "What actually happened: Bot Fight Mode was on and challenged the GitHub Actions health monitor (a datacenter IP), so both environments failed the check at once with an edge 403, while the API served users normally. Disabling BFM fixed it. The rule: both environments failing with an edge status code points at Cloudflare configuration, not your code. (Sourced from the incident record; this lives in Cloudflare edge config, not the repo.)",
         "sources": [
           { "kind": "official", "label": "Cloudflare - Bot Fight Mode", "url": "https://developers.cloudflare.com/bots/get-started/bot-fight-mode/" },
-          { "kind": "project", "label": ".github/workflows/monitor-api-health.yml L1-6 (why the independent monitor exists)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/916caf15fc9c25f17c3efa4a78c8d07bf36a8aa6/.github/workflows/monitor-api-health.yml#L1-L6" }
+          { "kind": "project", "label": ".github/workflows/monitor-api-health.yml L1-6 (why the independent monitor exists)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/fef978ae3e89e6fcd3557f79274be5d973c9bcca/.github/workflows/monitor-api-health.yml#L1-L6" }
         ]
       },
       "recap": [
@@ -1175,7 +1175,7 @@
           "heading": "From push to production",
           "body": "When code is pushed to the `main` branch, a **CI/CD** pipeline runs automatically. CI/CD (Continuous Integration / Continuous Deployment) means the project builds, tests, and ships itself without anyone running deploy commands by hand. Here the pipeline is **GitHub Actions** (GitHub's built-in automation). On a push that touches `worker/`, it installs dependencies, runs the test suite as a **gate**, and only if every test passes does it deploy the Worker: production from `main`, staging from `dev`.",
           "sources": [
-            { "kind": "project", "label": ".github/workflows/deploy-api.yml L9-54 (push -> test gate -> deploy)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/916caf15fc9c25f17c3efa4a78c8d07bf36a8aa6/.github/workflows/deploy-api.yml#L9-L54" }
+            { "kind": "project", "label": ".github/workflows/deploy-api.yml L9-54 (push -> test gate -> deploy)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/fef978ae3e89e6fcd3557f79274be5d973c9bcca/.github/workflows/deploy-api.yml#L9-L54" }
           ]
         },
         {
@@ -1184,7 +1184,7 @@
           "heading": "The key to the door: a scoped API token",
           "body": "To deploy, the pipeline must prove to Cloudflare that it is allowed to. It does this with a **Cloudflare API token**: a credential scoped to only the permissions it needs (this is 'least privilege', giving out no more access than required). The token is stored as a **GitHub Actions secret** (`CLOUDFLARE_API_TOKEN`), which GitHub keeps encrypted and hides from build logs, so it never appears in the code or the output.",
           "sources": [
-            { "kind": "project", "label": ".github/workflows/deploy-api.yml L41-54 (apiToken from secrets)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/916caf15fc9c25f17c3efa4a78c8d07bf36a8aa6/.github/workflows/deploy-api.yml#L41-L54" },
+            { "kind": "project", "label": ".github/workflows/deploy-api.yml L41-54 (apiToken from secrets)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/fef978ae3e89e6fcd3557f79274be5d973c9bcca/.github/workflows/deploy-api.yml#L41-L54" },
             { "kind": "official", "label": "GitHub Docs - Using secrets in GitHub Actions", "url": "https://docs.github.com/en/actions/security-for-github-actions/security-guides/using-secrets-in-github-actions" },
             { "kind": "official", "label": "Cloudflare - Create an API token (scoped permissions)", "url": "https://developers.cloudflare.com/fundamentals/api/get-started/create-token/" }
           ]
@@ -1196,7 +1196,7 @@
           "heading": "Two ways a token fails",
           "body": "Getting the token wrong is the classic deploy blocker, and it bit this project twice. (1) A token missing a required permission is rejected by Cloudflare with **error code 10000** (an authentication error); the fix is to widen the token's scope to include what the deploy actually needs. (2) A scoped token could not look up which account to deploy to; the fix was to set **`account_id`** directly in `wrangler.jsonc` so the deploy tool skips the account-discovery step (which would otherwise need an extra permission). Account IDs are not secret, so they live in the committed config.",
           "sources": [
-            { "kind": "project", "label": "worker/wrangler.jsonc L18-21 (account_id set so CI's scoped token skips the account lookup)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/916caf15fc9c25f17c3efa4a78c8d07bf36a8aa6/worker/wrangler.jsonc#L18-L21" }
+            { "kind": "project", "label": "worker/wrangler.jsonc L18-21 (account_id set so CI's scoped token skips the account lookup)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/fef978ae3e89e6fcd3557f79274be5d973c9bcca/worker/wrangler.jsonc#L18-L21" }
           ]
         },
         {
@@ -1205,8 +1205,9 @@
           "heading": "The deploy marker",
           "body": "How do you know a deploy actually landed? `API_VERSION` is set by hand in `wrangler.jsonc`, and the Worker reports it at `/v1/health` as `data.version`. Read it right after a deploy: if it is the value you shipped, your code is serving; if it is the old one, the deploy did not take. It is SemVer for the API SURFACE, not the site's release version: MINOR when a field or route is added, MAJOR on a breaking change (which also moves `/v1` to `/v2`), PATCH on a behavior fix. That makes it two tools in one: the cheapest possible deploy smoke test, and the signal a consumer reads to tell whether the field it wants exists yet. Worth knowing why it works that way: the marker sat at `0.1.0` through three additive changes because nothing forced a bump, so CI now fails any change to the API's shape that forgets to move it.",
           "sources": [
-            { "kind": "project", "label": "worker/wrangler.jsonc L30-34 (API_VERSION var)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/916caf15fc9c25f17c3efa4a78c8d07bf36a8aa6/worker/wrangler.jsonc#L30-L34" },
-            { "kind": "project", "label": "worker/src/index.js L114-132 (/v1/health reports env.API_VERSION)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/916caf15fc9c25f17c3efa4a78c8d07bf36a8aa6/worker/src/index.js#L114-L132" }
+            { "kind": "project", "label": "worker/wrangler.jsonc L30-39 (API_VERSION var)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/fef978ae3e89e6fcd3557f79274be5d973c9bcca/worker/wrangler.jsonc#L30-L39" },
+            { "kind": "project", "label": "worker/src/index.js L114-132 (/v1/health reports env.API_VERSION)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/fef978ae3e89e6fcd3557f79274be5d973c9bcca/worker/src/index.js#L114-L132" },
+            { "kind": "project", "label": "worker/test/api-version.test.js L33-47 (CI fails a shape change with no version bump)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/fef978ae3e89e6fcd3557f79274be5d973c9bcca/worker/test/api-version.test.js#L33-L47" }
           ]
         },
         {
@@ -1216,8 +1217,8 @@
           "heading": "The deploy can be triggered by a robot, too",
           "body": "A push is not the only way to deploy. `deploy-api.yml` also accepts a `workflow_dispatch` (a run triggered by hand or by another workflow), added so the health monitor can heal a wedged cron on its own. When the monitor sees `refresh_age_seconds` climbing past the limit (module 03), it dispatches this same workflow to redeploy the Worker, which re-registers the cron trigger and revives the 5-minute refresh. Because the dispatch runs the FULL pipeline (test gate included) and the ref still selects the environment, the self-heal ships the correct, tested code, never a bare `wrangler deploy` fired from the monitor. A budget cap (a couple of redeploys per environment per hour) stops it looping; past that it escalates to a human.",
           "sources": [
-            { "kind": "project", "label": ".github/workflows/deploy-api.yml L9-54 (workflow_dispatch + ref-gated env, #849)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/916caf15fc9c25f17c3efa4a78c8d07bf36a8aa6/.github/workflows/deploy-api.yml#L9-L54" },
-            { "kind": "project", "label": ".github/workflows/monitor-api-health.yml L56-75 (probe + self-heal dispatch step)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/916caf15fc9c25f17c3efa4a78c8d07bf36a8aa6/.github/workflows/monitor-api-health.yml#L56-L75" }
+            { "kind": "project", "label": ".github/workflows/deploy-api.yml L9-54 (workflow_dispatch + ref-gated env, #849)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/fef978ae3e89e6fcd3557f79274be5d973c9bcca/.github/workflows/deploy-api.yml#L9-L54" },
+            { "kind": "project", "label": ".github/workflows/monitor-api-health.yml L56-75 (probe + self-heal dispatch step)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/fef978ae3e89e6fcd3557f79274be5d973c9bcca/.github/workflows/monitor-api-health.yml#L56-L75" }
           ]
         }
       ],
@@ -1242,7 +1243,7 @@
         ],
         "debrief": "data.version is 1.3.0, the current API_VERSION. Because the deploy only runs after the test gate passes, seeing the expected version here means tests passed AND the deploy landed. A version other than the one you expected means the deploy did not take, time to check the pipeline. The 1.3.0 reads as three additive changes on top of the original /v1 surface: recently_updated, then archives, then the cron heartbeat.",
         "sources": [
-          { "kind": "project", "label": "worker/src/index.js L114-132", "url": "https://github.com/spuddeh/nc-zoning-board/blob/916caf15fc9c25f17c3efa4a78c8d07bf36a8aa6/worker/src/index.js#L114-L132" }
+          { "kind": "project", "label": "worker/src/index.js L114-132", "url": "https://github.com/spuddeh/nc-zoning-board/blob/fef978ae3e89e6fcd3557f79274be5d973c9bcca/worker/src/index.js#L114-L132" }
         ]
       },
       "quiz": [
@@ -1256,7 +1257,7 @@
             { "text": "Nothing; every push deploys immediately.", "correct": false, "feedback": "No. The tests run first, and a path filter means only worker/ changes trigger the API deploy at all." }
           ],
           "sources": [
-            { "kind": "project", "label": ".github/workflows/deploy-api.yml L37-54", "url": "https://github.com/spuddeh/nc-zoning-board/blob/916caf15fc9c25f17c3efa4a78c8d07bf36a8aa6/.github/workflows/deploy-api.yml#L37-L54" }
+            { "kind": "project", "label": ".github/workflows/deploy-api.yml L37-54", "url": "https://github.com/spuddeh/nc-zoning-board/blob/fef978ae3e89e6fcd3557f79274be5d973c9bcca/.github/workflows/deploy-api.yml#L37-L54" }
           ]
         },
         {
@@ -1270,7 +1271,7 @@
             { "text": "\"/v1/health reports the deployed API_VERSION.\"", "correct": false, "feedback": "True: that is what makes it a deploy marker." }
           ],
           "sources": [
-            { "kind": "project", "label": "worker/wrangler.jsonc L18-21", "url": "https://github.com/spuddeh/nc-zoning-board/blob/916caf15fc9c25f17c3efa4a78c8d07bf36a8aa6/worker/wrangler.jsonc#L18-L21" }
+            { "kind": "project", "label": "worker/wrangler.jsonc L18-21", "url": "https://github.com/spuddeh/nc-zoning-board/blob/fef978ae3e89e6fcd3557f79274be5d973c9bcca/worker/wrangler.jsonc#L18-L21" }
           ]
         }
       ],
@@ -1294,8 +1295,8 @@
         },
         "debrief": "What actually happened: the deploy's API token was not scoped for everything wrangler needed, and separately could not discover the account. Error 10000 is Cloudflare's 'this token cannot do that'. The fixes: give the token the right permissions, and set account_id in wrangler.jsonc so it does not need the account-lookup permission at all. Both are visible in the config below.",
         "sources": [
-          { "kind": "project", "label": "worker/wrangler.jsonc L18-21 (account_id rationale)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/916caf15fc9c25f17c3efa4a78c8d07bf36a8aa6/worker/wrangler.jsonc#L18-L21" },
-          { "kind": "project", "label": ".github/workflows/deploy-api.yml L41-54 (apiToken)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/916caf15fc9c25f17c3efa4a78c8d07bf36a8aa6/.github/workflows/deploy-api.yml#L41-L54" }
+          { "kind": "project", "label": "worker/wrangler.jsonc L18-21 (account_id rationale)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/fef978ae3e89e6fcd3557f79274be5d973c9bcca/worker/wrangler.jsonc#L18-L21" },
+          { "kind": "project", "label": ".github/workflows/deploy-api.yml L41-54 (apiToken)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/fef978ae3e89e6fcd3557f79274be5d973c9bcca/.github/workflows/deploy-api.yml#L41-L54" }
         ]
       },
       "recap": [
@@ -1338,7 +1339,7 @@
           "heading": "The contract, written down",
           "body": "Everything modules 01-06 taught (the endpoints, the envelope, the ETags) is also written down in one machine-readable file: the **OpenAPI** description at `/openapi.json`. **OpenAPI** is a standard, language-neutral way to describe an HTTP API so that both people and tools can understand it without reading the source code. It lists every path, its parameters (like `?full=1`), and the shape of each response.",
           "sources": [
-            { "kind": "project", "label": "worker/openapi.json L1-13 (openapi 3.1.0, info, paths)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/916caf15fc9c25f17c3efa4a78c8d07bf36a8aa6/worker/openapi.json#L1-L13" },
+            { "kind": "project", "label": "worker/openapi.json L1-13 (openapi 3.1.0, info, paths)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/fef978ae3e89e6fcd3557f79274be5d973c9bcca/worker/openapi.json#L1-L13" },
             { "kind": "official", "label": "OpenAPI Initiative - Learn OpenAPI", "url": "https://learn.openapis.org/" }
           ]
         },
@@ -1348,7 +1349,7 @@
           "heading": "Human docs for free",
           "body": "A machine-readable file is not much fun to read, so the API's root page (`GET /`) renders that same spec with **Scalar**, a documentation renderer, into browsable, interactive docs. A modder who visits `api.nczoning.net` lands there. The important part: the spec file is the single source of truth, and the docs page just displays it. Write the spec once, get the docs automatically.",
           "sources": [
-            { "kind": "project", "label": "worker/src/docs.js L1-29 (root page renders openapi.json with Scalar)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/916caf15fc9c25f17c3efa4a78c8d07bf36a8aa6/worker/src/docs.js#L1-L29" }
+            { "kind": "project", "label": "worker/src/docs.js L1-29 (root page renders openapi.json with Scalar)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/fef978ae3e89e6fcd3557f79274be5d973c9bcca/worker/src/docs.js#L1-L29" }
           ]
         },
         {
@@ -1358,7 +1359,7 @@
           "heading": "The spec must not lie: the drift guard",
           "body": "A written contract is only useful if it stays true. A test enforces that in BOTH directions: every route the Worker actually serves must appear in the spec (no undocumented routes), and every `/v1` path in the spec must actually be served (no stale, removed paths). If the code and the spec ever disagree, the test fails in CI and the change cannot merge. The docs can never quietly fall behind the code.",
           "sources": [
-            { "kind": "project", "label": "worker/test/openapi.test.js L24-36 (served==documented, both ways)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/916caf15fc9c25f17c3efa4a78c8d07bf36a8aa6/worker/test/openapi.test.js#L24-L36" }
+            { "kind": "project", "label": "worker/test/openapi.test.js L24-36 (served==documented, both ways)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/fef978ae3e89e6fcd3557f79274be5d973c9bcca/worker/test/openapi.test.js#L24-L36" }
           ]
         },
         {
@@ -1368,7 +1369,7 @@
           "heading": "Reading a path from the spec",
           "body": "\"/v1/locations\": {\n  \"get\": {\n    \"summary\": \"All locations\",\n    \"parameters\": [\n      { \"name\": \"full\", \"in\": \"query\", \"schema\": { \"enum\": [\"1\"] } },\n      { \"$ref\": \"#/components/parameters/IfNoneMatch\" }\n    ],\n    \"responses\": { \"200\": { }, \"304\": { }, \"503\": { } }\n  }\n}",
           "sources": [
-            { "kind": "project", "label": "worker/openapi.json L34-55 (/v1/locations path)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/916caf15fc9c25f17c3efa4a78c8d07bf36a8aa6/worker/openapi.json#L34-L55" }
+            { "kind": "project", "label": "worker/openapi.json L34-55 (/v1/locations path)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/fef978ae3e89e6fcd3557f79274be5d973c9bcca/worker/openapi.json#L34-L55" }
           ]
         }
       ],
@@ -1404,7 +1405,7 @@
         ],
         "debrief": "Trimmed here for readability; the real /openapi.json carries full request and response schemas for each path. The point is that this file, not a hand-written doc, is the contract, and the drift-guard test keeps it matched to the code.",
         "sources": [
-          { "kind": "project", "label": "worker/openapi.json (full spec)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/916caf15fc9c25f17c3efa4a78c8d07bf36a8aa6/worker/openapi.json" }
+          { "kind": "project", "label": "worker/openapi.json (full spec)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/fef978ae3e89e6fcd3557f79274be5d973c9bcca/worker/openapi.json" }
         ]
       },
       "quiz": [
@@ -1418,7 +1419,7 @@
             { "text": "That the spec is valid JSON.", "correct": false, "feedback": "It does check the spec is well-formed, but its real job is catching drift between the spec and the actual routes." }
           ],
           "sources": [
-            { "kind": "project", "label": "worker/test/openapi.test.js L24-36", "url": "https://github.com/spuddeh/nc-zoning-board/blob/916caf15fc9c25f17c3efa4a78c8d07bf36a8aa6/worker/test/openapi.test.js#L24-L36" }
+            { "kind": "project", "label": "worker/test/openapi.test.js L24-36", "url": "https://github.com/spuddeh/nc-zoning-board/blob/fef978ae3e89e6fcd3557f79274be5d973c9bcca/worker/test/openapi.test.js#L24-L36" }
           ]
         },
         {
@@ -1431,7 +1432,7 @@
             { "text": "The Scalar library.", "correct": false, "feedback": "Scalar only renders the spec; it is not the source of the content." }
           ],
           "sources": [
-            { "kind": "project", "label": "worker/src/docs.js L1-29", "url": "https://github.com/spuddeh/nc-zoning-board/blob/916caf15fc9c25f17c3efa4a78c8d07bf36a8aa6/worker/src/docs.js#L1-L29" }
+            { "kind": "project", "label": "worker/src/docs.js L1-29", "url": "https://github.com/spuddeh/nc-zoning-board/blob/fef978ae3e89e6fcd3557f79274be5d973c9bcca/worker/src/docs.js#L1-L29" }
           ]
         }
       ],
@@ -1455,7 +1456,7 @@
         },
         "debrief": "What the test enforces: the spec and the router must list the same routes. A new route with no spec entry fails 'served but missing from openapi.json'; a spec entry with no route fails 'documented but not served'. Either way the contributor updates the spec, and the docs stay honest. (Constructed scenario, but the two-way check is exactly what the test does.)",
         "sources": [
-          { "kind": "project", "label": "worker/test/openapi.test.js L24-36", "url": "https://github.com/spuddeh/nc-zoning-board/blob/916caf15fc9c25f17c3efa4a78c8d07bf36a8aa6/worker/test/openapi.test.js#L24-L36" }
+          { "kind": "project", "label": "worker/test/openapi.test.js L24-36", "url": "https://github.com/spuddeh/nc-zoning-board/blob/fef978ae3e89e6fcd3557f79274be5d973c9bcca/worker/test/openapi.test.js#L24-L36" }
         ]
       },
       "recap": [
@@ -1498,7 +1499,7 @@
           "heading": "Who actually calls this API",
           "body": "A **consumer** is any program that calls the API. This one has two, and both are open source. The **website** reads `/v1/locations` in the browser; since the B7 change it does no Nexus merge of its own, because the server already merged everything. The **in-game mod** (NCZoningCore) fetches the same route once per game launch and hands the data to other Cyberpunk mods through a small redscript contract. Different languages, same endpoint, same records. (Both still send `?full=1` in the URL, a habit from the old two-shape API - today it is a documented no-op alias, which is exactly why the alias exists.)",
           "sources": [
-            { "kind": "project", "label": "assets/js/services.js L19-98 (website reads the Data API)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/916caf15fc9c25f17c3efa4a78c8d07bf36a8aa6/assets/js/services.js#L19-L98" },
+            { "kind": "project", "label": "assets/js/services.js L19-98 (website reads the Data API)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/fef978ae3e89e6fcd3557f79274be5d973c9bcca/assets/js/services.js#L19-L98" },
             { "kind": "project", "label": "nc-zoning-core NCZoningFetcher.reds L1-9 (in-game mod fetches /v1/locations?full=1 once per launch)", "url": "https://github.com/spuddeh/nc-zoning-core/blob/08c45f77f97e02f8745062c576928134ed844d70/r6/scripts/NCZoningCore/NCZoningFetcher.reds#L1-L9" }
           ]
         },
@@ -1521,8 +1522,8 @@
           "heading": "A capability built for the in-game consumer: archives",
           "body": "The `archives` field on every record (module 01) exists for exactly this customer. It lists the `.archive` and `.xl` files a mod ships, all of which land in the game's `archive/pc/mod/` folder. Only a consumer running inside the game can read that folder, so only the in-game mod can match those filenames and tell a player which location mods they already have installed. The server does the hard part (resolving each mod's files from Nexus), so the list arrives ready to use. And it is an additive field: it appeared without touching `/v1` or `ApiVersion()`, so when the in-game DTO adds it the handshake stays at 1, the same additive pattern this module keeps returning to.",
           "sources": [
-            { "kind": "project", "label": "worker/openapi.json L184-198 (LocationFull.archives)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/916caf15fc9c25f17c3efa4a78c8d07bf36a8aa6/worker/openapi.json#L184-L198" },
-            { "kind": "project", "label": "worker/src/nexus.js L178-221 (archive detection built for in-game install matching)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/916caf15fc9c25f17c3efa4a78c8d07bf36a8aa6/worker/src/nexus.js#L178-L221" }
+            { "kind": "project", "label": "worker/openapi.json L184-198 (LocationFull.archives)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/fef978ae3e89e6fcd3557f79274be5d973c9bcca/worker/openapi.json#L184-L198" },
+            { "kind": "project", "label": "worker/src/nexus.js L178-221 (archive detection built for in-game install matching)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/fef978ae3e89e6fcd3557f79274be5d973c9bcca/worker/src/nexus.js#L178-L221" }
           ]
         },
         {
@@ -1532,8 +1533,8 @@
           "heading": "API-primary, and deliberately no fallback",
           "body": "The website tries the API, and ONLY the API. If anything goes wrong (a network error, a non-2xx status, a malformed body, or a payload missing `description` - the signature of an older deploy still serving the pre-1.4.0 slim shape), the code **throws**, and the site shows a loud 'map data unavailable' state. There is **no client-side fallback**: an earlier version fell back to fetching Nexus directly in the browser, but that path was removed on purpose. Why give up a safety net? Because the API's other consumer, in-game mods, has no fallback either, so a silent browser workaround would mask an outage that still breaks them. Failing loudly keeps the public site a **canary**: if the map is down, the API is down, and someone finds out.",
           "sources": [
-            { "kind": "project", "label": "assets/js/services.js L8-18 (the only data path; deliberately no fallback)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/916caf15fc9c25f17c3efa4a78c8d07bf36a8aa6/assets/js/services.js#L8-L18" },
-            { "kind": "project", "label": "assets/js/services.js L44-65 (throws on any failure; slim-payload guard)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/916caf15fc9c25f17c3efa4a78c8d07bf36a8aa6/assets/js/services.js#L44-L65" }
+            { "kind": "project", "label": "assets/js/services.js L8-18 (the only data path; deliberately no fallback)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/fef978ae3e89e6fcd3557f79274be5d973c9bcca/assets/js/services.js#L8-L18" },
+            { "kind": "project", "label": "assets/js/services.js L44-65 (throws on any failure; slim-payload guard)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/fef978ae3e89e6fcd3557f79274be5d973c9bcca/assets/js/services.js#L44-L65" }
           ]
         },
         {
@@ -1543,7 +1544,7 @@
           "heading": "The consumer caches too (304 in the wild)",
           "body": "Remember the conditional GET from module 02? Here it is from the client side. The website stores the last ETag and body in the browser's `localStorage` and sends `If-None-Match` on the next load. If the data has not changed it gets a **304** and reuses the cached copy: no re-download of 296 entries. The server issues the ETag; the consumer spends it. Same mechanism, both ends.",
           "sources": [
-            { "kind": "project", "label": "assets/js/services.js L22-43 (localStorage ETag + If-None-Match -> 304)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/916caf15fc9c25f17c3efa4a78c8d07bf36a8aa6/assets/js/services.js#L22-L43" }
+            { "kind": "project", "label": "assets/js/services.js L22-43 (localStorage ETag + If-None-Match -> 304)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/fef978ae3e89e6fcd3557f79274be5d973c9bcca/assets/js/services.js#L22-L43" }
           ]
         },
         {
@@ -1553,7 +1554,7 @@
           "heading": "The silent-drop trap: composite UIDs",
           "body": "To fetch a mod's thumbnail, Nexus wants a **composite UID**: the game id and mod id packed into one number as `(gameId << 32) + modId`, NOT the string `\"gameId:modId\"`. Get the format wrong and Nexus does not return an error; it simply returns no images. The server and the website must compute this identically, or thumbnails vanish with nothing in the logs to explain it.",
           "sources": [
-            { "kind": "project", "label": "worker/src/nexus.js L95-103 (composite UID must match the site's, or Nexus silently drops it)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/916caf15fc9c25f17c3efa4a78c8d07bf36a8aa6/worker/src/nexus.js#L95-L103" }
+            { "kind": "project", "label": "worker/src/nexus.js L95-103 (composite UID must match the site's, or Nexus silently drops it)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/fef978ae3e89e6fcd3557f79274be5d973c9bcca/worker/src/nexus.js#L95-L103" }
           ]
         }
       ],
@@ -1605,7 +1606,7 @@
         ],
         "debrief": "This is the exact payload the website consumes (real capture, truncated to the first of 296 entries). services.js reads envelope.data, maps source/image fields into the app's internal shape, and caches the body against its ETag for next time. A consumer only needs the envelope plus the documented fields; everything else it does is defensive.",
         "sources": [
-          { "kind": "project", "label": "assets/js/services.js L75-95 (map API entries to internal shape)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/916caf15fc9c25f17c3efa4a78c8d07bf36a8aa6/assets/js/services.js#L75-L95" }
+          { "kind": "project", "label": "assets/js/services.js L75-95 (map API entries to internal shape)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/fef978ae3e89e6fcd3557f79274be5d973c9bcca/assets/js/services.js#L75-L95" }
         ]
       },
       "quiz": [
@@ -1619,7 +1620,7 @@
             { "text": "To crash the page so the user reloads.", "correct": false, "feedback": "It is not a crash. The failure is caught and rendered as a clear 'data unavailable' state, not a broken page." }
           ],
           "sources": [
-            { "kind": "project", "label": "assets/js/services.js L8-18 (deliberately no fallback; canary)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/916caf15fc9c25f17c3efa4a78c8d07bf36a8aa6/assets/js/services.js#L8-L18" }
+            { "kind": "project", "label": "assets/js/services.js L8-18 (deliberately no fallback; canary)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/fef978ae3e89e6fcd3557f79274be5d973c9bcca/assets/js/services.js#L8-L18" }
           ]
         },
         {
@@ -1633,7 +1634,7 @@
             { "text": "\"A consumer reads the payload from envelope.data.\"", "correct": false, "feedback": "True: the data always lives under the envelope's data key." }
           ],
           "sources": [
-            { "kind": "project", "label": "worker/src/nexus.js L95-103", "url": "https://github.com/spuddeh/nc-zoning-board/blob/916caf15fc9c25f17c3efa4a78c8d07bf36a8aa6/worker/src/nexus.js#L95-L103" }
+            { "kind": "project", "label": "worker/src/nexus.js L95-103", "url": "https://github.com/spuddeh/nc-zoning-board/blob/fef978ae3e89e6fcd3557f79274be5d973c9bcca/worker/src/nexus.js#L95-L103" }
           ]
         }
       ],
@@ -1657,7 +1658,7 @@
         },
         "debrief": "What actually happened: the composite UID was built in the wrong format, so Nexus returned 200 with no matching nodes, and the images silently dropped. The fix was to compute the UID exactly as (gameId << 32) + modId, matching the server and site. The rule: when an upstream returns success but empty, suspect your request format, not an outage. (Grounded in the composite-UID invariant in the code below.)",
         "sources": [
-          { "kind": "project", "label": "worker/src/nexus.js L95-175 (toNexusUid + thumbnail fetch)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/916caf15fc9c25f17c3efa4a78c8d07bf36a8aa6/worker/src/nexus.js#L95-L175" }
+          { "kind": "project", "label": "worker/src/nexus.js L95-175 (toNexusUid + thumbnail fetch)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/fef978ae3e89e6fcd3557f79274be5d973c9bcca/worker/src/nexus.js#L95-L175" }
         ]
       },
       "recap": [
@@ -1701,7 +1702,7 @@
           "heading": "The mission",
           "body": "Everything you need you already learned. A good operator reads several signals together: the health probe (`/v1/health`, including `refresh_age_seconds`), the dataset's own report (`/v1/meta`, especially `discovery_stale` and `generated_at`), the status codes that come back, and whether real users are affected. Many 'incidents' are the system behaving exactly as designed. Your job in the field is to know the difference, and to not 'fix' things that are not broken.",
           "sources": [
-            { "kind": "project", "label": "worker/src/index.js L114-156 (health + meta endpoints)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/916caf15fc9c25f17c3efa4a78c8d07bf36a8aa6/worker/src/index.js#L114-L156" }
+            { "kind": "project", "label": "worker/src/index.js L114-156 (health + meta endpoints)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/fef978ae3e89e6fcd3557f79274be5d973c9bcca/worker/src/index.js#L114-L156" }
           ]
         }
       ],
@@ -1726,7 +1727,7 @@
         ],
         "debrief": "A healthy board: discovery_stale is false (fresh), the build is recent, and one skipped entry is a note for that mod's author, not an incident. Nothing to do. Half of operations is confidently recognizing 'all green' and not inventing work.",
         "sources": [
-          { "kind": "project", "label": "worker/src/index.js L152-156 (/v1/meta)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/916caf15fc9c25f17c3efa4a78c8d07bf36a8aa6/worker/src/index.js#L152-L156" }
+          { "kind": "project", "label": "worker/src/index.js L152-156 (/v1/meta)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/fef978ae3e89e6fcd3557f79274be5d973c9bcca/worker/src/index.js#L152-L156" }
         ]
       },
       "quiz": [
@@ -1740,7 +1741,7 @@
             { "text": "Poll /v1/health and watch the version.", "correct": false, "feedback": "version is API_VERSION: it moves when the API's SHAPE changes (a new field or route), not when the data does. Data changes are tracked by dataset_version / ETag." }
           ],
           "sources": [
-            { "kind": "project", "label": "worker/src/index.js L79-99; worker/src/store.js L33-38", "url": "https://github.com/spuddeh/nc-zoning-board/blob/916caf15fc9c25f17c3efa4a78c8d07bf36a8aa6/worker/src/index.js#L79-L99" }
+            { "kind": "project", "label": "worker/src/index.js L79-99; worker/src/store.js L33-38", "url": "https://github.com/spuddeh/nc-zoning-board/blob/fef978ae3e89e6fcd3557f79274be5d973c9bcca/worker/src/index.js#L79-L99" }
           ]
         },
         {
@@ -1767,7 +1768,7 @@
             "You confirm data.version matches the release you shipped"
           ],
           "sources": [
-            { "kind": "project", "label": ".github/workflows/deploy-api.yml L37-54; worker/src/index.js L114-132", "url": "https://github.com/spuddeh/nc-zoning-board/blob/916caf15fc9c25f17c3efa4a78c8d07bf36a8aa6/.github/workflows/deploy-api.yml#L37-L54" }
+            { "kind": "project", "label": ".github/workflows/deploy-api.yml L37-54; worker/src/index.js L114-132", "url": "https://github.com/spuddeh/nc-zoning-board/blob/fef978ae3e89e6fcd3557f79274be5d973c9bcca/.github/workflows/deploy-api.yml#L37-L54" }
           ]
         },
         {
@@ -1780,7 +1781,7 @@
             { "text": "The edge is rate limiting the cron.", "correct": false, "feedback": "The cron is a scheduled Worker invocation, not an inbound /v1 request, so the IP rate limit does not apply to it. A climbing heartbeat points at the cron not firing, not the edge." }
           ],
           "sources": [
-            { "kind": "project", "label": "worker/src/index.js L114-132 (refresh_age_seconds); worker/src/refresh.js L253 (heartbeat stamped every cycle)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/916caf15fc9c25f17c3efa4a78c8d07bf36a8aa6/worker/src/index.js#L114-L132" }
+            { "kind": "project", "label": "worker/src/index.js L114-132 (refresh_age_seconds); worker/src/refresh.js L253 (heartbeat stamped every cycle)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/fef978ae3e89e6fcd3557f79274be5d973c9bcca/worker/src/index.js#L114-L132" }
           ]
         }
       ],
@@ -1804,7 +1805,7 @@
         },
         "debrief": "What the signals say together: discovery_stale true + an older generated_at means a refresh failed and last-known-good is being served; health 200 with the right version means the code and deploy are fine; happy users confirm no outage. The correct action is usually none: the next successful cron clears the flag and posts the all-clear. Certification is knowing that 'stale but healthy' is a designed state, not an incident. Field test complete.",
         "sources": [
-          { "kind": "project", "label": "worker/src/refresh.js L229-279 (stale + last-known-good + recovery)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/916caf15fc9c25f17c3efa4a78c8d07bf36a8aa6/worker/src/refresh.js#L229-L279" }
+          { "kind": "project", "label": "worker/src/refresh.js L229-279 (stale + last-known-good + recovery)", "url": "https://github.com/spuddeh/nc-zoning-board/blob/fef978ae3e89e6fcd3557f79274be5d973c9bcca/worker/src/refresh.js#L229-L279" }
         ]
       },
       "recap": [
