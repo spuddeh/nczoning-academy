@@ -57,7 +57,7 @@ export function Dashboard({ course, moduleDone, revealedBy, onOpenCourse }: Dash
             <div className="orient-content">
               <div className="orient-title">NEW OPERATOR // ORIENTATION</div>
               <div className="orient-body">
-                This terminal keeps no cloud account. Your progress lives on a <b>Service Record Shard</b> — hit{' '}
+                This terminal keeps no cloud account. Your progress lives on a <b>Service Record Shard</b>. Hit{' '}
                 <b>SAVE PROGRESS</b> inside any module to eject one, then <b>SLOT SHARD</b> from the Service
                 Record page to pick up where you left off, on any machine.
               </div>

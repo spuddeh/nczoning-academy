@@ -51,7 +51,10 @@ contributor being onboarded with no prior knowledge of it**.
   "in this lesson you will...".
 - **en-US spelling** (Night Corp is an American corporation). No em dashes;
   use commas, colons, parentheses, or a rewrite. (Verbatim quotes from external
-  docs keep their original punctuation.)
+  docs keep their original punctuation.) `npm run validate` **fails** on any em
+  dash anywhere in a course JSON, changelog and `contentAudit` prose included.
+  There is deliberately no exemption flag: the verbatim-quote carve-out has
+  never been used, so add the escape hatch the day a real quote needs it.
 - **Markdown-lite only** in body text: `**bold**`, `*italic*`, `` `code` ``,
   `[link](url)`. No headings, lists, tables, or images inside a body string;
   use the dedicated chunk types for those.
