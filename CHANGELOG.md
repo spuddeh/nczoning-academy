@@ -11,6 +11,18 @@ file records what a visitor receives.
 
 ## [Unreleased]
 
+## 0.9.1 - 2026-07-22
+
+### Changed
+
+- TRANSMISSION PROTOCOLS course v2.1.0: re-audited against nc-zoning-board
+  1.6.0. Adds the `archives` install-detection field (m01, m08) and the
+  `/v1/health` cron heartbeat with the wedged-vs-failed distinction (m03, m04,
+  m09); corrects the now-false "client-side fallback" story to the site's
+  no-fallback canary posture (m08) and clarifies `API_VERSION` as a static
+  deploy marker (m06). Lab captures re-recorded live; every citation re-pinned
+  to 916caf1.
+
 ## 0.9.0 - 2026-07-16
 
 ### Added
