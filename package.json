@@ -18,7 +18,8 @@
     "harness:clean": "node -e \"require('fs').rmSync('scripts/parity/out',{recursive:true,force:true});console.log('removed scripts/parity/out')\"",
     "freshness": "node scripts/check-freshness.mjs",
     "validate:messages": "node scripts/validate-messages.mjs",
-    "seed:messages": "node scripts/seed-messages.mjs"
+    "seed:messages": "node scripts/seed-messages.mjs",
+    "build:validator": "node scripts/build-validator.mjs"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^5.20260710.1",

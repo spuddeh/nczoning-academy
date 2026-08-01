@@ -11,6 +11,17 @@ file records what a visitor receives.
 
 ## [Unreleased]
 
+## 0.10.0 - 2026-08-02
+
+### Added
+
+- An announcement written to the site is now checked before it lands.
+  `/api/messages` reads, writes and clears the broadcast feed, and rejects
+  anything that does not match the published contract, so a typo can no longer
+  reach the panel a visitor reads first. Writing is restricted to an
+  administrator authenticated through Cloudflare Access, verified by the
+  endpoint itself rather than trusted from the edge.
+
 ## 0.9.3 - 2026-08-02
 
 ### Fixed

@@ -8,6 +8,7 @@ on:
       - "public/assets/css/**"
       - "schema/**"
       - "scripts/**"
+      - "functions/**"
       - "package.json"
       - "package-lock.json"
       - ".github/workflows/validate.yml"
@@ -18,6 +19,7 @@ on:
       - "public/assets/css/**"
       - "schema/**"
       - "scripts/**"
+      - "functions/**"
       - "package.json"
       - "package-lock.json"
       - ".github/workflows/validate.yml"
@@ -36,3 +38,11 @@ jobs:
       - run: npm run validate:radio
       - run: npm run validate:messages
       - run: npm run validate:css
+      # The write endpoint validates against a version of the schema COMPILED
+      # ahead of time (the Workers runtime forbids `new Function`). Regenerate
+      # and diff: a schema edit that never reached the generated validator would
+      # otherwise leave the wall checking last week's rules.
+      - name: Check the generated validator matches the schema
+        run: |
+          npm run build:validator
+          git diff --exit-code functions/api/_messages-validator.mjs functions/api/_messages-validator.d.mts

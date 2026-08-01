@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://nczoning.net/schema/messages.schema.json",
   "title": "academy-messages/v1",
-  "description": "The lock screen's SYSTEM BROADCAST feed. Serves public/messages.json (the committed baseline) and the KV values overlaid on it by functions/messages.json.ts.",
+  "description": "The lock screen's SYSTEM BROADCAST feed. Governs the two Workers KV values (messages:ops, messages:manual) that functions/messages.json.ts merges, the scripts/seed-messages.json seed, and every payload written through PUT /api/messages.",
   "type": "object",
   "required": ["messages"],
   "additionalProperties": false,
@@ -22,7 +22,7 @@
         "id": {
           "type": "string",
           "minLength": 1,
-          "description": "Stable and unique. Reuse a baseline id from KV to shadow that entry."
+          "description": "Stable and unique within its key. An id in messages:ops shadows the same id in messages:manual, which is how an incident is resolved: rewrite the entry in place rather than stacking a second one beside it."
         },
         "level": {
           "enum": ["update", "info", "alert", "resolved"],
@@ -31,7 +31,8 @@
         "date": {
           "type": "string",
           "description": "REQUIRED. `YYYY-MM-DD`, or a full ISO 8601 datetime when the writer has one (a health check does). ISO strings compare lexicographically in chronological order, so a timestamp orders correctly against a bare date on the same day. Only the first 10 characters are rendered.",
-          "anyOf": [{ "format": "date" }, { "format": "date-time" }]
+          "$comment": "A `pattern`, not `format: date`, so this schema compiles to a standalone validator with no ajv-formats dependency: the Workers runtime forbids `new Function`, so PUT /api/messages imports code generated ahead of time by scripts/build-validator.mjs. The ranges are spelled out rather than left as \\d{2} so the regex still rejects month 13 and day 45, which is what a typo actually looks like. It does not know how long February is; that is the one gap accepted in exchange for keeping the schema the single source of truth, with no second check to drift from it.",
+          "pattern": "^\\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\\d|3[01])([T ]([01]\\d|2[0-3]):[0-5]\\d(:[0-5]\\d(\\.\\d+)?)?(Z|[+-]([01]\\d|2[0-3]):[0-5]\\d)?)?$"
         },
         "title": { "type": "string", "minLength": 1, "maxLength": 60 },
         "body": { "type": "string", "minLength": 1, "maxLength": 240 }
