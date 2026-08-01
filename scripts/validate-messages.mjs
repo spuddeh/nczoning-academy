@@ -1,11 +1,12 @@
 #!/usr/bin/env node
 // Validate a SYSTEM BROADCAST feed against schema/messages.schema.json.
 //
-// The feed is the first thing a visitor reads on the lock screen, and nothing
-// else checks it: the committed file ships on deploy, and KV values go live the
-// moment they are written. So validate both.
+// The feed is the first thing a visitor reads on the lock screen, and a KV value
+// goes live the moment it is written. Two things need checking: the seed file
+// that git supplies for a fresh deployment, and any payload about to be written
+// to KV by hand.
 //
-//   node scripts/validate-messages.mjs                 # the committed baseline
+//   node scripts/validate-messages.mjs                 # the seed file
 //   node scripts/validate-messages.mjs payload.json    # a KV value, before you put it
 //
 // A bare array is accepted (the Function and the client both coerce one), so a
@@ -24,7 +25,7 @@ const root = resolve(__dirname, "..");
 const schemaPath = join(root, "schema", "messages.schema.json");
 
 const targets = process.argv.slice(2).map((p) => resolve(p));
-if (!targets.length) targets.push(join(root, "public", "messages.json"));
+if (!targets.length) targets.push(join(root, "scripts", "seed-messages.json"));
 
 const ajv = new Ajv({ allErrors: true });
 addFormats(ajv);

@@ -23,7 +23,6 @@ src/
 public/                    static passthrough, served as-is, never bundled
   assets/css/              theme.css (design tokens) + one stylesheet per view
   config.js                ACADEMY_CONFIG (hosted profile: live + persist)
-  messages.json            SYSTEM BROADCAST baseline (KV overlays this)
   courses/
     index.json             course registry the shell loads
     data-api.json          the POC course (9 modules)
@@ -33,10 +32,11 @@ public/                    static passthrough, served as-is, never bundled
   _redirects               SPA fallback so deep links resolve
   _routes.json             only /messages.json invokes a Function
 functions/
-  messages.json.ts         GET /messages.json: merges KV over the baseline
+  messages.json.ts         GET /messages.json: merges the two KV keys (503 if KV fails)
   tsconfig.json            Workers runtime types (separate from the app's)
 schema/                    course, radio-station + messages JSON Schemas: the content contracts
 scripts/                   ajv validators, freshness check, headless-browser harness
+  seed-messages.json       SYSTEM BROADCAST seed: written to KV once, never read at runtime
 docs/                      plan, app-shell overview, authoring guide, design-tokens, decisions/
 dist/                      Vite build output (gitignored; Cloudflare builds it)
 ```
@@ -86,19 +86,24 @@ recap, and field notes. See the schema for the full shape.
 ## Announcements
 
 The lock screen's SYSTEM BROADCAST panel fetches `/messages.json`. That path is
-served by a Pages Function ([`functions/messages.json.ts`](functions/messages.json.ts)),
-which merges three sources (later ones are shadowed by earlier ones sharing an
-`id`):
+served by a Pages Function ([`functions/messages.json.ts`](functions/messages.json.ts)).
+**Workers KV is the only runtime source.** Two keys, merged; an `ops` entry
+shadows a `manual` one sharing an `id`:
 
 | Source | Where | Goes live |
 | --- | --- | --- |
 | `messages:ops` | Workers KV | immediately (for a health check to write) |
 | `messages:manual` | Workers KV | immediately (hand-written posts) |
-| baseline | `public/messages.json` | on deploy (committed, reviewed) |
 
-Delete a KV key and the site reverts to the committed baseline, no deploy. The
-Function never throws: unreachable KV, malformed KV JSON, or a missing baseline
-each degrade to whatever else is available, and an empty result hides the panel.
+There is no committed baseline underneath. `scripts/seed-messages.json` seeds
+`messages:manual` once at setup (`npm run seed:messages`) so a fresh deployment
+does not open on an empty panel; it is never read at runtime.
+
+**Failure and emptiness are different answers.** Delete both keys and the
+endpoint returns `200` with zero messages, so the panel hides, because that is
+what the administrator meant. If KV is unreachable or holds unparseable JSON the
+endpoint returns `503`, so the client falls back to the evergreen line inlined in
+`Lock.tsx` rather than rendering a silently blank panel.
 
 A message. **Every field is required.** There is no message worth broadcasting
 that lacks one, and an omission only ever means the author forgot:
@@ -127,12 +132,19 @@ characters render.
 ### Posting
 
 The KV namespace is bound as `MESSAGES` on the Pages project. **Adding a binding
-does not affect existing deployments. Redeploy after you add one.**
+does not affect existing deployments. Redeploy after you add one.** Seeding a
+fresh deployment:
+
+```bash
+NCZA_MESSAGES_KV_ID=<id> npm run seed:messages     # validates, then writes messages:manual
+```
+
+Posting by hand, until the `/admin` surface lands (issue #8):
 
 ```bash
 npm run validate:messages -- payload.json          # check it BEFORE it goes live
 npx wrangler kv key put --namespace-id=<id> messages:manual --path=payload.json --remote
-npx wrangler kv key delete --namespace-id=<id> messages:ops --remote   # revert to baseline
+npx wrangler kv key delete --namespace-id=<id> messages:ops --remote   # stand the key down
 ```
 
 An incident's lifecycle runs through one key. Write the `alert` to
@@ -142,9 +154,9 @@ stacking beside it. Delete the key once it no longer matters. Never put both in
 one payload: ids must be unique, and the validator rejects it.
 
 `validate:messages` accepts a bare `[...]` array or `{ "messages": [...] }`, and
-runs in CI against the committed baseline. KV values are **not** validated by
-anything at runtime, so validate before you put. This panel is the first thing a
-visitor reads: post only claims you can point at in the code.
+runs in CI against the seed file. KV values written by hand are **not** validated
+by anything at runtime, so validate before you put. This panel is the first thing
+a visitor reads: post only claims you can point at in the code.
 
 Two more things about KV. Writes are eventually consistent, so a change can take
 up to about a minute to appear at an edge that recently read the old value. And

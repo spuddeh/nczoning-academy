@@ -11,6 +11,23 @@ file records what a visitor receives.
 
 ## [Unreleased]
 
+## 0.9.3 - 2026-08-02
+
+### Fixed
+
+- A Workers KV outage no longer blanks the SYSTEM BROADCAST panel. `/messages.json`
+  used to answer `200` with an empty list whichever way it failed, and the lock
+  screen's fallback fires only on a failed response, so nothing rendered. Failure
+  and emptiness now get different answers: an unreachable or unreadable store
+  returns `503` and the panel falls back to its standing evergreen line, while a
+  feed the administrator genuinely emptied still returns `200` and hides.
+
+### Changed
+
+- Announcements are served from Workers KV alone. The committed `messages.json`
+  is no longer read at runtime: it becomes a one-time seed, so there is one place
+  an announcement lives and nothing to keep in sync.
+
 ## 0.9.2 - 2026-07-22
 
 ### Changed

@@ -24,3 +24,6 @@ raw/
 # Vite build output (Cloudflare builds this)
 dist/
 scripts/parity/out/
+
+# Local wrangler state (miniflare's KV store for `wrangler pages dev`)
+.wrangler/

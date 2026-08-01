@@ -5,7 +5,6 @@ on:
     paths:
       - "public/courses/**"
       - "public/radio/**"
-      - "public/messages.json"
       - "public/assets/css/**"
       - "schema/**"
       - "scripts/**"
@@ -16,7 +15,6 @@ on:
     paths:
       - "public/courses/**"
       - "public/radio/**"
-      - "public/messages.json"
       - "public/assets/css/**"
       - "schema/**"
       - "scripts/**"
