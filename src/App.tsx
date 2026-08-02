@@ -9,6 +9,7 @@ import { Boot } from './views/Boot';
 import { Dashboard } from './views/Dashboard';
 import { Player } from './views/Player';
 import { ServiceRecord } from './views/ServiceRecord';
+import { Admin } from './views/Admin';
 import { AppHeader } from './components/AppHeader';
 import { ShardOverlay } from './components/ShardOverlay';
 import type { ShardIOState } from './components/ShardOverlay';
@@ -1061,6 +1062,11 @@ export function App() {
           jump={jump}
         />,
       )} />
+      {/* Standalone: outside shell() and outside the `entered` guard. Cloudflare
+          Access is the gate, and the lock-screen login is a named local profile
+          rather than access control, so requiring it here would be friction with
+          no security value. See functions/api/_access.ts. */}
+      <Route path="/admin" element={<Admin />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
     {/* App level, not shell: the boot slot (issue #30) animates pre-login.

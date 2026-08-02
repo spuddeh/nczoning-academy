@@ -17,9 +17,10 @@ JSON files, not a redesign.
 index.html                 Vite entry: links the static global CSS + data globals
 src/
   App.tsx                  routes, operator/record state, radio host, eddies economy
-  views/                   Lock, Boot, Dashboard, Player, ServiceRecord
+  views/                   Lock, Boot, Dashboard, Player, ServiceRecord, Admin
   components/              header, overlays, modals, music player, player primitives
   lib/                     academy (config/course/identity), sfx, player, types
+                           messages (the read contract), admin (the write contract)
 public/                    static passthrough, served as-is, never bundled
   assets/css/              theme.css (design tokens) + one stylesheet per view
   config.js                ACADEMY_CONFIG (hosted profile: live + persist)
@@ -57,6 +58,9 @@ The lock screen is the landing page and the audio gate. Browsers keep an
 the shared context and builds the radio engine; boot then inherits a running
 context instead of playing silently. `/boot` is guarded: a refresh or a direct
 hit redirects to `/`. Post-login routes redirect to `/` when signed out.
+
+`/admin` sits outside all of that: no shell, no audio gate, no operator login,
+because Cloudflare Access is its gate. See [Posting from `/admin`](#posting-from-admin).
 
 ## Commands
 
@@ -160,6 +164,31 @@ one payload: ids must be unique, and the validator rejects it.
 runs in CI against the seed file. KV values written by hand are **not** validated
 by anything at runtime, so validate before you put. This panel is the first thing
 a visitor reads: post only claims you can point at in the code.
+
+### Posting from `/admin`
+
+`academy.nczoning.net/admin` is the route an administrator actually uses,
+including from a phone during an incident. It is a **form, not a JSON editor**:
+pick a level, write a title and body, and the date fills itself in.
+
+Two rules that were easy to forget are now enforced by the UI rather than by a
+human:
+
+- **Routing is implicit.** `alert` posts to `messages:ops`; every other level
+  posts to `messages:manual`. That applies to new posts only.
+- **Mark resolved rewrites the entry in place**, in the key it already lives in,
+  reusing its `id`. Routing a resolved entry by level would move it to `manual`
+  and leave the original alert alive in `ops`, where it shadows the same `id`
+  and wins, so the amber banner would never change.
+
+Both keys are listed and every entry is editable, **including ones an automated
+writer created**: a health check writes `messages:ops`, and an operator can amend
+its wording, resolve it or clear it without a shell. A key holding a value the
+schema rejects is shown as such, with the raw value, so it can be cleared.
+
+The page is standalone: no header, no radio, no operator login. The lock-screen
+login is a named local profile rather than access control, so requiring it here
+would be friction with no security value. Cloudflare Access is the gate.
 
 ### The admin API
 
