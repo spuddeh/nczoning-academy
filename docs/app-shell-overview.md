@@ -49,7 +49,23 @@ from the original Claude Design monolith at verified parity.
   drag reordering (pointer events, works on mouse and touch) alongside ▲/▼ arrow
   buttons kept for accessibility; the arrows flash the row that moved.
 - **Glossary**: a modal (floating book-icon button top-right; drops into the
-  mobile nav row) accessible from any view.
+  mobile nav row) accessible from any view. Terms **declassify progressively**:
+  an entry is readable once the operator has opened the module that introduces
+  it (`fieldNotes.glossaryTerms`), and until then holds a redacted row naming
+  the module that will open it. Readable entries sort above the classified
+  tail, which runs in course order. Classified entries are not searchable, or
+  the redaction would be decorative. Opening a module that declassifies new
+  terms flashes `+N DECLASSIFIED` on the glossary opener. The unlock set is
+  derived from the record's `modulesSeen`; shards written before that field
+  existed backfill from `moduleDone` + `revealedBy`, so a returning operator
+  keeps what they earned.
+- **Field notes**: the module footer, between the recap and the completion
+  stage. Lists the terms that module declassified (chips that open the
+  glossary), the course `resources` it cites, and — when
+  `fieldNotes.renderCitations` is set — a de-duplicated roll-up of its
+  `kind: project` citations, which is the module's provenance against the
+  pinned audit commit. Names only, never definitions: those live in the
+  glossary alone.
 - **Progress / Service Record**: the single source of truth for all storage,
   with username editing, volume/mute prefs, and import/export.
 - **Certificate**: name-gated (uses the login/operator name, with an inline

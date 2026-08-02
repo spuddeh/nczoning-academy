@@ -87,6 +87,25 @@ export interface Scenario {
   sources?: Source[];
 }
 
+// Course-level further reading, referenced from a module by id
+// (fieldNotes.resources). `modules` is authoring metadata, not read here.
+export interface Resource {
+  id: string;
+  label: string;
+  url: string;
+  modules?: string[];
+  sources?: Source[];
+}
+
+// Module-footer field notes: the terms and resources a module introduces.
+// Authored in every module and defined in the schema; the rebuild never
+// rendered it (issue #65).
+export interface FieldNotes {
+  glossaryTerms?: string[];
+  resources?: string[];
+  renderCitations?: boolean;
+}
+
 export interface CourseModule {
   id: string;
   order?: number;
@@ -103,6 +122,7 @@ export interface CourseModule {
   quiz?: Question[];
   scenario?: Scenario;
   recap?: string[];
+  fieldNotes?: FieldNotes;
   [k: string]: unknown;
 }
 
@@ -161,6 +181,7 @@ export interface Course {
     wrongPenalty?: number;
   };
   glossary?: GlossaryEntry[];
+  resources?: Resource[];
   ranks?: CourseRank[];
   [k: string]: unknown;
 }
@@ -205,6 +226,12 @@ export interface ProgressRecord {
   quiz: Record<string, unknown>;
   eddies: number;
   revealedBy: Record<string, number>;
+  /** Modules the operator has opened, `id -> first-open timestamp`. Drives
+   *  glossary declassification (issue #65): a term is readable once the module
+   *  that introduces it has been opened, not once it has been completed.
+   *  Legacy shards predate it; migrateRecord backfills from moduleDone +
+   *  revealedBy so a returning operator does not lose earned terms. */
+  modulesSeen: Record<string, number>;
   txns: unknown[];
   operatorName: string;
   audio: RecordAudio | null;

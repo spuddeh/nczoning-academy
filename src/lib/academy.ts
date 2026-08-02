@@ -85,6 +85,22 @@ export function createProgress(host: ProgressHost): ProgressAdapter | null {
   return window.Progress?.create(host) ?? null;
 }
 
+// modulesSeen backfill for shards written before it existed (issue #65).
+// A module the operator completed, or revealed past its first stage, was
+// plainly opened, so its terms are already earned; withholding them would
+// re-classify a returning operator's own glossary. Backfilled entries carry
+// timestamp 0 (open time unknown); live opens carry Date.now().
+export function backfillSeen(
+  seen: Record<string, number>,
+  moduleDone: Record<string, unknown>,
+  revealedBy: Record<string, number>,
+): Record<string, number> {
+  const out = { ...seen };
+  for (const id of Object.keys(moduleDone)) if (!(id in out)) out[id] = 0;
+  for (const id of Object.keys(revealedBy)) if (!(id in out)) out[id] = 0;
+  return out;
+}
+
 // Version-tolerant record migration: port of the monolith's migrateRecord.
 // THROWS on anything that isn't a ncza-record (the thrown message surfaces in
 // the boot import line as `SHARD REJECTED // <message>`).
@@ -98,13 +114,16 @@ export function migrateRecord(rec: unknown, course: Course): ProgressRecord {
   }
   const obj = <T>(v: unknown): Record<string, T> =>
     (v && typeof v === 'object' && !Array.isArray(v)) ? v as Record<string, T> : {};
+  const moduleDone = obj(r.moduleDone);
+  const revealedBy = obj<number>(r.revealedBy);
   return {
     schema: RECORD_SCHEMA,
     course: typeof r.course === 'string' && r.course ? r.course : (course.id || 'sample'),
-    moduleDone: obj(r.moduleDone),
+    moduleDone,
     quiz: obj(r.quiz),
     eddies: typeof r.eddies === 'number' ? r.eddies : (course.economy?.startingBalance ?? 500),
-    revealedBy: obj<number>(r.revealedBy),
+    revealedBy,
+    modulesSeen: backfillSeen(obj<number>(r.modulesSeen), moduleDone, revealedBy),
     txns: Array.isArray(r.txns) ? r.txns : [],
     operatorName: typeof r.operatorName === 'string' ? r.operatorName : '',
     audio: (r.audio && typeof r.audio === 'object') ? r.audio as RecordAudio : null,

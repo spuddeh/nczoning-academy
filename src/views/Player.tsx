@@ -10,6 +10,7 @@ import { QuizView } from '../components/player/QuizView';
 import type { QuizApi } from '../components/player/QuizView';
 import { LabView } from '../components/player/LabView';
 import { ScenarioView } from '../components/player/ScenarioView';
+import { FieldNotesView } from '../components/player/FieldNotesView';
 import { Md, SectionLabel, StageCard, TerminalBlock } from '../components/player/primitives';
 
 interface PlayerProps {
@@ -28,6 +29,10 @@ interface PlayerProps {
   onSaveProgress: (moduleId: string, revealed: number) => void;
   /** capstone completion payoff: opens the certificate overlay */
   onViewCert: () => void;
+  /** field-notes term chips open the glossary */
+  onOpenGlossary: () => void;
+  /** module entry: records the open so its terms declassify (issue #65) */
+  onSeeModule: (moduleId: string) => void;
   /** Ledger deep-link target; tick marks each fresh jump (same-module too). */
   jump: { moduleId: string; qid: string; tick: number } | null;
 }
@@ -36,7 +41,7 @@ export function Player({
   course, moduleId, quiz, moduleDone, revealedBy, quizApi,
   moduleReward, economySymbol,
   onAdvance, onSelectModule, onBackToDashboard, onComplete, onSaveProgress,
-  onViewCert, jump,
+  onViewCert, onOpenGlossary, onSeeModule, jump,
 }: PlayerProps) {
   const mods = sortedModules(course ?? {});
   const m = mods.find((x) => x.id === moduleId) ?? mods[0];
@@ -74,6 +79,10 @@ export function Player({
   useEffect(() => {
     if (!m) return;
     setDrawerOpen(false);
+    // Opening the module declassifies its glossary terms. Safe under
+    // StrictMode's double mount-run: the write is keyed on the module id, so
+    // the second run is a no-op and cannot double-count the flash.
+    onSeeModule(m.id);
     const j = jump && jump.moduleId === m.id && jump.tick !== jumpDone.current ? jump : null;
     if (j) {
       window.setTimeout(() => { jumpDone.current = j.tick; }, 1500);
@@ -236,6 +245,9 @@ export function Player({
                       ))}
                     </div>
                   </StageCard>
+                )}
+                {stage.kind === 'fieldnotes' && (
+                  <FieldNotesView course={course} module={m} onOpenGlossary={onOpenGlossary} />
                 )}
                 {stage.kind === 'complete' && (
                   <StageCard accent={done ? 'green-strong' : 'gold'}>
