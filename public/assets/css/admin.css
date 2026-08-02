@@ -19,27 +19,36 @@
   --fs-ui:        13px;
   --fs-label:     11px;
 
-  /* THIS PAGE OWNS ITS SCROLL CONTAINER.
-     `body` is `overflow: hidden` globally (style.css) because the app shell is a
-     fixed-height terminal whose views scroll internally. /admin is not inside
-     that shell, so in document flow it simply could not be scrolled: everything
-     below the fold was unreachable on a phone, which is the one device this page
-     exists for. Fixed + inset + overflow-y is the same contract every other view
-     honours, stated here rather than assumed.
-     `margin-inline: auto` against left:0/right:0 is what keeps the column
-     centred once max-width constrains it. */
-  position: fixed;
-  inset: 0;
-  overflow-y: auto;
-  overflow-x: hidden;
-  overscroll-behavior: contain;
-
   display: block;
   max-width: 760px;
   margin-inline: auto;
   padding: var(--space-6xl) var(--space-2xl) 64px;
   font-family: var(--font-body);
   color: var(--text-body);
+}
+
+/* THIS PAGE SCROLLS THE DOCUMENT, and that is a deliberate second attempt.
+ *
+ * `body` is `overflow: hidden` globally (style.css) because the app shell is a
+ * fixed-height terminal whose views scroll internally. /admin is not inside that
+ * shell, so it inherited the restriction with none of the compensation and could
+ * not be scrolled at all.
+ *
+ * The first fix made `.admin` its own fixed scroll container. That restored
+ * scrolling and broke pull-to-refresh, because the browser's pull-to-refresh is
+ * bound to the ROOT scroller: a fixed inner element can never trigger it, and no
+ * amount of overscroll tuning changes that. Reimplementing the gesture in JS
+ * would have been a worse version of something the platform already does.
+ *
+ * So the restriction is lifted for this page instead. `:has()` scopes it to the
+ * admin view only, so the app shell keeps its fixed-height behaviour untouched,
+ * and the document is the scroller again — which is what pull-to-refresh needs.
+ */
+body:has(.admin) {
+  overflow: auto;
+  /* `contain` here would block pull-to-refresh just as surely as the fixed
+     container did. Say `auto` out loud so a future tidy-up does not "harden" it. */
+  overscroll-behavior-y: auto;
 }
 
 /* ---- head ---- */
