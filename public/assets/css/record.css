@@ -551,7 +551,14 @@
    (house pattern). 40px each side is a fifth of a 390px screen. */
 
 @media (max-width: 640px) {
-  .record-main { --frame-gutter: var(--space-xl); }
+  .record-main {
+    --frame-gutter: var(--space-xl);
+    /* 38px is a desktop hero size. SERVICE RECORD SHARD in the identity face at
+       that size filled 352px and stood three lines tall on a 390px screen —
+       a third of the viewport before a word of the record itself. 21px matches
+       the dashboard hero, which is the same kind of heading. */
+    --fs-title: 21px;
+  }
   /* The shard stage cannot shrink, so the padding around it must: 270px of
      stage needs the wrap down to 10px a side to survive a 390px screen. */
   .shard-stage-wrap { padding: var(--space-6xl) var(--space-md) var(--space-xl); }

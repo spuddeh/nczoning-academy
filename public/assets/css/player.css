@@ -965,6 +965,10 @@
        title size at all — it inherited :root's 34px, and the module title ran
        68px past its column. */
     --frame-gutter: var(--space-xl);
-    --fs-title: 26px;
+    /* 22px, a step above the two browse heroes at 21px and no more: this is the
+       same kind of thing they are, the view's H1, and the module title is the
+       one a reader passes every stage. (.transfer-bal also reads --fs-title but
+       lives on a fixed root at App level, so it inherits :root, not this.) */
+    --fs-title: 22px;
   }
 }

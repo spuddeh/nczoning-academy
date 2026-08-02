@@ -142,6 +142,12 @@ Four rules the shell holds to, each of which was learned by breaking it (#5):
   is 844px wide and 390px tall.
 - **Every fixed scrim owns its scroll.** `body { overflow: hidden }` means an
   overlay taller than the viewport is unreachable rather than merely awkward.
+- **Judge a phone type size by the render, not the number.** Night Corp Display
+  is a very wide identity face: TRANSACTION HISTORY measures ~250px at 12px in
+  it. The phone titlebar sizes look small written down and are not on screen.
+- **`text-overflow` does nothing on a flex container.** Both modal titles are
+  flex rows, so the ellipsis has to sit on the text span inside; without that
+  they hard-clip mid-letter and read as broken rather than truncated.
 
 The phone header is two rows at every width — monogram plus controls, then the
 two destinations as full-width tabs. `.hdr-meta` is the one thing in it that

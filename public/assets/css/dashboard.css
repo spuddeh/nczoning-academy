@@ -302,4 +302,20 @@
     --fs-heading: 17px;
     --fs-body: 14px;
   }
+
+  /* The five relays are icon-only here. Spelled out they are 173-243px each in
+     a 352px column, so they stacked into five full-width rows and the footer
+     was taller than the course card above it. Every relay already ships an
+     icon, so the label is the only thing that has to go — and it goes to
+     aria-label/title rather than nowhere, because two of these are the same
+     GitHub mark and none of them would otherwise have an accessible name. */
+  .dash-link-txt { display: none; }
+  .dash-link {
+    gap: 0;
+    padding: var(--space-md);
+    min-width: 44px;
+    min-height: 44px;
+    justify-content: center;
+  }
+  .dash-links { gap: var(--space-md); }
 }

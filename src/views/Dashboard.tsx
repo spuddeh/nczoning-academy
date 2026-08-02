@@ -103,9 +103,21 @@ export function Dashboard({ course, moduleDone, revealedBy, onOpenCourse }: Dash
           <div className="dash-section-hdr dash-relays-hdr">TRANSMISSION RELAYS <b>// EXTERNAL LINKS</b></div>
           <div className="dash-links">
             {LINKS.map((l) => (
-              <a key={l.url} className={`dash-link ${l.kind}`} href={l.url} target="_blank" rel="noreferrer">
+              // aria-label and title are load-bearing, not decoration: the
+              // label span is hidden at ≤640px and the row becomes five bare
+              // icons, so without them these links have no accessible name at
+              // all on a phone. Two of them are the same GitHub mark.
+              <a
+                key={l.url}
+                className={`dash-link ${l.kind}`}
+                href={l.url}
+                target="_blank"
+                rel="noreferrer"
+                aria-label={l.label}
+                title={l.label}
+              >
                 <RelayIcon icon={l.icon} />
-                <span>{l.label}</span>
+                <span className="dash-link-txt">{l.label}</span>
               </a>
             ))}
           </div>

@@ -49,6 +49,16 @@ file records what a visitor receives.
   targets that were quietly under size (JACK OUT, the bell, the glossary) now
   meet the 44px floor, and the module completion notice, the certificate, the
   glossary search and the shard reader all fit a 320px screen.
+- Titles are sized for a phone rather than a desktop. SERVICE RECORD SHARD was
+  set at 38px, which on a 390px screen filled the width and stood three lines
+  tall before a word of the record itself; it now matches OPERATOR DASHBOARD.
+  FIELD GLOSSARY and TRANSACTION HISTORY were the only titlebars in the app
+  above 14px and were being cut off mid-word by their own CLOSE button, which
+  in turn was carrying a keyboard shortcut no phone has. Both now fit, and where
+  a title genuinely cannot, it ends in an ellipsis instead of mid-letter.
+- The external-link buttons at the foot of the dashboard are icons on a phone.
+  Spelled out they were up to 243px each in a 352px column, so five links became
+  five full-width rows and the footer outgrew the course card above it.
 
 ## 0.11.0 - 2026-08-02
 

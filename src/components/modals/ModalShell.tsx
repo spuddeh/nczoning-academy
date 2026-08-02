@@ -21,11 +21,15 @@ export function ModalShell({ accent, title, sub, closeLabel, onClose, scrimClass
       <div className={`modal-box ${accent}`} onClick={(e) => e.stopPropagation()}>
         <div className="modal-titlebar">
           <div className="modal-title">
-            <span>{title}</span>
+            {/* its own element so the truncation can live on it: text-overflow
+                does not apply to a flex container, which .modal-title is */}
+            <span className="modal-title-txt">{title}</span>
             <span className="modal-title-sub">{sub}</span>
           </div>
           <button type="button" className="modal-close" aria-label={closeLabel} onClick={onClose}>
-            [ ESC ] CLOSE
+            {/* the key hint is a desktop affordance; a phone has no Esc key and
+                the titlebar has no room for one (#5) */}
+            <span className="modal-close-key">[ ESC ] </span>CLOSE
           </button>
         </div>
         {children}
