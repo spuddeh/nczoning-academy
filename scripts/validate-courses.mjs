@@ -238,6 +238,26 @@ for (const entry of index.courses ?? []) {
       errors.push(`${rel}: ${mods.join(", ")} list glossary term "${term}", which has no glossary entry`);
     }
   }
+
+  // Definition length (issue #66). A glossary entry is a lookup card, not a
+  // lesson: what the thing is and where it lives, plus at most one more
+  // sentence for a constraint a reader could get wrong. Rationale, history and
+  // edge cases belong in module prose, which is where they had drifted FROM.
+  //
+  // Length is the hard ceiling because length is what actually costs the
+  // reader. Sentence count is a WARNING only: it is a proxy for "this is an
+  // essay", and a genuinely short entry that happens to use three clauses is
+  // not the thing this guards against. Do not let the proxy rewrite good prose.
+  for (const g of course.glossary ?? []) {
+    const n = (g.def ?? "").length;
+    if (n > 200) {
+      errors.push(`${rel}: glossary "${g.term}" definition is ${n} chars (ceiling 200) - move the rationale into module prose`);
+    }
+    const sentences = (g.def ?? "").split(/(?<=[.!?])\s+/).filter(Boolean).length;
+    if (sentences > 2) {
+      warnings.push(`${rel}: glossary "${g.term}" runs to ${sentences} sentences (guide: one, or two for a gotcha)`);
+    }
+  }
 }
 
 // --- report -----------------------------------------------------------------

@@ -153,9 +153,21 @@ contract, and taught no rule.)
   one module's `fieldNotes.glossaryTerms` first: that is what declassifies it
   (see `docs/app-shell-overview.md`). A term listed by no module never becomes
   readable. List it in the module that first defines it in prose.
-- Definition length is governed separately; see issue #66. Short version: one
-  sentence, and a second only for a constraint a reader could get wrong.
-  Rationale, history and edge cases belong in module prose.
+- **A definition is a lookup card, not a lesson.** One sentence saying what the
+  thing is and where it lives; a second **only** for a constraint a reader could
+  otherwise get wrong. Hard ceiling **200 characters**, enforced by
+  `npm run validate`. Rationale, history, comparisons against other concepts and
+  edge-case behaviour go in module prose.
+  - Nine entries had drifted past this, up to 688 characters and five
+    sentences. In every case but one the prose they had absorbed was *already*
+    in the module; the card was duplicating the course, not carrying it. Check
+    the module before you write a long definition: what you are about to explain
+    is probably already explained.
+  - Project terms are where this goes wrong. General terms have MDN to hand off
+    to; project terms have nowhere, so the temptation is to pack the card. Send
+    the reader to the module instead.
+- **No markdown in definitions.** The glossary is plain prose throughout: no
+  backticks, no bold. Field and header names read fine unadorned at this length.
 
 ## 11. Before you commit a module
 
