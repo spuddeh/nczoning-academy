@@ -35,8 +35,16 @@ if (!namespaceId) {
 
 const preview = process.argv.includes("--preview");
 
-const run = (cmd, args) => {
-  const r = spawnSync(cmd, args, { stdio: "inherit", shell: process.platform === "win32" });
+/**
+ * `shell` is opt-in, per command, and that distinction is load-bearing on
+ * Windows. `npx` is a `.cmd` shim, so it needs a shell to be found at all. But
+ * with `shell: true` the whole command line is re-parsed by cmd.exe, and
+ * `process.execPath` is `C:\Program Files\nodejs\node.exe`, which splits at the
+ * space: the seed failed with `'C:\Program' is not recognized`. Spawning a real
+ * executable directly passes argv through untouched.
+ */
+const run = (cmd, args, { shell = false } = {}) => {
+  const r = spawnSync(cmd, args, { stdio: "inherit", shell });
   if (r.error) {
     console.error(`FAIL  could not run ${cmd}: ${r.error.message}`);
     process.exit(1);
@@ -65,4 +73,4 @@ const args = [
 if (preview) args.push("--preview");
 
 console.log(`\nwriting ${KEY} to namespace ${namespaceId}${preview ? " (preview)" : ""}`);
-process.exit(run("npx", args));
+process.exit(run("npx", args, { shell: process.platform === "win32" }));

@@ -54,6 +54,9 @@ export function Admin() {
   const [draft, setDraft] = useState<Draft>(emptyDraft);
   const [editing, setEditing] = useState<{ key: KeyName; id: string } | null>(null);
   const alive = useRef(true);
+  // The page is its own scroll container (see admin.css), so "jump to the form"
+  // has to move this element. `window.scrollTo` would be a no-op here.
+  const scroller = useRef<HTMLElement>(null);
 
   useEffect(() => () => { alive.current = false; }, []);
 
@@ -149,7 +152,7 @@ export function Admin() {
       date: (entry.date ?? today()).slice(0, 10),
     });
     setEditing({ key, id: entry.id });
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    scroller.current?.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   async function saveEdit() {
@@ -175,7 +178,7 @@ export function Admin() {
     !busy && draft.title.trim().length > 0 && draft.body.trim().length > 0 && !titleOver && !bodyOver;
 
   return (
-    <main className="admin">
+    <main className="admin" ref={scroller}>
       <header className="admin-head">
         <div>
           <h1 className="admin-title">BROADCAST CONTROL</h1>
