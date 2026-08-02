@@ -11,6 +11,19 @@ file records what a visitor receives.
 
 ## [Unreleased]
 
+## 0.11.0 - 2026-08-02
+
+### Added
+
+- `/admin`: announcements are now posted and managed on the site itself, from
+  any device, with no git checkout and no shell. A form rather than a JSON
+  editor, with verbs matching the real lifecycle (Post, Mark resolved, Clear)
+  and the date filled in. Both channels are listed and every entry is editable,
+  including ones an automated writer created. The two rules that were easy to
+  get wrong are now the interface's job: an alert routes itself to the ops
+  channel, and resolving an incident replaces the original banner instead of
+  stacking a second one beside it.
+
 ## 0.10.0 - 2026-08-02
 
 ### Added

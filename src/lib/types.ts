@@ -165,9 +165,10 @@ export interface Course {
   [k: string]: unknown;
 }
 
-// SYSTEM BROADCAST announcement, as served by /messages.json (baseline merged
-// with KV). Every field the schema requires stays optional here: this is the
-// wire shape, and KV values arrive unvalidated (see lib/messages.ts).
+// SYSTEM BROADCAST announcement, as served by /messages.json (the two KV keys
+// merged). Every field the schema requires stays optional here: this is the
+// wire shape, and a value written by hand rather than through /api/messages
+// arrives unvalidated (see lib/messages.ts).
 export type SysLevel = 'update' | 'info' | 'alert' | 'resolved';
 export interface SysMessage {
   id: string;
