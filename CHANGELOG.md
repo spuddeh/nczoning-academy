@@ -43,6 +43,9 @@ file records what a visitor receives.
 
 - A Service Record shard saved before this release keeps the terms it earned:
   modules you had completed or started count as opened.
+- The NEXT MODULE button has lost its chevron. Orbitron draws that character
+  small and sitting below the line the letters sit on, so it read as a
+  misplaced speck; no other action in the player carried one anyway.
 
 ## 0.12.1 - 2026-08-02
 

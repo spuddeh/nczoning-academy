@@ -269,7 +269,10 @@ export function Player({
                               (SAVE PROGRESS) and on the Service Record. */}
                           {nextMod ? (
                             <button type="button" className="complete-next" onClick={() => onSelectModule(nextMod.id)}>
-                              [ NEXT MODULE › ]
+                              {/* no chevron: Orbitron draws › small and off the
+                                  cap-height baseline, and no sibling action
+                                  ([ CONTINUE ], [ VIEW CERTIFICATE ]) carries one */}
+                              [ NEXT MODULE ]
                             </button>
                           ) : (
                             <button type="button" className="complete-cert" onClick={onViewCert}>
