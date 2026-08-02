@@ -145,13 +145,13 @@ fresh deployment:
 CLOUDFLARE_ACCOUNT_ID=<account> NCZA_MESSAGES_KV_ID=<id> npm run seed:messages
 ```
 
-**Check the account before you write.** More than one Cloudflare account can hold
-a namespace called `nczoning-academy-messages`, and `wrangler` writes to whichever
-one it defaults to, reporting success either way. The account that serves
-`academy.nczoning.net` is the one whose Pages project publishes it: take both the
-account id and the namespace id from that project's dashboard URL and bindings,
-not from `wrangler kv namespace list` alone. Seeding the wrong namespace looks
-identical to seeding the right one, right up to the panel staying empty.
+**Pin the account, do not let `wrangler` pick one.** Take the account id and the
+namespace id from the Pages project that publishes `academy.nczoning.net`, not
+from `wrangler kv namespace list`, which cannot tell you which account you are
+looking at. This is written from experience: a second account once held a
+namespace of the same name, the seed wrote to it and reported success, and the
+live panel stayed empty. That duplicate is gone, but a write that lands in the
+wrong place is indistinguishable from one that works, so the habit stays.
 
 Posting by hand, which is now the fallback rather than the route (see the admin
 API below):
