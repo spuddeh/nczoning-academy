@@ -143,6 +143,30 @@
   font: inherit;
 }
 
+/* A course whose prerequisite is not certified. Dimmed and not clickable, but
+   still fully READABLE: the point of showing a locked card rather than hiding
+   the course is that the operator learns it exists and what opens it. Pairs the
+   dim with an explicit note, never colour alone. */
+.course-card.locked {
+  cursor: not-allowed;
+  border-color: rgb(from var(--muted) r g b / 0.3);
+  opacity: 0.72;
+
+  & .course-hero { filter: grayscale(1); }
+  & .course-title { color: var(--muted); }
+  & .course-cta { cursor: not-allowed; opacity: 0.6; }
+}
+
+.course-locked-note {
+  margin: 10px 0;
+  padding: 6px 8px;
+  border-left: 2px solid var(--secondary);
+  background: rgb(from var(--secondary) r g b / 0.08);
+  color: var(--secondary);
+  font-size: var(--fs-micro);
+  letter-spacing: 0.06em;
+}
+
 /* blueprint hero: gradient + grid overlay + tag + watermark module count */
 .course-hero {
   height: 132px;

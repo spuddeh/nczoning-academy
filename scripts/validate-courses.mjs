@@ -91,6 +91,34 @@ for (const entry of index.courses ?? []) {
   }
 }
 
+// `requires` is stored twice on purpose: the index carries it so the dashboard
+// can gate without fetching every course, and the course file carries it because
+// that is where the authoring decision lives. Two copies of one fact drift, so
+// they are compared here rather than trusted (see the audit-SHA check below for
+// the same reasoning applied to commit SHAs).
+const idsInIndex = new Set((index.courses ?? []).map((e) => e.id));
+for (const entry of index.courses ?? []) {
+  const file = join(coursesDir, entry.file ?? "");
+  if (!entry.file || !existsSync(file)) continue;
+  const course = readJson(file);
+  const inIndex = [...(entry.requires ?? [])].sort();
+  const inCourse = [...(course.requires ?? [])].sort();
+  if (JSON.stringify(inIndex) !== JSON.stringify(inCourse)) {
+    errors.push(
+      `courses/index.json: ${entry.id} lists requires [${inIndex.join(", ")}] ` +
+      `but ${entry.file} says [${inCourse.join(", ")}]`,
+    );
+  }
+  for (const need of inCourse) {
+    if (!idsInIndex.has(need)) {
+      errors.push(`${entry.file}: requires "${need}", which is not a course in the index`);
+    }
+    if (need === entry.id) {
+      errors.push(`${entry.file}: requires itself`);
+    }
+  }
+}
+
 // orphan detection: course JSON on disk not listed in the index
 for (const f of readdirSync(coursesDir)) {
   if (f === "index.json" || !f.endsWith(".json")) continue;

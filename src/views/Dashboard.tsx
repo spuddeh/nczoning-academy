@@ -8,7 +8,7 @@
 import { useState } from 'react';
 import { sortedModules } from '../lib/academy';
 import { partialFrac } from '../lib/player';
-import type { Course } from '../lib/types';
+import type { Course, CourseIndexEntry, CourseProgress } from '../lib/types';
 
 type LinkKind = 'cyan' | 'gold' | 'gray';
 interface Relay { label: string; url: string; kind: LinkKind; icon: 'map' | 'discord' | 'kofi' | 'github'; }
@@ -31,11 +31,33 @@ interface DashboardProps {
   moduleDone: Record<string, unknown>;
   revealedBy: Record<string, number>;
   onOpenCourse: () => void;
+  /** Every course in public/courses/index.json. One entry = the shell before a
+   *  catalogue existed, so the picker collapses to today's single card. */
+  catalogue: CourseIndexEntry[];
+  /** Progress for the courses the operator is not currently in, so their cards
+   *  can show real counts without loading each course file. */
+  otherCourses: Record<string, CourseProgress>;
+  onSwitchCourse: (id: string) => void;
 }
 
-export function Dashboard({ course, moduleDone, revealedBy, onOpenCourse }: DashboardProps) {
+export function Dashboard({
+  course, moduleDone, revealedBy, onOpenCourse, catalogue, otherCourses, onSwitchCourse,
+}: DashboardProps) {
   const c = course ?? {};
   const mods = sortedModules(c);
+  // The catalogue minus the loaded course: that one already has the live card
+  // below, with real per-module progress the others cannot show.
+  const entries = catalogue.length ? catalogue : [{ id: c.id ?? 'course', title: c.title ?? '', file: '' }];
+  const others = entries.filter((e) => e.id !== c.id);
+  const titleOf = (id: string) => entries.find((e) => e.id === id)?.title || id;
+  // A course counts as certified when EVERY one of its modules is done, which
+  // needs that course's module list. Only the loaded course has one here, so a
+  // parked course is never counted: the gate FAILS CLOSED rather than guessing
+  // from a module count it cannot bound. That costs nothing in practice, because
+  // a card is only gated while the course it requires is the loaded one.
+  const certified = new Set<string>();
+  if (c.id && mods.length && mods.every((m) => moduleDone[m.id])) certified.add(c.id);
+  const unmet = (e: CourseIndexEntry) => (e.requires ?? []).filter((id) => !certified.has(id));
   const doneCount = mods.filter((m) => moduleDone[m.id]).length;
   const startedCount = mods.filter((m) => !moduleDone[m.id] && partialFrac(m, moduleDone, revealedBy) > 0).length;
   const anyProgress = doneCount > 0 || startedCount > 0;
@@ -73,7 +95,7 @@ export function Dashboard({ course, moduleDone, revealedBy, onOpenCourse }: Dash
           </div>
         )}
 
-        <div className="dash-section-hdr">AVAILABLE COURSES <b>[ 1 ]</b></div>
+        <div className="dash-section-hdr">AVAILABLE COURSES <b>[ {entries.length} ]</b></div>
         <div className="course-grid">
           <article className="course-card" onClick={onOpenCourse}>
             <div className="course-hero">
@@ -102,6 +124,49 @@ export function Dashboard({ course, moduleDone, revealedBy, onOpenCourse }: Dash
               </button>
             </div>
           </article>
+
+          {others.map((e) => {
+            const p = otherCourses[e.id];
+            const doneN = Object.keys(p?.moduleDone ?? {}).length;
+            const missing = unmet(e);
+            const locked = missing.length > 0;
+            const needs = missing.map((id) => titleOf(id)).join(', ');
+            return (
+              <article
+                key={e.id}
+                className={`course-card${locked ? ' locked' : ''}`}
+                aria-disabled={locked || undefined}
+                onClick={locked ? undefined : () => onSwitchCourse(e.id)}
+              >
+                <div className="course-hero">
+                  <div className="course-hero-grid" />
+                  <div className="course-tag">COURSE // {e.id.toUpperCase()}</div>
+                  <div className="course-watermark">{locked ? '✖' : (doneN || '')}</div>
+                </div>
+                <div className="course-body">
+                  <div className="course-title">{e.title || e.id}</div>
+                  <div className="course-title-bar" />
+                  <div className="course-sub">{e.subtitle ?? ''}</div>
+                  {locked ? (
+                    <>
+                      <div className="course-locked-note">CLEARANCE WITHHELD // REQUIRES {needs.toUpperCase()}</div>
+                      <button className="course-cta" type="button" disabled>[ LOCKED ]</button>
+                    </>
+                  ) : (
+                    <>
+                      <div className="course-progress-row">
+                        <span>PROGRESS</span>
+                        <span className="course-progress-count">{doneN} CERTIFIED</span>
+                      </div>
+                      <button className="course-cta" type="button" onClick={() => onSwitchCourse(e.id)}>
+                        [ {doneN ? 'RESUME PROGRAM' : 'BEGIN PROGRAM'} ]
+                      </button>
+                    </>
+                  )}
+                </div>
+              </article>
+            );
+          })}
         </div>
 
         <div className="dash-relays">
