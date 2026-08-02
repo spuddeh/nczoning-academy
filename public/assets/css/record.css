@@ -37,10 +37,6 @@
   align-items: center;
   gap: var(--space-2xl);
   margin: 0 0 var(--space-xs);
-  /* SERVICE RECORD SHARD at 38px next to a 68px shard icon needs 312px, which
-     is 2px more than a 390px screen has left after the page gutter. Let it drop
-     to a second line rather than hang off the edge. */
-  flex-wrap: wrap;
 
   img { display: block; flex-shrink: 0; }
 }
@@ -52,6 +48,12 @@
   letter-spacing: var(--tracking-tight);
   margin: 0;
   color: var(--text);
+  /* Wrap the words, not the row. A flex item floors at min-content by default,
+     so on a phone the whole heading was pushed onto its own line beneath the
+     shard icon and THEN wrapped again — icon, then two lines of text, three
+     rows for a title. With this it wraps inside the space left beside the icon:
+     one row, icon at its full size, two lines of text next to it. */
+  min-width: 0;
 }
 
 .record-lede {
@@ -553,12 +555,18 @@
 @media (max-width: 640px) {
   .record-main {
     --frame-gutter: var(--space-xl);
-    /* 38px is a desktop hero size. SERVICE RECORD SHARD in the identity face at
-       that size filled 352px and stood three lines tall on a 390px screen —
-       a third of the viewport before a word of the record itself. 21px matches
-       the dashboard hero, which is the same kind of heading. */
-    --fs-title: 21px;
+    /* 38px is a desktop hero size: in the identity face it filled the full
+       352px column and stood three lines tall on a 390px screen, a third of the
+       viewport before a word of the record itself.
+       18px rather than the dashboard's 21px, because this heading does not get
+       the whole column — the 68px shard icon sits beside it, leaving 274px.
+       "SERVICE RECORD" measures 299px at 21px and 258px at 18px, so 21px broke
+       it into three lines (SERVICE / RECORD / SHARD) and 18px gives the two the
+       icon is sized to sit against. Measured, not chosen. */
+    --fs-title: 18px;
   }
+  /* 10px, not 16: every pixel here is one the heading does not get. */
+  .record-title-row { gap: var(--space-md); }
   /* The shard stage cannot shrink, so the padding around it must: 270px of
      stage needs the wrap down to 10px a side to survive a 390px screen. */
   .shard-stage-wrap { padding: var(--space-6xl) var(--space-md) var(--space-xl); }
@@ -572,6 +580,14 @@
    was, and only make the picture smaller. */
 @media (max-width: 400px) {
   .shard-stage { zoom: 0.82; }
+}
+
+/* Below 350px the shard mark stands down and the heading takes the full column,
+   the same trade the header makes with the brand monogram at this width: the
+   icon leaves only 204px beside it, which puts SERVICE RECORD SHARD back on
+   three lines. Without it the heading fits two. */
+@media (max-width: 350px) {
+  .record-title-row img { display: none; }
 }
 
 /* ---- red confirm dialogs (slot overwrite / purge), z 9999 ---- */

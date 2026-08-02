@@ -56,9 +56,16 @@ file records what a visitor receives.
   above 14px and were being cut off mid-word by their own CLOSE button, which
   in turn was carrying a keyboard shortcut no phone has. Both now fit, and where
   a title genuinely cannot, it ends in an ellipsis instead of mid-letter.
-- The external-link buttons at the foot of the dashboard are icons on a phone.
-  Spelled out they were up to 243px each in a 352px column, so five links became
-  five full-width rows and the footer outgrew the course card above it.
+- The external-link buttons at the foot of the dashboard are centred icons on a
+  phone. Spelled out they were up to 243px each in a 352px column, so five links
+  became five full-width rows and the footer outgrew the course card above it.
+  MAP REPOSITORY now carries the same cyan as the map's other two links, which
+  both groups it with them and tells it apart from ACADEMY REPOSITORY — without
+  labels the two were the same grey GitHub mark twice.
+- The Service Record heading sits beside its shard icon rather than under it.
+  At the desktop size the heading was pushed onto its own line and then wrapped
+  again, so the icon and two lines of title took three rows; it now reads as one
+  block, at the size that fits the space the icon leaves it.
 
 ## 0.11.0 - 2026-08-02
 

@@ -317,5 +317,7 @@
     min-height: 44px;
     justify-content: center;
   }
-  .dash-links { gap: var(--space-md); }
+  /* Centred: five 44px squares left-aligned under a full-width rule read as a
+     row that ran out, rather than as the whole set. */
+  .dash-links { gap: var(--space-md); justify-content: center; }
 }
