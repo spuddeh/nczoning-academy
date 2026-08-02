@@ -3,8 +3,15 @@
   "id": "d1",
   "title": "PERMANENT RECORD",
   "subtitle": "The D1 registry and the write path",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "changelog": [
+    {
+      "version": "1.0.1",
+      "date": "2026-08-02",
+      "changes": [
+        "Re-pinned to nc-zoning-board 20fc456, matching TRANSMISSION PROTOCOLS v2.3.0. The cited ranges in refresh.js and nexus.js moved and were re-verified; no claim changed."
+      ]
+    },
     {
       "version": "1.0.0",
       "date": "2026-08-02",
@@ -39,41 +46,41 @@
     "wrongPenalty": 250
   },
   "contentAudit": {
-    "projectCommit": "091b0691bf990e92d34fbfa844fab804f1398ce4",
+    "projectCommit": "20fc45673599d8b5fd7b786858bff37c3783af5f",
     "auditedAt": "2026-08-02",
     "repos": [
-      { "repo": "nczoning/nc-zoning-board", "commit": "091b0691bf990e92d34fbfa844fab804f1398ce4" }
+      { "repo": "nczoning/nc-zoning-board", "commit": "20fc45673599d8b5fd7b786858bff37c3783af5f" }
     ],
-    "auditNote": "Course v1.0.0, authored 2026-08-02 against nczoning/nc-zoning-board at 091b069, read from origin/main rather than the local dev branch. Every project claim cites file+line at that commit: the nine migrations in worker/migrations, and worker/src/{validate,submissions,github-app,materialize,registry,audit,alerts}.js. The schema claims were read from the migration files, which are the authoritative statement of the schema, rather than from a dump of a live database, and the migrations carry their own reasoning in comments that this course quotes rather than paraphrases where the wording is load-bearing. Live shapes were ground-truthed with curl against api.nczoning.net on 2026-08-02: /v1/tags returns the 14 registry rows in sort_order, and /v1/locations returned 295 records of which 9 carry nexus- ids. Those two are the only D1 content this course can show a learner directly, because everything else it teaches is behind the collaborator gate. THE WRITE-PATH LABS ARE THEREFORE RECONSTRUCTED, NOT CAPTURED, and each says so in its own debrief; the shell runs every lab against canned responses with no live network, so nothing here can post a real submission. General concepts cite official docs (developers.cloudflare.com for D1 and Turnstile, sqlite.org for SQL semantics, MDN for status codes), verified 2026-08-02. The 'why' behind the design decisions comes from the NC-Zoning-Board project wiki, which is not a citable public source, so every such claim is carried back to the code or the migration comment that implements it. Two Board decision records are SUPERSEDED and were deliberately not taught from: cloudflare-worker-d1-submission-system (says git stays the source of truth; the git submission road was retired in 963f130) and api-version-semver-policy (describes the 1.3.0 backfill that was rolled back). Run `npm run freshness` to check the pinned commit."
+    "auditNote": "Course v1.0.1, pinned to nczoning/nc-zoning-board at 20fc456. The text was authored against the revision named in the v1.0.0 changelog entry and every cited range was rechecked at the newer SHA, read from origin/main rather than the local dev branch. Every project claim cites file+line at that commit: the nine migrations in worker/migrations, and worker/src/{validate,submissions,github-app,materialize,registry,audit,alerts}.js. The schema claims were read from the migration files, which are the authoritative statement of the schema, rather than from a dump of a live database, and the migrations carry their own reasoning in comments that this course quotes rather than paraphrases where the wording is load-bearing. Live shapes were ground-truthed with curl against api.nczoning.net on 2026-08-02: /v1/tags returns the 14 registry rows in sort_order, and /v1/locations returned 295 records of which 9 carry nexus- ids. Those two are the only D1 content this course can show a learner directly, because everything else it teaches is behind the collaborator gate. THE WRITE-PATH LABS ARE THEREFORE RECONSTRUCTED, NOT CAPTURED, and each says so in its own debrief; the shell runs every lab against canned responses with no live network, so nothing here can post a real submission. General concepts cite official docs (developers.cloudflare.com for D1 and Turnstile, sqlite.org for SQL semantics, MDN for status codes), verified 2026-08-02. The 'why' behind the design decisions comes from the NC-Zoning-Board project wiki, which is not a citable public source, so every such claim is carried back to the code or the migration comment that implements it. Two Board decision records are SUPERSEDED and were deliberately not taught from: cloudflare-worker-d1-submission-system (says git stays the source of truth; the git submission road was retired in 963f130) and api-version-semver-policy (describes the 1.3.0 backfill that was rolled back). Run `npm run freshness` to check the pinned commit."
   },
   "glossary": [
     { "term": "D1", "tier": "general", "def": "Cloudflare's serverless SQL database. Here it is the location registry of record: every location is a row in D1 first, and the KV copy the API serves is rebuilt from it.", "sources": [ { "kind": "official", "label": "Cloudflare - D1", "url": "https://developers.cloudflare.com/d1/" } ] },
     { "term": "SQL", "tier": "general", "def": "Structured Query Language: the language for asking a relational database to store, change or return rows. D1 speaks the SQLite dialect of it.", "sources": [ { "kind": "official", "label": "Cloudflare - D1 SQL statements", "url": "https://developers.cloudflare.com/d1/sql-api/sql-statements/" } ] },
-    { "term": "table", "tier": "general", "def": "A named collection of rows that all share the same columns, like one sheet in a spreadsheet. This registry has nine.", "sources": [ { "kind": "project", "label": "worker/migrations/0001_initial_schema.sql", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/migrations/0001_initial_schema.sql" } ] },
+    { "term": "table", "tier": "general", "def": "A named collection of rows that all share the same columns, like one sheet in a spreadsheet. This registry has nine.", "sources": [ { "kind": "project", "label": "worker/migrations/0001_initial_schema.sql", "url": "https://github.com/nczoning/nc-zoning-board/blob/20fc45673599d8b5fd7b786858bff37c3783af5f/worker/migrations/0001_initial_schema.sql" } ] },
     { "term": "primary key", "tier": "general", "def": "The column whose value identifies a row uniquely within its table. No two rows may share one, and the database refuses a duplicate rather than storing it.", "sources": [ { "kind": "official", "label": "SQLite - PRIMARY KEY", "url": "https://www.sqlite.org/lang_createtable.html#the_primary_key" } ] },
-    { "term": "registry of record", "tier": "project", "def": "The store where a location exists first and authoritatively, which here is D1. Everything else holding location data, including the KV copy the API serves, is derived and rebuildable.", "sources": [ { "kind": "project", "label": "worker/wrangler.jsonc L83-97", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/wrangler.jsonc#L83-L97" } ] },
+    { "term": "registry of record", "tier": "project", "def": "The store where a location exists first and authoritatively, which here is D1. Everything else holding location data, including the KV copy the API serves, is derived and rebuildable.", "sources": [ { "kind": "project", "label": "worker/wrangler.jsonc L83-97", "url": "https://github.com/nczoning/nc-zoning-board/blob/20fc45673599d8b5fd7b786858bff37c3783af5f/worker/wrangler.jsonc#L83-L97" } ] },
     { "term": "migration", "tier": "general", "def": "A numbered SQL file that changes the schema, applied in order and never edited once it has run. The list of them is the schema's history.", "sources": [ { "kind": "official", "label": "Cloudflare - D1 migrations", "url": "https://developers.cloudflare.com/d1/reference/migrations/" } ] },
-    { "term": "CHECK constraint", "tier": "general", "def": "A rule attached to a column that the database enforces on every write, refusing a row that breaks it. Here it is what keeps category and status to their known values.", "sources": [ { "kind": "project", "label": "worker/migrations/0001_initial_schema.sql L19-33", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/migrations/0001_initial_schema.sql#L19-L33" } ] },
-    { "term": "index", "tier": "general", "def": "A lookup structure the database keeps so it can find matching rows without reading every one. Costs a little on write, saves a lot on a query that runs often.", "sources": [ { "kind": "project", "label": "worker/migrations/0001_initial_schema.sql L41-44", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/migrations/0001_initial_schema.sql#L41-L44" } ] },
-    { "term": "dismissed candidate", "tier": "project", "def": "A Nexus mod someone looked at and decided not to put on the map. It is not a location and never was one; the row exists only to keep the mod off the candidates list.", "sources": [ { "kind": "project", "label": "worker/migrations/0001_initial_schema.sql L65-72", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/migrations/0001_initial_schema.sql#L65-L72" } ] },
-    { "term": "audit log", "tier": "project", "def": "An append-only table recording who changed what and when. It is what replaces git log once records are edited through the API instead of through pull requests.", "sources": [ { "kind": "project", "label": "worker/src/audit.js L1-12", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/src/audit.js#L1-L12" } ] },
-    { "term": "join table", "tier": "general", "def": "A table whose rows pair up two other tables, one row per link. location_tags holds one row per location-and-tag pair.", "sources": [ { "kind": "project", "label": "worker/migrations/0002_tags.sql L33-44", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/migrations/0002_tags.sql#L33-L44" } ] },
-    { "term": "foreign key", "tier": "general", "def": "A column declared to point at another table's key, so the database can refuse a link to something that does not exist. It is how a typo'd tag becomes impossible rather than merely unlikely.", "sources": [ { "kind": "project", "label": "worker/migrations/0002_tags.sql L40-44", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/migrations/0002_tags.sql#L40-L44" } ] },
-    { "term": "referential integrity", "tier": "general", "def": "The guarantee that every link points at something real. The database enforces it on write rather than a checker finding the break later.", "sources": [ { "kind": "project", "label": "worker/migrations/0002_tags.sql L33-39", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/migrations/0002_tags.sql#L33-L39" } ] },
-    { "term": "slug", "tier": "general", "def": "A short, stable, lowercase identifier used in place of a numeric id. Tags use their slug as the primary key, so a location's tags array carries the identifier directly.", "sources": [ { "kind": "project", "label": "worker/migrations/0002_tags.sql L16-31", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/migrations/0002_tags.sql#L16-L31" } ] },
-    { "term": "additive-then-drop", "tier": "project", "def": "The migration discipline used here: add the new representation, prove it produces identical output, and only then remove the old one in a later migration.", "sources": [ { "kind": "project", "label": "worker/migrations/0002_tags.sql L7-11", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/migrations/0002_tags.sql#L7-L11" } ] },
-    { "term": "parity gate", "tier": "project", "def": "A test that rebuilds the served dataset from the new source and compares it byte for byte against the old output. It is what makes a storage change provable rather than plausible.", "sources": [ { "kind": "project", "label": "worker/migrations/0007_drop_locations_tags.sql L3-8", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/migrations/0007_drop_locations_tags.sql#L3-L8" } ] },
-    { "term": "write path", "tier": "project", "def": "Every route that changes the registry: the public submission queue, the admin editor, and the review queue that approves a submission into a record.", "sources": [ { "kind": "project", "label": "worker/src/submissions.js L1-19", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/src/submissions.js#L1-L19" } ] },
-    { "term": "submission", "tier": "project", "def": "A pending row proposing a create, edit or removal. It carries no authority: nothing it says reaches the map until a collaborator approves it.", "sources": [ { "kind": "project", "label": "worker/migrations/0001_initial_schema.sql L46-55", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/migrations/0001_initial_schema.sql#L46-L55" } ] },
+    { "term": "CHECK constraint", "tier": "general", "def": "A rule attached to a column that the database enforces on every write, refusing a row that breaks it. Here it is what keeps category and status to their known values.", "sources": [ { "kind": "project", "label": "worker/migrations/0001_initial_schema.sql L19-33", "url": "https://github.com/nczoning/nc-zoning-board/blob/20fc45673599d8b5fd7b786858bff37c3783af5f/worker/migrations/0001_initial_schema.sql#L19-L33" } ] },
+    { "term": "index", "tier": "general", "def": "A lookup structure the database keeps so it can find matching rows without reading every one. Costs a little on write, saves a lot on a query that runs often.", "sources": [ { "kind": "project", "label": "worker/migrations/0001_initial_schema.sql L41-44", "url": "https://github.com/nczoning/nc-zoning-board/blob/20fc45673599d8b5fd7b786858bff37c3783af5f/worker/migrations/0001_initial_schema.sql#L41-L44" } ] },
+    { "term": "dismissed candidate", "tier": "project", "def": "A Nexus mod someone looked at and decided not to put on the map. It is not a location and never was one; the row exists only to keep the mod off the candidates list.", "sources": [ { "kind": "project", "label": "worker/migrations/0001_initial_schema.sql L65-72", "url": "https://github.com/nczoning/nc-zoning-board/blob/20fc45673599d8b5fd7b786858bff37c3783af5f/worker/migrations/0001_initial_schema.sql#L65-L72" } ] },
+    { "term": "audit log", "tier": "project", "def": "An append-only table recording who changed what and when. It is what replaces git log once records are edited through the API instead of through pull requests.", "sources": [ { "kind": "project", "label": "worker/src/audit.js L1-12", "url": "https://github.com/nczoning/nc-zoning-board/blob/20fc45673599d8b5fd7b786858bff37c3783af5f/worker/src/audit.js#L1-L12" } ] },
+    { "term": "join table", "tier": "general", "def": "A table whose rows pair up two other tables, one row per link. location_tags holds one row per location-and-tag pair.", "sources": [ { "kind": "project", "label": "worker/migrations/0002_tags.sql L33-44", "url": "https://github.com/nczoning/nc-zoning-board/blob/20fc45673599d8b5fd7b786858bff37c3783af5f/worker/migrations/0002_tags.sql#L33-L44" } ] },
+    { "term": "foreign key", "tier": "general", "def": "A column declared to point at another table's key, so the database can refuse a link to something that does not exist. It is how a typo'd tag becomes impossible rather than merely unlikely.", "sources": [ { "kind": "project", "label": "worker/migrations/0002_tags.sql L40-44", "url": "https://github.com/nczoning/nc-zoning-board/blob/20fc45673599d8b5fd7b786858bff37c3783af5f/worker/migrations/0002_tags.sql#L40-L44" } ] },
+    { "term": "referential integrity", "tier": "general", "def": "The guarantee that every link points at something real. The database enforces it on write rather than a checker finding the break later.", "sources": [ { "kind": "project", "label": "worker/migrations/0002_tags.sql L33-39", "url": "https://github.com/nczoning/nc-zoning-board/blob/20fc45673599d8b5fd7b786858bff37c3783af5f/worker/migrations/0002_tags.sql#L33-L39" } ] },
+    { "term": "slug", "tier": "general", "def": "A short, stable, lowercase identifier used in place of a numeric id. Tags use their slug as the primary key, so a location's tags array carries the identifier directly.", "sources": [ { "kind": "project", "label": "worker/migrations/0002_tags.sql L16-31", "url": "https://github.com/nczoning/nc-zoning-board/blob/20fc45673599d8b5fd7b786858bff37c3783af5f/worker/migrations/0002_tags.sql#L16-L31" } ] },
+    { "term": "additive-then-drop", "tier": "project", "def": "The migration discipline used here: add the new representation, prove it produces identical output, and only then remove the old one in a later migration.", "sources": [ { "kind": "project", "label": "worker/migrations/0002_tags.sql L7-11", "url": "https://github.com/nczoning/nc-zoning-board/blob/20fc45673599d8b5fd7b786858bff37c3783af5f/worker/migrations/0002_tags.sql#L7-L11" } ] },
+    { "term": "parity gate", "tier": "project", "def": "A test that rebuilds the served dataset from the new source and compares it byte for byte against the old output. It is what makes a storage change provable rather than plausible.", "sources": [ { "kind": "project", "label": "worker/migrations/0007_drop_locations_tags.sql L3-8", "url": "https://github.com/nczoning/nc-zoning-board/blob/20fc45673599d8b5fd7b786858bff37c3783af5f/worker/migrations/0007_drop_locations_tags.sql#L3-L8" } ] },
+    { "term": "write path", "tier": "project", "def": "Every route that changes the registry: the public submission queue, the admin editor, and the review queue that approves a submission into a record.", "sources": [ { "kind": "project", "label": "worker/src/submissions.js L1-19", "url": "https://github.com/nczoning/nc-zoning-board/blob/20fc45673599d8b5fd7b786858bff37c3783af5f/worker/src/submissions.js#L1-L19" } ] },
+    { "term": "submission", "tier": "project", "def": "A pending row proposing a create, edit or removal. It carries no authority: nothing it says reaches the map until a collaborator approves it.", "sources": [ { "kind": "project", "label": "worker/migrations/0001_initial_schema.sql L46-55", "url": "https://github.com/nczoning/nc-zoning-board/blob/20fc45673599d8b5fd7b786858bff37c3783af5f/worker/migrations/0001_initial_schema.sql#L46-L55" } ] },
     { "term": "Turnstile", "tier": "general", "def": "Cloudflare's challenge that tells a human from a script without a puzzle. The browser gets a token and the server verifies it; only the server's verdict counts.", "sources": [ { "kind": "official", "label": "Cloudflare - Turnstile", "url": "https://developers.cloudflare.com/turnstile/" } ] },
     { "term": "422 Unprocessable Content", "tier": "general", "def": "The status returned when a request was understood but its contents are wrong. Here it carries the list of fields that failed validation.", "sources": [ { "kind": "official", "label": "MDN - 422 Unprocessable Content", "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/422" } ] },
-    { "term": "salted hash", "tier": "general", "def": "A hash computed with a secret mixed in, so the result cannot be reversed by trying every possible input. Submitter addresses are stored only this way, and an unset salt fails the request.", "sources": [ { "kind": "project", "label": "worker/src/submissions.js L20-28", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/src/submissions.js#L20-L28" } ] },
-    { "term": "collaborator gate", "tier": "project", "def": "Admin access is repository collaborator status, checked server-side on every request. Adding an admin is a repo setting, not a deploy.", "sources": [ { "kind": "project", "label": "worker/src/github-app.js L134-156", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/src/github-app.js#L134-L156" } ] },
+    { "term": "salted hash", "tier": "general", "def": "A hash computed with a secret mixed in, so the result cannot be reversed by trying every possible input. Submitter addresses are stored only this way, and an unset salt fails the request.", "sources": [ { "kind": "project", "label": "worker/src/submissions.js L20-28", "url": "https://github.com/nczoning/nc-zoning-board/blob/20fc45673599d8b5fd7b786858bff37c3783af5f/worker/src/submissions.js#L20-L28" } ] },
+    { "term": "collaborator gate", "tier": "project", "def": "Admin access is repository collaborator status, checked server-side on every request. Adding an admin is a repo setting, not a deploy.", "sources": [ { "kind": "project", "label": "worker/src/github-app.js L134-156", "url": "https://github.com/nczoning/nc-zoning-board/blob/20fc45673599d8b5fd7b786858bff37c3783af5f/worker/src/github-app.js#L134-L156" } ] },
     { "term": "GitHub App", "tier": "general", "def": "An identity a program can hold in its own right, which mints a short-lived token that renews itself. Unlike a personal token it belongs to the organisation and does not expire on a date.", "sources": [ { "kind": "official", "label": "GitHub Docs - About GitHub Apps", "url": "https://docs.github.com/en/apps/overview" } ] },
-    { "term": "fail closed", "tier": "general", "def": "When a check cannot answer, deny rather than allow. The collaborator check returns yes, no, or error, and error must never be read as either of the other two.", "sources": [ { "kind": "project", "label": "worker/src/github-app.js L120-133", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/src/github-app.js#L120-L133" } ] },
-    { "term": "materializer", "tier": "project", "def": "The code that turns D1 rows into the served record map the API answers from. It is the only builder of the served dataset.", "sources": [ { "kind": "project", "label": "worker/src/materialize.js L1-17", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/src/materialize.js#L1-L17" } ] },
-    { "term": "withheld", "tier": "project", "def": "A published record whose pin the build skips because its Nexus mod is confirmed deleted. The row is untouched, so the pin returns on its own if the mod comes back.", "sources": [ { "kind": "project", "label": "worker/src/materialize.js L96-105", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/src/materialize.js#L96-L105" } ] },
-    { "term": "candidate", "tier": "project", "def": "A Nexus mod tagged NCZoning that is not on the map and has not been dismissed. It is a suggestion for a reviewer, published on /v1/meta as skipped.", "sources": [ { "kind": "project", "label": "worker/src/materialize.js L120-128", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/src/materialize.js#L120-L128" } ] }
+    { "term": "fail closed", "tier": "general", "def": "When a check cannot answer, deny rather than allow. The collaborator check returns yes, no, or error, and error must never be read as either of the other two.", "sources": [ { "kind": "project", "label": "worker/src/github-app.js L120-133", "url": "https://github.com/nczoning/nc-zoning-board/blob/20fc45673599d8b5fd7b786858bff37c3783af5f/worker/src/github-app.js#L120-L133" } ] },
+    { "term": "materializer", "tier": "project", "def": "The code that turns D1 rows into the served record map the API answers from. It is the only builder of the served dataset.", "sources": [ { "kind": "project", "label": "worker/src/materialize.js L1-17", "url": "https://github.com/nczoning/nc-zoning-board/blob/20fc45673599d8b5fd7b786858bff37c3783af5f/worker/src/materialize.js#L1-L17" } ] },
+    { "term": "withheld", "tier": "project", "def": "A published record whose pin the build skips because its Nexus mod is confirmed deleted. The row is untouched, so the pin returns on its own if the mod comes back.", "sources": [ { "kind": "project", "label": "worker/src/materialize.js L96-105", "url": "https://github.com/nczoning/nc-zoning-board/blob/20fc45673599d8b5fd7b786858bff37c3783af5f/worker/src/materialize.js#L96-L105" } ] },
+    { "term": "candidate", "tier": "project", "def": "A Nexus mod tagged NCZoning that is not on the map and has not been dismissed. It is a suggestion for a reviewer, published on /v1/meta as skipped.", "sources": [ { "kind": "project", "label": "worker/src/materialize.js L120-128", "url": "https://github.com/nczoning/nc-zoning-board/blob/20fc45673599d8b5fd7b786858bff37c3783af5f/worker/src/materialize.js#L120-L128" } ] }
   ],
   "resources": [
     { "id": "cf-d1", "label": "Cloudflare: D1", "url": "https://developers.cloudflare.com/d1/", "modules": ["d01", "d02"] },
@@ -128,8 +135,8 @@
           "heading": "What it used to be",
           "body": "Until recently a location was a **file**. One JSON file per mod under `data/locations/`, edited by opening a pull request against the repository, checked by a script running in CI, and merged by a maintainer. A build step turned the folder into a single `mods.json`, the cron read that, and the map appeared. It worked, and it had one property worth naming: every change was a **commit**, so `git log` was a complete record of who changed what. Phase 6 of the migration deleted that folder, the build script and the merge path with it. The location registry is now `locations`, a table in D1, and the git history stops recording data changes from that day forward.",
           "sources": [
-            { "kind": "project", "label": "worker/migrations/0001_initial_schema.sql L13-14 (replaces data/locations/*.json)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/migrations/0001_initial_schema.sql#L13-L14" },
-            { "kind": "project", "label": "worker/src/refresh.js L317-331 (there is one source; the mods.json path was deleted at Phase 6)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/src/refresh.js#L317-L331" }
+            { "kind": "project", "label": "worker/migrations/0001_initial_schema.sql L13-14 (replaces data/locations/*.json)", "url": "https://github.com/nczoning/nc-zoning-board/blob/20fc45673599d8b5fd7b786858bff37c3783af5f/worker/migrations/0001_initial_schema.sql#L13-L14" },
+            { "kind": "project", "label": "worker/src/refresh.js L327-341 (there is one source; the mods.json path was deleted at Phase 6)", "url": "https://github.com/nczoning/nc-zoning-board/blob/20fc45673599d8b5fd7b786858bff37c3783af5f/worker/src/refresh.js#L327-L341" }
           ]
         },
         {
@@ -146,9 +153,9 @@
           ],
           "body": "Read the last two rows together: the same move that made editing immediate also removed the safety net that made editing safe. Both of the replacements in the right-hand column exist because of the left-hand column, not in spite of it. That is the honest shape of this migration: it did not simply upgrade the storage, it moved a set of guarantees from one place to another and had to rebuild each one on arrival.",
           "sources": [
-            { "kind": "project", "label": "worker/src/validate.js L1-14 (the write path IS the gate; nothing in CI sees a location first)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/src/validate.js#L1-L14" },
-            { "kind": "project", "label": "worker/src/audit.js L1-12 (what replaces git log for data changes)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/src/audit.js#L1-L12" },
-            { "kind": "project", "label": "worker/wrangler.jsonc L83-97 (D1 is NOT derived: losing it loses data)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/wrangler.jsonc#L83-L97" }
+            { "kind": "project", "label": "worker/src/validate.js L1-14 (the write path IS the gate; nothing in CI sees a location first)", "url": "https://github.com/nczoning/nc-zoning-board/blob/20fc45673599d8b5fd7b786858bff37c3783af5f/worker/src/validate.js#L1-L14" },
+            { "kind": "project", "label": "worker/src/audit.js L1-12 (what replaces git log for data changes)", "url": "https://github.com/nczoning/nc-zoning-board/blob/20fc45673599d8b5fd7b786858bff37c3783af5f/worker/src/audit.js#L1-L12" },
+            { "kind": "project", "label": "worker/wrangler.jsonc L83-97 (D1 is NOT derived: losing it loses data)", "url": "https://github.com/nczoning/nc-zoning-board/blob/20fc45673599d8b5fd7b786858bff37c3783af5f/worker/wrangler.jsonc#L83-L97" }
           ]
         },
         {
@@ -158,8 +165,8 @@
           "heading": "Two stores, and only one of them is the truth",
           "body": "You met both of these in TRANSMISSION PROTOCOLS module 03, and the distinction is the spine of this course. **D1 is the registry of record.** A location exists there first, and if D1 is lost the data is lost with it. **KV is a derived serving copy.** The rebuild reads D1 and writes the result to KV; the read routes serve KV and never touch D1 at all. Delete the entire KV namespace and the next rebuild puts it back, which is why the config calls it recreatable at any time and calls D1 the opposite. The practical consequence for anything you write later: **fixing the map means fixing the row, not the copy.** Editing KV would work until the next rebuild overwrote it, roughly five minutes later, and the change would vanish with nothing to explain where it went.",
           "sources": [
-            { "kind": "project", "label": "worker/wrangler.jsonc L73-82 (KV content is fully derived, recreate at any time)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/wrangler.jsonc#L73-L82" },
-            { "kind": "project", "label": "worker/wrangler.jsonc L83-97 (the location registry, and the only source)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/wrangler.jsonc#L83-L97" }
+            { "kind": "project", "label": "worker/wrangler.jsonc L73-82 (KV content is fully derived, recreate at any time)", "url": "https://github.com/nczoning/nc-zoning-board/blob/20fc45673599d8b5fd7b786858bff37c3783af5f/worker/wrangler.jsonc#L73-L82" },
+            { "kind": "project", "label": "worker/wrangler.jsonc L83-97 (the location registry, and the only source)", "url": "https://github.com/nczoning/nc-zoning-board/blob/20fc45673599d8b5fd7b786858bff37c3783af5f/worker/wrangler.jsonc#L83-L97" }
           ]
         },
         {
@@ -169,8 +176,8 @@
           "heading": "Nothing auto-publishes any more",
           "body": "The old system had a second way in. A Nexus mod tagged `NCZoning`, carrying a formatted block in its description, was parsed and **became a pin** with nobody involved. That is over. A tagged mod is now a **candidate**: it appears in a list for a reviewer, it prefills a form, and it reaches the map only when a person approves it. The `NCZoning` tag is prefill, not publication. This is why the `source` field you saw removed from `/v1` in the other course could go: it recorded whether a record arrived manually or automatically, and once nothing arrives automatically the distinction stopped describing anything the system still produces.",
           "sources": [
-            { "kind": "project", "label": "worker/src/materialize.js L1-17 (nothing auto-publishes; a tagged mod is a candidate, not a location)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/src/materialize.js#L1-L17" },
-            { "kind": "project", "label": "worker/migrations/0005_drop_source.sql L10-22 (source stopped describing anything)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/migrations/0005_drop_source.sql#L10-L22" }
+            { "kind": "project", "label": "worker/src/materialize.js L1-17 (nothing auto-publishes; a tagged mod is a candidate, not a location)", "url": "https://github.com/nczoning/nc-zoning-board/blob/20fc45673599d8b5fd7b786858bff37c3783af5f/worker/src/materialize.js#L1-L17" },
+            { "kind": "project", "label": "worker/migrations/0005_drop_source.sql L10-22 (source stopped describing anything)", "url": "https://github.com/nczoning/nc-zoning-board/blob/20fc45673599d8b5fd7b786858bff37c3783af5f/worker/migrations/0005_drop_source.sql#L10-L22" }
           ]
         }
       ],
@@ -205,8 +212,8 @@
         ],
         "debrief": "Real capture from api.nczoning.net on 2026-08-02, trimmed to three of the fourteen rows. Almost everything here is a column in the tags table: slug is the primary key, description is NOT NULL, and sort_order is what the list is ordered by. One field is not a stored value: name is nullable in the table, and every current row stores NULL, so what you are reading is the fallback to the slug. Module 03 is about why that split exists at all.",
         "sources": [
-          { "kind": "project", "label": "worker/migrations/0002_tags.sql L16-31 (the tags table)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/migrations/0002_tags.sql#L16-L31" },
-          { "kind": "project", "label": "worker/migrations/0002_tags.sql L49-68 (the seeded rows, all with NULL name)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/migrations/0002_tags.sql#L49-L68" }
+          { "kind": "project", "label": "worker/migrations/0002_tags.sql L16-31 (the tags table)", "url": "https://github.com/nczoning/nc-zoning-board/blob/20fc45673599d8b5fd7b786858bff37c3783af5f/worker/migrations/0002_tags.sql#L16-L31" },
+          { "kind": "project", "label": "worker/migrations/0002_tags.sql L49-68 (the seeded rows, all with NULL name)", "url": "https://github.com/nczoning/nc-zoning-board/blob/20fc45673599d8b5fd7b786858bff37c3783af5f/worker/migrations/0002_tags.sql#L49-L68" }
         ]
       },
       "quiz": [
@@ -221,7 +228,7 @@
             { "text": "Neither: open a pull request against data/locations/.", "correct": false, "feedback": "That folder was deleted at Phase 6, along with the build step that read it. There is no file to edit." }
           ],
           "sources": [
-            { "kind": "project", "label": "worker/wrangler.jsonc L73-97 (KV derived, D1 not)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/wrangler.jsonc#L73-L97" }
+            { "kind": "project", "label": "worker/wrangler.jsonc L73-97 (KV derived, D1 not)", "url": "https://github.com/nczoning/nc-zoning-board/blob/20fc45673599d8b5fd7b786858bff37c3783af5f/worker/wrangler.jsonc#L73-L97" }
           ]
         },
         {
@@ -236,8 +243,8 @@
             { "text": "Deciding which mods are tagged NCZoning on Nexus.", "correct": false, "feedback": "No. That is Nexus's data, read by the cron. The registry decides what is on the map, not what is tagged." }
           ],
           "sources": [
-            { "kind": "project", "label": "worker/src/audit.js L1-12", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/src/audit.js#L1-L12" },
-            { "kind": "project", "label": "worker/src/validate.js L1-14", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/src/validate.js#L1-L14" }
+            { "kind": "project", "label": "worker/src/audit.js L1-12", "url": "https://github.com/nczoning/nc-zoning-board/blob/20fc45673599d8b5fd7b786858bff37c3783af5f/worker/src/audit.js#L1-L12" },
+            { "kind": "project", "label": "worker/src/validate.js L1-14", "url": "https://github.com/nczoning/nc-zoning-board/blob/20fc45673599d8b5fd7b786858bff37c3783af5f/worker/src/validate.js#L1-L14" }
           ]
         }
       ],
@@ -262,8 +269,8 @@
         },
         "debrief": "The transferable rule: a derived store cannot be edited, only overwritten, and an edit to one fails in the quietest way a system can fail. There was no error because nothing erred. Ask of any store you are about to write to: is this the source, or a copy of the source? If it is a copy, find the source. Here that means the row in D1, and the rebuild carries it the rest of the way. (Constructed scenario. The cadence, the replace-not-merge rebuild and the two stores' roles are all real and cited below.)",
         "sources": [
-          { "kind": "project", "label": "worker/wrangler.jsonc L98-109 (the 5-minute rebuild)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/wrangler.jsonc#L98-L109" },
-          { "kind": "project", "label": "worker/src/materialize.js L1-17 (the only builder of the served dataset)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/src/materialize.js#L1-L17" }
+          { "kind": "project", "label": "worker/wrangler.jsonc L98-109 (the 5-minute rebuild)", "url": "https://github.com/nczoning/nc-zoning-board/blob/20fc45673599d8b5fd7b786858bff37c3783af5f/worker/wrangler.jsonc#L98-L109" },
+          { "kind": "project", "label": "worker/src/materialize.js L1-17 (the only builder of the served dataset)", "url": "https://github.com/nczoning/nc-zoning-board/blob/20fc45673599d8b5fd7b786858bff37c3783af5f/worker/src/materialize.js#L1-L17" }
         ]
       },
       "recap": [
@@ -307,8 +314,8 @@
           "heading": "The migrations are the schema",
           "body": "There is no separate document describing the database. There is a numbered list of **migrations**: SQL files applied in order, each one changing the schema, none of them edited once it has run. `0001_initial_schema.sql` creates everything; the eight after it change things. Read in order they are both the current shape and its history, which is why this course cites them rather than a dump of the live database: a dump tells you what is true, and the migration tells you why. One operational detail with teeth, stated in the first migration itself: named Wrangler environments inherit no bindings, so staging has its **own** database and every migration must be applied **twice**, once per database. Forget the second and staging drifts from production silently until something queries a column that is not there.",
           "sources": [
-            { "kind": "project", "label": "worker/migrations/0001_initial_schema.sql L1-11 (applied to BOTH databases; every migration runs twice)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/migrations/0001_initial_schema.sql#L1-L11" },
-            { "kind": "project", "label": "worker/wrangler.jsonc L88-97 (staging has its own database; named environments inherit nothing)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/wrangler.jsonc#L88-L97" },
+            { "kind": "project", "label": "worker/migrations/0001_initial_schema.sql L1-11 (applied to BOTH databases; every migration runs twice)", "url": "https://github.com/nczoning/nc-zoning-board/blob/20fc45673599d8b5fd7b786858bff37c3783af5f/worker/migrations/0001_initial_schema.sql#L1-L11" },
+            { "kind": "project", "label": "worker/wrangler.jsonc L88-97 (staging has its own database; named environments inherit nothing)", "url": "https://github.com/nczoning/nc-zoning-board/blob/20fc45673599d8b5fd7b786858bff37c3783af5f/worker/wrangler.jsonc#L88-L97" },
             { "kind": "official", "label": "Cloudflare - D1 migrations", "url": "https://developers.cloudflare.com/d1/reference/migrations/" }
           ]
         },
@@ -330,9 +337,9 @@
           ],
           "body": "Two of these are worth pausing on because their names invite a wrong guess. `dismissed_candidates` is **not** a location with a flag set: it holds a Nexus id and a reason, has no coordinates and no category, and its only job is keeping that mod out of the candidates list. And `alerts` exists because a notification posted to a chat channel is not a record: it scrolls away, and the question 'has this been happening for a week?' has no answer unless something wrote it down.",
           "sources": [
-            { "kind": "project", "label": "worker/migrations/0001_initial_schema.sql L15-95 (all eight initial tables)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/migrations/0001_initial_schema.sql#L15-L95" },
-            { "kind": "project", "label": "worker/migrations/0001_initial_schema.sql L65-72 (dismissed_candidates is NOT a location)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/migrations/0001_initial_schema.sql#L65-L72" },
-            { "kind": "project", "label": "worker/migrations/0002_tags.sql L20-44 (tags and location_tags)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/migrations/0002_tags.sql#L20-L44" }
+            { "kind": "project", "label": "worker/migrations/0001_initial_schema.sql L15-95 (all eight initial tables)", "url": "https://github.com/nczoning/nc-zoning-board/blob/20fc45673599d8b5fd7b786858bff37c3783af5f/worker/migrations/0001_initial_schema.sql#L15-L95" },
+            { "kind": "project", "label": "worker/migrations/0001_initial_schema.sql L65-72 (dismissed_candidates is NOT a location)", "url": "https://github.com/nczoning/nc-zoning-board/blob/20fc45673599d8b5fd7b786858bff37c3783af5f/worker/migrations/0001_initial_schema.sql#L65-L72" },
+            { "kind": "project", "label": "worker/migrations/0002_tags.sql L20-44 (tags and location_tags)", "url": "https://github.com/nczoning/nc-zoning-board/blob/20fc45673599d8b5fd7b786858bff37c3783af5f/worker/migrations/0002_tags.sql#L20-L44" }
           ]
         },
         {
@@ -342,9 +349,9 @@
           "heading": "Reading the locations table",
           "body": "CREATE TABLE locations (\n  id          TEXT PRIMARY KEY,   -- existing UUIDs preserved; nexus-<id> for imports\n  name        TEXT NOT NULL,\n  nexus_id    TEXT,\n  category    TEXT NOT NULL,\n  x REAL NOT NULL, y REAL NOT NULL, z REAL, yaw REAL,\n  description TEXT, credits TEXT,\n  authors     TEXT,               -- JSON array\n  status      TEXT NOT NULL DEFAULT 'published'\n              CHECK (status IN ('published', 'hidden', 'draft')),\n  admin_notes TEXT,               -- admin-only, never served on /v1\n  owner_id    INTEGER,            -- NULL for now; the author-self-service hook\n  created_at TEXT NOT NULL, updated_at TEXT NOT NULL\n);\n\nCREATE INDEX idx_locations_status ON locations (status);\nCREATE INDEX idx_locations_nexus_id ON locations (nexus_id);\n\n-- shown as it stands after migrations 0005 and 0007 dropped `source` and `tags`",
           "sources": [
-            { "kind": "project", "label": "worker/migrations/0001_initial_schema.sql L15-44 (the table as first created)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/migrations/0001_initial_schema.sql#L15-L44" },
-            { "kind": "project", "label": "worker/migrations/0005_drop_source.sql L33 (ALTER TABLE locations DROP COLUMN source)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/migrations/0005_drop_source.sql#L33" },
-            { "kind": "project", "label": "worker/migrations/0007_drop_locations_tags.sql L32 (ALTER TABLE locations DROP COLUMN tags)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/migrations/0007_drop_locations_tags.sql#L32" }
+            { "kind": "project", "label": "worker/migrations/0001_initial_schema.sql L15-44 (the table as first created)", "url": "https://github.com/nczoning/nc-zoning-board/blob/20fc45673599d8b5fd7b786858bff37c3783af5f/worker/migrations/0001_initial_schema.sql#L15-L44" },
+            { "kind": "project", "label": "worker/migrations/0005_drop_source.sql L33 (ALTER TABLE locations DROP COLUMN source)", "url": "https://github.com/nczoning/nc-zoning-board/blob/20fc45673599d8b5fd7b786858bff37c3783af5f/worker/migrations/0005_drop_source.sql#L33" },
+            { "kind": "project", "label": "worker/migrations/0007_drop_locations_tags.sql L32 (ALTER TABLE locations DROP COLUMN tags)", "url": "https://github.com/nczoning/nc-zoning-board/blob/20fc45673599d8b5fd7b786858bff37c3783af5f/worker/migrations/0007_drop_locations_tags.sql#L32" }
           ]
         },
         {
@@ -353,8 +360,8 @@
           "heading": "Four kinds of rule in that listing",
           "body": "Everything after a column's type is a **rule the database enforces on every write**, not a comment or a convention. `PRIMARY KEY` on `id` means no two rows may share one, so a duplicate insert is refused rather than stored. `NOT NULL` on `name`, `category`, `x` and `y` means a row without them cannot exist, which is why no code anywhere needs to handle a nameless location. `DEFAULT 'published'` fills a value in when the write does not supply one. And `CHECK (status IN ('published', 'hidden', 'draft'))` refuses any other string outright: `status: 'publishd'` is not a bug that ships, it is a write that fails. Below the table, `CREATE INDEX` declares no rule at all: an **index** is a lookup structure so the database can find matching rows without reading every one. These two exist because the rebuild filters on `status` and matches on `nexus_id` on every single cron tick, which is the only reason an index ever earns its cost.",
           "sources": [
-            { "kind": "project", "label": "worker/migrations/0001_initial_schema.sql L15-44", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/migrations/0001_initial_schema.sql#L15-L44" },
-            { "kind": "project", "label": "worker/migrations/0001_initial_schema.sql L41-42 (why these two indexes: both run every cron tick)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/migrations/0001_initial_schema.sql#L41-L42" },
+            { "kind": "project", "label": "worker/migrations/0001_initial_schema.sql L15-44", "url": "https://github.com/nczoning/nc-zoning-board/blob/20fc45673599d8b5fd7b786858bff37c3783af5f/worker/migrations/0001_initial_schema.sql#L15-L44" },
+            { "kind": "project", "label": "worker/migrations/0001_initial_schema.sql L41-42 (why these two indexes: both run every cron tick)", "url": "https://github.com/nczoning/nc-zoning-board/blob/20fc45673599d8b5fd7b786858bff37c3783af5f/worker/migrations/0001_initial_schema.sql#L41-L42" },
             { "kind": "official", "label": "SQLite - CREATE TABLE (PRIMARY KEY, NOT NULL, CHECK)", "url": "https://www.sqlite.org/lang_createtable.html" }
           ]
         },
@@ -365,8 +372,8 @@
           "heading": "status is not the same question as 'is it on the map'",
           "body": "`status` has three values and they are not a pipeline. `published` means the record is meant to be on the map. `hidden` means the pin is pulled but the record is kept, which is what you want when a mod is taken down and might come back. `draft` has never been published at all. The trap is reading `published` as 'therefore served'. It is not: the build can withhold a published record for a reason that has nothing to do with the row, and module 06 is about exactly that case. Keep the two questions apart from here on. **`status` is what an admin decided.** Whether a pin is served is what the build concluded, and the API reports any difference on `/v1/meta` rather than letting the two disagree quietly.",
           "sources": [
-            { "kind": "project", "label": "worker/migrations/0001_initial_schema.sql L32-35 (the three statuses; hidden keeps the record)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/migrations/0001_initial_schema.sql#L32-L35" },
-            { "kind": "project", "label": "worker/src/materialize.js L92-105 (only published rows reach the map, minus the withheld)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/src/materialize.js#L92-L105" }
+            { "kind": "project", "label": "worker/migrations/0001_initial_schema.sql L32-35 (the three statuses; hidden keeps the record)", "url": "https://github.com/nczoning/nc-zoning-board/blob/20fc45673599d8b5fd7b786858bff37c3783af5f/worker/migrations/0001_initial_schema.sql#L32-L35" },
+            { "kind": "project", "label": "worker/src/materialize.js L92-105 (only published rows reach the map, minus the withheld)", "url": "https://github.com/nczoning/nc-zoning-board/blob/20fc45673599d8b5fd7b786858bff37c3783af5f/worker/src/materialize.js#L92-L105" }
           ]
         }
       ],
@@ -413,8 +420,8 @@
         ],
         "debrief": "RECONSTRUCTED, not captured: the id, the nexus- prefix and the record's shape are real, but the descriptive text here is illustrative. The three computed fields: district and subdistrict come from testing the coordinates against the district polygons at build time, which is why district is never null (outside every polygon is Badlands), and recently_updated is worked out from the Nexus timestamp against the recency window. None of the three is a column in locations. That id is worth a second look too. Nine records carry a nexus- prefix, and since the source column was dropped that prefix is the only thing recording that they arrived by auto-discovery back when auto-discovery still published.",
         "sources": [
-          { "kind": "project", "label": "worker/src/materialize.js L135-165 (district, subdistrict and recently_updated computed into the record)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/src/materialize.js#L135-L165" },
-          { "kind": "project", "label": "worker/migrations/0005_drop_source.sql L16-22 (the nexus- keys record the provenance on their own)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/migrations/0005_drop_source.sql#L16-L22" }
+          { "kind": "project", "label": "worker/src/materialize.js L135-165 (district, subdistrict and recently_updated computed into the record)", "url": "https://github.com/nczoning/nc-zoning-board/blob/20fc45673599d8b5fd7b786858bff37c3783af5f/worker/src/materialize.js#L135-L165" },
+          { "kind": "project", "label": "worker/migrations/0005_drop_source.sql L16-22 (the nexus- keys record the provenance on their own)", "url": "https://github.com/nczoning/nc-zoning-board/blob/20fc45673599d8b5fd7b786858bff37c3783af5f/worker/migrations/0005_drop_source.sql#L16-L22" }
         ]
       },
       "quiz": [
@@ -428,7 +435,7 @@
             { "text": "It is stored as NULL, because the value is invalid.", "correct": false, "feedback": "No. An invalid value fails the write outright; it is not quietly converted into a different one, which would be a far worse outcome." }
           ],
           "sources": [
-            { "kind": "project", "label": "worker/migrations/0001_initial_schema.sql L32-33", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/migrations/0001_initial_schema.sql#L32-L33" }
+            { "kind": "project", "label": "worker/migrations/0001_initial_schema.sql L32-33", "url": "https://github.com/nczoning/nc-zoning-board/blob/20fc45673599d8b5fd7b786858bff37c3783af5f/worker/migrations/0001_initial_schema.sql#L32-L33" }
           ]
         },
         {
@@ -442,8 +449,8 @@
             { "text": "\"Every migration has to be applied to the staging database as well.\"", "correct": false, "feedback": "True, and easy to forget. Named Wrangler environments inherit no bindings, so staging has its own database and its own copy of every migration." }
           ],
           "sources": [
-            { "kind": "project", "label": "worker/src/materialize.js L92-105", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/src/materialize.js#L92-L105" },
-            { "kind": "project", "label": "worker/migrations/0001_initial_schema.sql L1-11", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/migrations/0001_initial_schema.sql#L1-L11" }
+            { "kind": "project", "label": "worker/src/materialize.js L92-105", "url": "https://github.com/nczoning/nc-zoning-board/blob/20fc45673599d8b5fd7b786858bff37c3783af5f/worker/src/materialize.js#L92-L105" },
+            { "kind": "project", "label": "worker/migrations/0001_initial_schema.sql L1-11", "url": "https://github.com/nczoning/nc-zoning-board/blob/20fc45673599d8b5fd7b786858bff37c3783af5f/worker/migrations/0001_initial_schema.sql#L1-L11" }
           ]
         }
       ],
@@ -468,8 +475,8 @@
         },
         "debrief": "The rule this teaches, and it generalises well past D1: **a shared name is not a shared thing.** Both environments bind their database as DB, both run the same code, and that similarity is exactly what makes the difference invisible until something queries the missing column. The failure also waited two weeks, because nothing reads staging, which is the other half of the lesson: a difference nobody exercises is not a difference nobody has. (Constructed scenario. The two databases, the inherit-nothing rule and the apply-twice instruction are all real and cited.)",
         "sources": [
-          { "kind": "project", "label": "worker/migrations/0001_initial_schema.sql L4-7 (apply to both databases)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/migrations/0001_initial_schema.sql#L4-L7" },
-          { "kind": "project", "label": "worker/wrangler.jsonc L193-203 (staging declares its own database in full; omitting it leaves env.DB undefined)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/wrangler.jsonc#L193-L203" }
+          { "kind": "project", "label": "worker/migrations/0001_initial_schema.sql L4-7 (apply to both databases)", "url": "https://github.com/nczoning/nc-zoning-board/blob/20fc45673599d8b5fd7b786858bff37c3783af5f/worker/migrations/0001_initial_schema.sql#L4-L7" },
+          { "kind": "project", "label": "worker/wrangler.jsonc L193-203 (staging declares its own database in full; omitting it leaves env.DB undefined)", "url": "https://github.com/nczoning/nc-zoning-board/blob/20fc45673599d8b5fd7b786858bff37c3783af5f/worker/wrangler.jsonc#L193-L203" }
         ]
       },
       "recap": [
@@ -513,8 +520,8 @@
           "heading": "A tag list as a string, and what it cannot do",
           "body": "At the start, a location's tags were a **JSON array stored in a column**: one text value reading `[\"house\", \"photos\"]`. That is convenient and it has one fatal property. To the database it is just text. `\"photos\"` and `\"photoss\"` are equally valid strings, so a typo is stored happily and shows up as a tag that filters to nothing, months later, in a sidebar nobody is watching. The old system caught this with a script that ran in CI on data pull requests, which worked exactly as long as every edit was a pull request. Once edits became API calls, that check stopped standing between anyone and the registry.",
           "sources": [
-            { "kind": "project", "label": "worker/migrations/0001_initial_schema.sql L22-24 (tags as a JSON array at Phase 1)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/migrations/0001_initial_schema.sql#L22-L24" },
-            { "kind": "project", "label": "worker/migrations/0002_tags.sql L33-36 (a typo'd tag was caught by CI on a data PR, long after the edit)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/migrations/0002_tags.sql#L33-L36" }
+            { "kind": "project", "label": "worker/migrations/0001_initial_schema.sql L22-24 (tags as a JSON array at Phase 1)", "url": "https://github.com/nczoning/nc-zoning-board/blob/20fc45673599d8b5fd7b786858bff37c3783af5f/worker/migrations/0001_initial_schema.sql#L22-L24" },
+            { "kind": "project", "label": "worker/migrations/0002_tags.sql L33-36 (a typo'd tag was caught by CI on a data PR, long after the edit)", "url": "https://github.com/nczoning/nc-zoning-board/blob/20fc45673599d8b5fd7b786858bff37c3783af5f/worker/migrations/0002_tags.sql#L33-L36" }
           ]
         },
         {
@@ -524,7 +531,7 @@
           "heading": "The join, and the rule inside it",
           "body": "CREATE TABLE tags (\n  slug TEXT PRIMARY KEY,\n  name TEXT,                    -- display label; NULL falls back to the slug\n  description TEXT NOT NULL,\n  sort_order INTEGER,\n  created_at TEXT NOT NULL, updated_at TEXT NOT NULL\n);\n\nCREATE TABLE location_tags (\n  location_id TEXT NOT NULL REFERENCES locations(id) ON DELETE CASCADE,\n  tag_slug    TEXT NOT NULL REFERENCES tags(slug)    ON UPDATE CASCADE,\n  PRIMARY KEY (location_id, tag_slug)\n);\n\nCREATE INDEX idx_location_tags_tag ON location_tags (tag_slug);",
           "sources": [
-            { "kind": "project", "label": "worker/migrations/0002_tags.sql L20-47 (tags, location_tags and the join index)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/migrations/0002_tags.sql#L20-L47" },
+            { "kind": "project", "label": "worker/migrations/0002_tags.sql L20-47 (tags, location_tags and the join index)", "url": "https://github.com/nczoning/nc-zoning-board/blob/20fc45673599d8b5fd7b786858bff37c3783af5f/worker/migrations/0002_tags.sql#L20-L47" },
             { "kind": "official", "label": "SQLite - foreign key support (REFERENCES, ON DELETE, ON UPDATE)", "url": "https://www.sqlite.org/foreignkeys.html" }
           ]
         },
@@ -534,9 +541,9 @@
           "heading": "What every line of that buys",
           "body": "A **join table** stores one row per link: this location carries this tag. `REFERENCES tags(slug)` makes it a **foreign key**, so the database refuses a link to a tag that does not exist. That is the point of the move: a typo'd tag stops being a thing that gets caught and becomes a thing that cannot be written. The composite `PRIMARY KEY (location_id, tag_slug)` means the same tag cannot be attached twice. `ON DELETE CASCADE` removes a location's links when the location goes, so no link outlives the thing it points at. `ON UPDATE CASCADE` handles the rare case where a slug genuinely has to change: one update propagates everywhere. And `slug` is the primary key rather than a numeric id on purpose, because the slug is already the identifier every record carries; adding an integer key would create a **second** identifier for the same thing, which is the exact duplication this whole migration exists to remove. The `name` column is what makes renaming safe: `neomilitarism` can display as `Neo-Militarism` without the identifier moving at all.",
           "sources": [
-            { "kind": "project", "label": "worker/migrations/0002_tags.sql L16-19 (slug as the key, because an integer would be a SECOND identifier)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/migrations/0002_tags.sql#L16-L19" },
-            { "kind": "project", "label": "worker/migrations/0002_tags.sql L22-26 (name splits the label from the identifier)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/migrations/0002_tags.sql#L22-L26" },
-            { "kind": "project", "label": "worker/migrations/0002_tags.sql L37-39 (ON UPDATE CASCADE covers a slug that must genuinely change)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/migrations/0002_tags.sql#L37-L39" }
+            { "kind": "project", "label": "worker/migrations/0002_tags.sql L16-19 (slug as the key, because an integer would be a SECOND identifier)", "url": "https://github.com/nczoning/nc-zoning-board/blob/20fc45673599d8b5fd7b786858bff37c3783af5f/worker/migrations/0002_tags.sql#L16-L19" },
+            { "kind": "project", "label": "worker/migrations/0002_tags.sql L22-26 (name splits the label from the identifier)", "url": "https://github.com/nczoning/nc-zoning-board/blob/20fc45673599d8b5fd7b786858bff37c3783af5f/worker/migrations/0002_tags.sql#L22-L26" },
+            { "kind": "project", "label": "worker/migrations/0002_tags.sql L37-39 (ON UPDATE CASCADE covers a slug that must genuinely change)", "url": "https://github.com/nczoning/nc-zoning-board/blob/20fc45673599d8b5fd7b786858bff37c3783af5f/worker/migrations/0002_tags.sql#L37-L39" }
           ]
         },
         {
@@ -546,8 +553,8 @@
           "heading": "Additive, then prove it, then drop",
           "body": "Migration 0002 created the join and **deliberately left `locations.tags` in place**. The old column stayed for five more migrations, until 0007 dropped it. That gap is the method, not hesitation. Dropping the column in 0002 would have made the join the new source of truth and simultaneously destroyed the only thing it could be checked against; the migration's own comment says it would be 'simultaneously the new source of truth and unverifiable'. Instead: add the new representation, switch the reader to it, run a **parity gate** that rebuilds the served dataset from the join and compares it byte for byte against the output the column produced, and only once that is green in both directions does the old one go. The rule generalises to any storage change: **you may have two representations, or you may have an unverified one, but the moment you have neither a comparison nor a rollback you have made the change unfalsifiable.**",
           "sources": [
-            { "kind": "project", "label": "worker/migrations/0002_tags.sql L7-11 (ADDITIVE ONLY, and why dropping here would be unverifiable)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/migrations/0002_tags.sql#L7-L11" },
-            { "kind": "project", "label": "worker/migrations/0007_drop_locations_tags.sql L1-8 (dropped only once parity ran green, twice over)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/migrations/0007_drop_locations_tags.sql#L1-L8" }
+            { "kind": "project", "label": "worker/migrations/0002_tags.sql L7-11 (ADDITIVE ONLY, and why dropping here would be unverifiable)", "url": "https://github.com/nczoning/nc-zoning-board/blob/20fc45673599d8b5fd7b786858bff37c3783af5f/worker/migrations/0002_tags.sql#L7-L11" },
+            { "kind": "project", "label": "worker/migrations/0007_drop_locations_tags.sql L1-8 (dropped only once parity ran green, twice over)", "url": "https://github.com/nczoning/nc-zoning-board/blob/20fc45673599d8b5fd7b786858bff37c3783af5f/worker/migrations/0007_drop_locations_tags.sql#L1-L8" }
           ]
         },
         {
@@ -557,8 +564,8 @@
           "heading": "The fallback that had to die first",
           "body": "Migration 0007 could not simply drop the column, and the reasons are the most useful thing in this module. Two pieces of code were quietly depending on the old representation. The **importer**, which rebuilds a database from an export, listed `tags` in its insert and never wrote the join at all: dropping the column would have broken the restore path outright, and leaving it would have kept producing databases that serve every location untagged. And `resolveTags` **fell back** to the column when no join was supplied. That fallback sounds defensive and is the opposite: with the column gone it would have quietly served 297 records with no tags while looking like it worked. Both were fixed before the drop, the importer verified by building a database from nothing and counting 572 links against production's 572. The lesson is about the shape of the bug, not the tags: **a fallback converts a loud failure into a plausible wrong answer.** Where correctness matters more than uptime, throw instead.",
           "sources": [
-            { "kind": "project", "label": "worker/migrations/0007_drop_locations_tags.sql L10-23 (what had to go first: the importer and the resolveTags fallback)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/migrations/0007_drop_locations_tags.sql#L10-L23" },
-            { "kind": "project", "label": "worker/src/registry.js L11-15 (the tag join is part of a write, not a follow-up to it)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/src/registry.js#L11-L15" }
+            { "kind": "project", "label": "worker/migrations/0007_drop_locations_tags.sql L10-23 (what had to go first: the importer and the resolveTags fallback)", "url": "https://github.com/nczoning/nc-zoning-board/blob/20fc45673599d8b5fd7b786858bff37c3783af5f/worker/migrations/0007_drop_locations_tags.sql#L10-L23" },
+            { "kind": "project", "label": "worker/src/registry.js L11-15 (the tag join is part of a write, not a follow-up to it)", "url": "https://github.com/nczoning/nc-zoning-board/blob/20fc45673599d8b5fd7b786858bff37c3783af5f/worker/src/registry.js#L11-L15" }
           ]
         }
       ],
@@ -601,8 +608,8 @@
         ],
         "debrief": "The default case is a trimmed real capture; the legacy case is RECONSTRUCTED to show what the same record used to serve. That extra nczoning entry was never a registry row. It was synthesised at serve time for auto-discovered records, which made it a visible filter for a tag /v1/tags did not list, and it went in the same release that dropped source. Notice what the join makes true: because every entry in the current array is a foreign key into tags, a tag that filters to nothing cannot get in this way any more. It would have to be added to the registry first, deliberately.",
         "sources": [
-          { "kind": "project", "label": "worker/migrations/0002_tags.sql L49-53 (nczoning is deliberately NOT a registry row)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/migrations/0002_tags.sql#L49-L53" },
-          { "kind": "project", "label": "worker/migrations/0005_drop_source.sql L24-27 (both write paths for the synthetic tag removed in one release)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/migrations/0005_drop_source.sql#L24-L27" }
+          { "kind": "project", "label": "worker/migrations/0002_tags.sql L49-53 (nczoning is deliberately NOT a registry row)", "url": "https://github.com/nczoning/nc-zoning-board/blob/20fc45673599d8b5fd7b786858bff37c3783af5f/worker/migrations/0002_tags.sql#L49-L53" },
+          { "kind": "project", "label": "worker/migrations/0005_drop_source.sql L24-27 (both write paths for the synthetic tag removed in one release)", "url": "https://github.com/nczoning/nc-zoning-board/blob/20fc45673599d8b5fd7b786858bff37c3783af5f/worker/migrations/0005_drop_source.sql#L24-L27" }
         ]
       },
       "quiz": [
@@ -616,8 +623,8 @@
             { "text": "It is silently dropped from the tag list.", "correct": false, "feedback": "Silently dropping is what auto-discovery does with an unknown tag from a third-party description, deliberately. An admin typing a tag has made a mistake worth surfacing, so this path refuses instead." }
           ],
           "sources": [
-            { "kind": "project", "label": "worker/migrations/0002_tags.sql L40-44", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/migrations/0002_tags.sql#L40-L44" },
-            { "kind": "project", "label": "worker/src/validate.js L41-47 (unknown tags are an error for an admin, not silently dropped)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/src/validate.js#L41-L47" }
+            { "kind": "project", "label": "worker/migrations/0002_tags.sql L40-44", "url": "https://github.com/nczoning/nc-zoning-board/blob/20fc45673599d8b5fd7b786858bff37c3783af5f/worker/migrations/0002_tags.sql#L40-L44" },
+            { "kind": "project", "label": "worker/src/validate.js L41-47 (unknown tags are an error for an admin, not silently dropped)", "url": "https://github.com/nczoning/nc-zoning-board/blob/20fc45673599d8b5fd7b786858bff37c3783af5f/worker/src/validate.js#L41-L47" }
           ]
         },
         {
@@ -633,8 +640,8 @@
             "Drop the column in a later migration"
           ],
           "sources": [
-            { "kind": "project", "label": "worker/migrations/0002_tags.sql L7-11, L70-76", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/migrations/0002_tags.sql#L70-L76" },
-            { "kind": "project", "label": "worker/migrations/0007_drop_locations_tags.sql L1-32", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/migrations/0007_drop_locations_tags.sql#L1-L32" }
+            { "kind": "project", "label": "worker/migrations/0002_tags.sql L7-11, L70-76", "url": "https://github.com/nczoning/nc-zoning-board/blob/20fc45673599d8b5fd7b786858bff37c3783af5f/worker/migrations/0002_tags.sql#L70-L76" },
+            { "kind": "project", "label": "worker/migrations/0007_drop_locations_tags.sql L1-32", "url": "https://github.com/nczoning/nc-zoning-board/blob/20fc45673599d8b5fd7b786858bff37c3783af5f/worker/migrations/0007_drop_locations_tags.sql#L1-L32" }
           ]
         }
       ],
@@ -659,8 +666,8 @@
         },
         "debrief": "Two rules come out of this one. First: **an operation that reports success has only told you it did what it was written to do**, which is a different claim from doing what you needed. The import genuinely inserted 297 rows. Second, and this is why the parity gate exists: the failure was invisible at every step except the byte-for-byte comparison. No error, no exception, a plausible-looking database, and 297 records serving an empty tag list. A count you can check against a known number, 572 links, is worth more than any number of green log lines. That is also why resolveTags now throws instead of falling back to an empty list: a missing join is a failure, and it should look like one.",
         "sources": [
-          { "kind": "project", "label": "worker/migrations/0007_drop_locations_tags.sql L12-22 (the importer wrote no links; the fallback served 297 untagged records)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/migrations/0007_drop_locations_tags.sql#L12-L22" },
-          { "kind": "project", "label": "worker/src/registry.js L11-15 (the join is part of a write, not a follow-up to it)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/src/registry.js#L11-L15" }
+          { "kind": "project", "label": "worker/migrations/0007_drop_locations_tags.sql L12-22 (the importer wrote no links; the fallback served 297 untagged records)", "url": "https://github.com/nczoning/nc-zoning-board/blob/20fc45673599d8b5fd7b786858bff37c3783af5f/worker/migrations/0007_drop_locations_tags.sql#L12-L22" },
+          { "kind": "project", "label": "worker/src/registry.js L11-15 (the join is part of a write, not a follow-up to it)", "url": "https://github.com/nczoning/nc-zoning-board/blob/20fc45673599d8b5fd7b786858bff37c3783af5f/worker/src/registry.js#L11-L15" }
         ]
       },
       "recap": [
@@ -704,7 +711,7 @@
           "heading": "Validation moved because the pull request did",
           "body": "Under the old system every write was a commit, so validation could be a **CI step**: a schema check run on the pull request, producing a red cross if a value was wrong. That arrangement quietly depended on one thing, and the migration removed it. A dashboard edit, an approved submission and an admin API call all reach the registry **without passing through a pull request**, so a check that only runs on pull requests now stands between almost nobody and the data. The gate therefore moved to where the writes actually are: the Worker validates every write **on the way in**, and a bad value is refused at submission with a **422** naming the fields, rather than accepted and caught later. Everything else in this module follows from that one relocation.",
           "sources": [
-            { "kind": "project", "label": "worker/src/validate.js L1-14 (this IS the gate; nothing in CI sees a location before it is stored)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/src/validate.js#L1-L14" },
+            { "kind": "project", "label": "worker/src/validate.js L1-14 (this IS the gate; nothing in CI sees a location before it is stored)", "url": "https://github.com/nczoning/nc-zoning-board/blob/20fc45673599d8b5fd7b786858bff37c3783af5f/worker/src/validate.js#L1-L14" },
             { "kind": "official", "label": "MDN - 422 Unprocessable Content", "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/422" }
           ]
         },
@@ -722,8 +729,8 @@
           ],
           "body": "The ordering is the interesting part, and each position is argued in the code rather than incidental. The rate limit sits ahead of everything expensive **and** ahead of everything informative: a flood is cheap to refuse, and an attacker cannot use refusals to learn what the validator accepts. Read the whole column of refusal codes together and it says something useful about the API's manners: `503` means we are broken, `429` means you are too fast, `403` means we do not believe you are a person, and `422` means we understood you perfectly and the contents are wrong.",
           "sources": [
-            { "kind": "project", "label": "worker/src/submissions.js L192-214 (salt, then rate limit, then Turnstile, with the ordering argued)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/src/submissions.js#L192-L214" },
-            { "kind": "project", "label": "worker/src/submissions.js L42-51 (admin-only fields; 5 submissions per hour)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/src/submissions.js#L42-L51" },
+            { "kind": "project", "label": "worker/src/submissions.js L192-214 (salt, then rate limit, then Turnstile, with the ordering argued)", "url": "https://github.com/nczoning/nc-zoning-board/blob/20fc45673599d8b5fd7b786858bff37c3783af5f/worker/src/submissions.js#L192-L214" },
+            { "kind": "project", "label": "worker/src/submissions.js L42-51 (admin-only fields; 5 submissions per hour)", "url": "https://github.com/nczoning/nc-zoning-board/blob/20fc45673599d8b5fd7b786858bff37c3783af5f/worker/src/submissions.js#L42-L51" },
             { "kind": "official", "label": "Cloudflare - Turnstile", "url": "https://developers.cloudflare.com/turnstile/" }
           ]
         },
@@ -734,8 +741,8 @@
           "heading": "Refused, not ignored",
           "body": "Two rules in the validator are worth memorising because they are the same rule wearing different clothes. **Unknown fields are rejected, not discarded**: a payload with a misspelled field name is an error, because a typo that is silently thrown away looks exactly like a successful save. And **`id` cannot be set by a payload at all**. It is generated by the server on create and immutable afterwards, since letting a request choose it is how a deep link gets quietly repointed at a different mod. Both come from one principle: **when input is wrong, the system must say so rather than do its best.** Doing its best is how a submitter comes away believing they set something they did not.",
           "sources": [
-            { "kind": "project", "label": "worker/src/validate.js L16-22 (id is not accepted from input; admin-only fields never existed in the file format)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/src/validate.js#L16-L22" },
-            { "kind": "project", "label": "worker/src/validate.js L58-66 (unknown keys are rejected rather than ignored)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/src/validate.js#L58-L66" }
+            { "kind": "project", "label": "worker/src/validate.js L16-22 (id is not accepted from input; admin-only fields never existed in the file format)", "url": "https://github.com/nczoning/nc-zoning-board/blob/20fc45673599d8b5fd7b786858bff37c3783af5f/worker/src/validate.js#L16-L22" },
+            { "kind": "project", "label": "worker/src/validate.js L58-66 (unknown keys are rejected rather than ignored)", "url": "https://github.com/nczoning/nc-zoning-board/blob/20fc45673599d8b5fd7b786858bff37c3783af5f/worker/src/validate.js#L58-L66" }
           ]
         },
         {
@@ -744,9 +751,9 @@
           "heading": "What a submission is, and what it is not",
           "body": "A successful `POST /submissions` produces exactly one thing: a row in the `submissions` table with status `pending`. It carries a `kind` of `create`, `edit` or `remove`, the proposed `payload`, an optional note and contact for the reviewer, and a **salted hash of the submitter's address**, never the address itself. That hash exists only for the rate limit and abuse triage, is purged after 90 days by the cron, and an unset salt fails the request closed, because an unsalted hash of an IPv4 address can be reversed by trying all four billion of them. What the row is **not** is a change. Nothing it says reaches the map until a collaborator approves it, and approval **re-validates the payload against the tag registry as it stands then**, not as it stood when the submission arrived: a tag can be renamed or removed while a submission sits in the queue.",
           "sources": [
-            { "kind": "project", "label": "worker/src/submissions.js L1-32 (nothing published by this route reaches the map; what is stored about the submitter, and why)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/src/submissions.js#L1-L32" },
-            { "kind": "project", "label": "worker/migrations/0001_initial_schema.sql L46-55 (the submissions table)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/migrations/0001_initial_schema.sql#L46-L55" },
-            { "kind": "project", "label": "worker/src/submissions.js L225-244 (create validates in full; edit validates the present keys only)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/src/submissions.js#L225-L244" }
+            { "kind": "project", "label": "worker/src/submissions.js L1-32 (nothing published by this route reaches the map; what is stored about the submitter, and why)", "url": "https://github.com/nczoning/nc-zoning-board/blob/20fc45673599d8b5fd7b786858bff37c3783af5f/worker/src/submissions.js#L1-L32" },
+            { "kind": "project", "label": "worker/migrations/0001_initial_schema.sql L46-55 (the submissions table)", "url": "https://github.com/nczoning/nc-zoning-board/blob/20fc45673599d8b5fd7b786858bff37c3783af5f/worker/migrations/0001_initial_schema.sql#L46-L55" },
+            { "kind": "project", "label": "worker/src/submissions.js L225-244 (create validates in full; edit validates the present keys only)", "url": "https://github.com/nczoning/nc-zoning-board/blob/20fc45673599d8b5fd7b786858bff37c3783af5f/worker/src/submissions.js#L225-L244" }
           ]
         }
       ],
@@ -807,8 +814,8 @@
         ],
         "debrief": "ALL FOUR RESPONSES ARE RECONSTRUCTED from the code, not captured. This is the one lab in either course that would change something if it ran for real, so it was built from validate.js and submissions.js rather than by posting to production. (The console runs every lab against canned data with no network, so pressing TRANSMIT here cannot reach the API in any case.) Three things to take from the shapes. The 422 lists every failing field in one response rather than stopping at the first, so a submitter fixes one form rather than playing twenty questions. The admin-field case is refused rather than stripped, so nobody comes away thinking they set a status. And the accepted response says pending and gives you an id: it is a receipt, not a change.",
         "sources": [
-          { "kind": "project", "label": "worker/src/submissions.js L192-250 (the gates and their status codes)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/src/submissions.js#L192-L250" },
-          { "kind": "project", "label": "worker/src/validate.js L28-37 (the category list and the writable set)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/src/validate.js#L28-L37" }
+          { "kind": "project", "label": "worker/src/submissions.js L192-250 (the gates and their status codes)", "url": "https://github.com/nczoning/nc-zoning-board/blob/20fc45673599d8b5fd7b786858bff37c3783af5f/worker/src/submissions.js#L192-L250" },
+          { "kind": "project", "label": "worker/src/validate.js L28-37 (the category list and the writable set)", "url": "https://github.com/nczoning/nc-zoning-board/blob/20fc45673599d8b5fd7b786858bff37c3783af5f/worker/src/validate.js#L28-L37" }
         ]
       },
       "quiz": [
@@ -822,7 +829,7 @@
             { "text": "Accept it and store the status, since a pending submission is not on the map.", "correct": false, "feedback": "That stores a value the submitter chose in a field an approval will later read. The gap between storing and applying is exactly where this goes wrong." }
           ],
           "sources": [
-            { "kind": "project", "label": "worker/src/submissions.js L12-16, L42-43", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/src/submissions.js#L12-L16" }
+            { "kind": "project", "label": "worker/src/submissions.js L12-16, L42-43", "url": "https://github.com/nczoning/nc-zoning-board/blob/20fc45673599d8b5fd7b786858bff37c3783af5f/worker/src/submissions.js#L12-L16" }
           ]
         },
         {
@@ -835,7 +842,7 @@
             { "text": "Because the rate limit is enforced by the edge before the Worker runs.", "correct": false, "feedback": "That is the /v1 read rate limit from the other course, a WAF rule at the edge. This one is a different limit, counted per submitter hash inside the Worker." }
           ],
           "sources": [
-            { "kind": "project", "label": "worker/src/submissions.js L201-208", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/src/submissions.js#L201-L208" }
+            { "kind": "project", "label": "worker/src/submissions.js L201-208", "url": "https://github.com/nczoning/nc-zoning-board/blob/20fc45673599d8b5fd7b786858bff37c3783af5f/worker/src/submissions.js#L201-L208" }
           ]
         },
         {
@@ -849,8 +856,8 @@
             { "text": "Whether the submitter is still under the rate limit.", "correct": false, "feedback": "No. The limit governs how fast submissions arrive, not whether an accepted one may be approved later." }
           ],
           "sources": [
-            { "kind": "project", "label": "worker/src/submissions.js L225-244 (tag registry read at submission; re-read at approval)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/src/submissions.js#L225-L244" },
-            { "kind": "project", "label": "worker/src/submissions.js L230-236 (an edit records the version of the record it was written against)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/src/submissions.js#L230-L236" }
+            { "kind": "project", "label": "worker/src/submissions.js L225-244 (tag registry read at submission; re-read at approval)", "url": "https://github.com/nczoning/nc-zoning-board/blob/20fc45673599d8b5fd7b786858bff37c3783af5f/worker/src/submissions.js#L225-L244" },
+            { "kind": "project", "label": "worker/src/submissions.js L230-236 (an edit records the version of the record it was written against)", "url": "https://github.com/nczoning/nc-zoning-board/blob/20fc45673599d8b5fd7b786858bff37c3783af5f/worker/src/submissions.js#L230-L236" }
           ]
         }
       ],
@@ -874,8 +881,8 @@
         },
         "debrief": "The transferable rule: **a check is only worth what it stands between.** This one kept reporting PASS in a world where almost nothing passed through it any more, which is worse than a red check, because green is read as 'verified' rather than 'not examined'. Two habits follow. When you move where writes happen, audit every gate that was watching the old path and ask what it still sees. And treat a check that cannot fail as broken: the CI job here survived deliberately, to keep the migration revertible, and it now only asserts that some deleted files have not come back. That is a much smaller and much more honest claim. Note also which document was still lying: the contributor guide told submitters to run a validation loop that no longer decides anything.",
         "sources": [
-          { "kind": "project", "label": "worker/src/validate.js L1-14 (writes arrive through the API, so nothing in CI sees a location before it is stored)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/src/validate.js#L1-L14" },
-          { "kind": "project", "label": "worker/src/validate.js L8-14 (the link back to the real schema is a TEST, not an import)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/src/validate.js#L8-L14" }
+          { "kind": "project", "label": "worker/src/validate.js L1-14 (writes arrive through the API, so nothing in CI sees a location before it is stored)", "url": "https://github.com/nczoning/nc-zoning-board/blob/20fc45673599d8b5fd7b786858bff37c3783af5f/worker/src/validate.js#L1-L14" },
+          { "kind": "project", "label": "worker/src/validate.js L8-14 (the link back to the real schema is a TEST, not an import)", "url": "https://github.com/nczoning/nc-zoning-board/blob/20fc45673599d8b5fd7b786858bff37c3783af5f/worker/src/validate.js#L8-L14" }
         ]
       },
       "recap": [
@@ -918,7 +925,7 @@
           "heading": "The admin list is the collaborator list",
           "body": "The registry needs an answer to 'is this signed-in person allowed to change the map?'. The answer chosen here is **repository collaborator status**: if GitHub says you are a collaborator on the project's repository, you are an admin. That is deliberate, and the alternative it beat is instructive. A hardcoded list of three logins needs no credential at all and is simpler in every way, except that it puts 'who is an admin' in a **deploy** rather than in a repo setting, and it starts silently disagreeing with the real collaborator list the moment either one changes. Making the collaborator list itself the source means adding an admin is a repo-collaborator change, with **no separate allowlist to drift**.",
           "sources": [
-            { "kind": "project", "label": "worker/wrangler.jsonc L61-63 (the repo whose collaborator list IS the admin list)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/wrangler.jsonc#L61-L63" },
+            { "kind": "project", "label": "worker/wrangler.jsonc L61-63 (the repo whose collaborator list IS the admin list)", "url": "https://github.com/nczoning/nc-zoning-board/blob/20fc45673599d8b5fd7b786858bff37c3783af5f/worker/wrangler.jsonc#L61-L63" },
             { "kind": "official", "label": "GitHub REST - check if a user is a repository collaborator", "url": "https://docs.github.com/en/rest/collaborators/collaborators#check-if-a-user-is-a-repository-collaborator" }
           ]
         },
@@ -928,8 +935,8 @@
           "heading": "Why the Worker needs a credential of its own",
           "body": "The check runs **server-side, with the Worker's own credential**, and not with the token GitHub hands the user at sign-in. The reason is a permissions trap worth recognising in general: asking GitHub 'is this person a collaborator' with the *user's* token requires broad repository scope, which would mean an admin granting wide access to their repositories **merely to discover that they are an admin**. So the Worker holds its own identity. The choice there was between a **personal access token** and a **GitHub App**, and the App won on one property above all: a fine-grained token expires after at most a year, on a date nobody remembers, and when it dies the failure looks exactly like everyone having stopped being a collaborator at once. An App's installation token renews itself hourly and belongs to the organisation rather than to one person's account.",
           "sources": [
-            { "kind": "project", "label": "worker/src/github-app.js L86-116 (installation lookup, then a token that is cached and re-minted before expiry)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/src/github-app.js#L86-L116" },
-            { "kind": "project", "label": "worker/wrangler.jsonc L56-60 (an App id and an OAuth client id are public; the private key and client secret are Worker secrets)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/wrangler.jsonc#L56-L60" },
+            { "kind": "project", "label": "worker/src/github-app.js L86-116 (installation lookup, then a token that is cached and re-minted before expiry)", "url": "https://github.com/nczoning/nc-zoning-board/blob/20fc45673599d8b5fd7b786858bff37c3783af5f/worker/src/github-app.js#L86-L116" },
+            { "kind": "project", "label": "worker/wrangler.jsonc L56-60 (an App id and an OAuth client id are public; the private key and client secret are Worker secrets)", "url": "https://github.com/nczoning/nc-zoning-board/blob/20fc45673599d8b5fd7b786858bff37c3783af5f/worker/wrangler.jsonc#L56-L60" },
             { "kind": "official", "label": "GitHub Docs - About GitHub Apps", "url": "https://docs.github.com/en/apps/overview" }
           ]
         },
@@ -940,7 +947,7 @@
           "heading": "Three outcomes, not two",
           "body": "// GitHub answers 204 for yes and 404 for no.\n// A broken or unauthorised credential answers 401 or 403.\nif (res.status === 204) return 'yes';\nif (res.status === 404) return 'no';\n\n// 401/403/5xx: the question was not answered. Say so.\nconsole.error(`collaborator check for ${login}: unexpected HTTP ${res.status}`);\nif (res.status === 401) _resetTokenCache();\nreturn 'error';",
           "sources": [
-            { "kind": "project", "label": "worker/src/github-app.js L134-156 (checkCollaborator returns yes, no or error)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/src/github-app.js#L134-L156" }
+            { "kind": "project", "label": "worker/src/github-app.js L134-156 (checkCollaborator returns yes, no or error)", "url": "https://github.com/nczoning/nc-zoning-board/blob/20fc45673599d8b5fd7b786858bff37c3783af5f/worker/src/github-app.js#L134-L156" }
           ]
         },
         {
@@ -950,7 +957,7 @@
           "heading": "Never fold the third answer into the other two",
           "body": "'Yes' and 'no' are the answers people design for. **'I could not find out' is a third answer**, and collapsing it into either of the others produces a specific disaster. Fold it into yes, by writing something like `not 404 means allow`, and a dead credential grants **everyone** administrative access, precisely at the moment the system is least able to notice. Fold it into no and a GitHub outage reads as every collaborator being quietly demoted, which is safe but silently wrong and sends people chasing a permissions bug that does not exist. So it is returned as **its own value**, and callers must do two things with it: **fail closed, and surface it.** Failing closed alone is not enough, because a security control that degrades into 'no' without saying so is indistinguishable from working.",
           "sources": [
-            { "kind": "project", "label": "worker/src/github-app.js L120-133 (folding it into yes means a dead credential grants everyone admin)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/src/github-app.js#L120-L133" },
+            { "kind": "project", "label": "worker/src/github-app.js L120-133 (folding it into yes means a dead credential grants everyone admin)", "url": "https://github.com/nczoning/nc-zoning-board/blob/20fc45673599d8b5fd7b786858bff37c3783af5f/worker/src/github-app.js#L120-L133" },
             { "kind": "official", "label": "MDN - 403 Forbidden", "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/403" }
           ]
         },
@@ -960,9 +967,9 @@
           "heading": "And then write down what they did",
           "body": "Authorisation answers who may act. The **audit log** answers who did. It is an append-only table, one row per change, recording the actor (a GitHub login, or `system` for the cron), the action, the target, and the record **before** and **after**. Never updated, never deleted: a correction is another row. Two details are worth carrying away. It exists specifically because the commit history stopped recording data changes when the registry left git, so this is not extra bookkeeping, it is a replacement for something that used to be free. And `before`/`after` are stored **verbatim, including admin-only notes**, which is right for the live table and wrong for any public export: the redaction belongs at the export, because storing a redacted copy would lose the actual history for the sake of a possible future publication.",
           "sources": [
-            { "kind": "project", "label": "worker/src/audit.js L1-12 (append-only; a correction is another row; verbatim including admin_notes)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/src/audit.js#L1-L12" },
-            { "kind": "project", "label": "worker/src/audit.js L14-25 (actor, action, target, before, after)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/src/audit.js#L14-L25" },
-            { "kind": "project", "label": "worker/migrations/0001_initial_schema.sql L57-63 (the audit_log table)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/migrations/0001_initial_schema.sql#L57-L63" }
+            { "kind": "project", "label": "worker/src/audit.js L1-12 (append-only; a correction is another row; verbatim including admin_notes)", "url": "https://github.com/nczoning/nc-zoning-board/blob/20fc45673599d8b5fd7b786858bff37c3783af5f/worker/src/audit.js#L1-L12" },
+            { "kind": "project", "label": "worker/src/audit.js L14-25 (actor, action, target, before, after)", "url": "https://github.com/nczoning/nc-zoning-board/blob/20fc45673599d8b5fd7b786858bff37c3783af5f/worker/src/audit.js#L14-L25" },
+            { "kind": "project", "label": "worker/migrations/0001_initial_schema.sql L57-63 (the audit_log table)", "url": "https://github.com/nczoning/nc-zoning-board/blob/20fc45673599d8b5fd7b786858bff37c3783af5f/worker/migrations/0001_initial_schema.sql#L57-L63" }
           ]
         }
       ],
@@ -999,8 +1006,8 @@
         ],
         "debrief": "RECONSTRUCTED from the gate's logic, not captured: signing in to produce a real 403 would mean holding a GitHub session, and the third case only happens when GitHub is failing. The distinction the three make is the module in miniature. A 401 says we do not know who you are. A 403 says we know exactly who you are and the answer is no. The third says we asked and could not get an answer, so we are refusing and telling you that is what happened, which is the only honest thing a gate can do when its own check is down. Notice that it does NOT return 403 there: that would claim the answer was no, and the answer was not no. It was nothing.",
         "sources": [
-          { "kind": "project", "label": "worker/src/github-app.js L120-156 (the three outcomes and what callers must do with them)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/src/github-app.js#L120-L156" },
-          { "kind": "project", "label": "worker/src/index.js L233-239 (handleAdmin gates every admin route on collaborator status itself)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/src/index.js#L233-L239" }
+          { "kind": "project", "label": "worker/src/github-app.js L120-156 (the three outcomes and what callers must do with them)", "url": "https://github.com/nczoning/nc-zoning-board/blob/20fc45673599d8b5fd7b786858bff37c3783af5f/worker/src/github-app.js#L120-L156" },
+          { "kind": "project", "label": "worker/src/index.js L233-239 (handleAdmin gates every admin route on collaborator status itself)", "url": "https://github.com/nczoning/nc-zoning-board/blob/20fc45673599d8b5fd7b786858bff37c3783af5f/worker/src/index.js#L233-L239" }
         ]
       },
       "quiz": [
@@ -1015,7 +1022,7 @@
             { "text": "Run the check with the Worker's own App credential rather than the signed-in user's token.", "correct": false, "feedback": "Correct. Using the user's token would require broad repository scope just to answer whether they are an admin." }
           ],
           "sources": [
-            { "kind": "project", "label": "worker/src/github-app.js L120-156", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/src/github-app.js#L120-L156" }
+            { "kind": "project", "label": "worker/src/github-app.js L120-156", "url": "https://github.com/nczoning/nc-zoning-board/blob/20fc45673599d8b5fd7b786858bff37c3783af5f/worker/src/github-app.js#L120-L156" }
           ]
         },
         {
@@ -1028,7 +1035,7 @@
             { "text": "Because the table has no primary key to update by.", "correct": false, "feedback": "It has an integer primary key. Nothing prevents an update technically; it is a rule about what this table means." }
           ],
           "sources": [
-            { "kind": "project", "label": "worker/src/audit.js L1-12", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/src/audit.js#L1-L12" }
+            { "kind": "project", "label": "worker/src/audit.js L1-12", "url": "https://github.com/nczoning/nc-zoning-board/blob/20fc45673599d8b5fd7b786858bff37c3783af5f/worker/src/audit.js#L1-L12" }
           ]
         }
       ],
@@ -1053,8 +1060,8 @@
         },
         "debrief": "Two rules, and the second is the one people miss. **A check that cannot answer must not be read as an answer**: 'not an explicit no' is not the same as yes, and writing it that way turns a credential expiry into a full authorisation bypass. Second, **a credential with a fixed expiry is a scheduled outage you have not scheduled**, and its failure mode wears a disguise: everyone losing access at once looks like a permissions bug, not like a date passing. That is the specific reason a GitHub App was chosen over a personal token here. The App's installation token is short-lived by design and renews itself, so there is no date to remember and nothing to forget. (Constructed scenario. The 401 behaviour, the three-outcome return and the reasoning against a fixed-expiry token are all real and cited.)",
         "sources": [
-          { "kind": "project", "label": "worker/src/github-app.js L120-133 (the 'not 404 -> allow' failure mode, named in the code)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/src/github-app.js#L120-L133" },
-          { "kind": "project", "label": "worker/src/github-app.js L100-116 (the installation token is cached and re-minted a minute before expiry)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/src/github-app.js#L100-L116" }
+          { "kind": "project", "label": "worker/src/github-app.js L120-133 (the 'not 404 -> allow' failure mode, named in the code)", "url": "https://github.com/nczoning/nc-zoning-board/blob/20fc45673599d8b5fd7b786858bff37c3783af5f/worker/src/github-app.js#L120-L133" },
+          { "kind": "project", "label": "worker/src/github-app.js L100-116 (the installation token is cached and re-minted a minute before expiry)", "url": "https://github.com/nczoning/nc-zoning-board/blob/20fc45673599d8b5fd7b786858bff37c3783af5f/worker/src/github-app.js#L100-L116" }
         ]
       },
       "recap": [
@@ -1097,8 +1104,8 @@
           "heading": "The only builder",
           "body": "The **materializer** is the code that turns D1 rows into the record map the API serves, and it is the **only** thing that builds that dataset. It reads the published rows, joins each one's tags, works out its district from its coordinates, computes the recency flag against the clock, attaches the archive filenames, and hands the result to the refresh job to hash and store. One detail in it is stranger than it looks and worth knowing: the **order of the keys in each record is load-bearing**. JSON output follows insertion order, and the served payload is a public contract that was fixed byte for byte by the parity gate at the cutover, so a field written in a different position is a difference the gate will catch. That is why `archives` is appended after the record literal rather than sitting inside it.",
           "sources": [
-            { "kind": "project", "label": "worker/src/materialize.js L1-17 (the only builder of the served dataset; the key order is load-bearing)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/src/materialize.js#L1-L17" },
-            { "kind": "project", "label": "worker/src/materialize.js L131-166 (sort, district, recency, then the record literal)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/src/materialize.js#L131-L166" }
+            { "kind": "project", "label": "worker/src/materialize.js L1-17 (the only builder of the served dataset; the key order is load-bearing)", "url": "https://github.com/nczoning/nc-zoning-board/blob/20fc45673599d8b5fd7b786858bff37c3783af5f/worker/src/materialize.js#L1-L17" },
+            { "kind": "project", "label": "worker/src/materialize.js L131-166 (sort, district, recency, then the record literal)", "url": "https://github.com/nczoning/nc-zoning-board/blob/20fc45673599d8b5fd7b786858bff37c3783af5f/worker/src/materialize.js#L131-L166" }
           ]
         },
         {
@@ -1107,8 +1114,8 @@
           "heading": "When a mod is deleted from Nexus",
           "body": "A pinned mod can disappear underneath the map. The cron asks Nexus about every pinned mod, and Nexus states a status. Three non-published outcomes are observable and they are **not** treated alike. `wastebinned` means deleted, which is unambiguous, so after **three consecutive sweeps** confirm it the pin is withheld from the built dataset. `hidden` gets a review-list entry and one alert, and nothing else. A mod simply **absent** from the response needs six sweeps and 24 hours before it is even mentioned, because absence is the only one of the three a Nexus failure can manufacture: a failed request returns no node, but it never returns a node saying `wastebinned`. Three sweeps is roughly fifteen minutes on a five-minute cron, and it is confirmation that the signal is real, not a grace period for anybody.",
           "sources": [
-            { "kind": "project", "label": "worker/src/materialize.js L96-105 (records whose mod is confirmed deleted on consecutive sweeps)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/src/materialize.js#L96-L105" },
-            { "kind": "project", "label": "worker/migrations/0009_nexus_mod_status.sql (the table that tracks consecutive sweeps)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/migrations/0009_nexus_mod_status.sql" }
+            { "kind": "project", "label": "worker/src/materialize.js L96-105 (records whose mod is confirmed deleted on consecutive sweeps)", "url": "https://github.com/nczoning/nc-zoning-board/blob/20fc45673599d8b5fd7b786858bff37c3783af5f/worker/src/materialize.js#L96-L105" },
+            { "kind": "project", "label": "worker/migrations/0009_nexus_mod_status.sql (the table that tracks consecutive sweeps)", "url": "https://github.com/nczoning/nc-zoning-board/blob/20fc45673599d8b5fd7b786858bff37c3783af5f/worker/migrations/0009_nexus_mod_status.sql" }
           ]
         },
         {
@@ -1118,8 +1125,8 @@
           "heading": "Withhold at build time, never by writing status",
           "body": "There were two ways to pull that pin. Write `locations.status = 'hidden'` from the cron, using the column that already exists. Or pass the withheld ids into the build and skip those records, **leaving the row completely untouched**. The second was chosen, and the reasons are worth more than the mechanism. **The invariant survives literally**: 'the only writers of `locations.status` are a human editing or approving' stays true, instead of becoming 'and also the cron, sometimes', which is the kind of exception that has to be remembered at every future reading of that column. **It self-heals**: if Nexus republishes the mod, the row is already correct, the withhold lifts and the next build serves the pin with nobody involved. Under the other design an admin has to notice and manually un-hide, and nothing tells them to. And **nothing needs undoing if the signal was wrong**, because the record is exactly as the admin left it.",
           "sources": [
-            { "kind": "project", "label": "worker/src/materialize.js L96-101 (withheld HERE rather than by writing locations.status, so a reversal restores the pin with nobody involved)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/src/materialize.js#L96-L101" },
-            { "kind": "project", "label": "worker/src/materialize.js L102-105 (published minus withheld, computed at build time)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/src/materialize.js#L102-L105" }
+            { "kind": "project", "label": "worker/src/materialize.js L96-101 (withheld HERE rather than by writing locations.status, so a reversal restores the pin with nobody involved)", "url": "https://github.com/nczoning/nc-zoning-board/blob/20fc45673599d8b5fd7b786858bff37c3783af5f/worker/src/materialize.js#L96-L101" },
+            { "kind": "project", "label": "worker/src/materialize.js L102-105 (published minus withheld, computed at build time)", "url": "https://github.com/nczoning/nc-zoning-board/blob/20fc45673599d8b5fd7b786858bff37c3783af5f/worker/src/materialize.js#L102-L105" }
           ]
         },
         {
@@ -1129,8 +1136,8 @@
           "heading": "The cost: two true numbers that disagree",
           "body": "That design has a price and it was paid deliberately. **'Published in the registry' and 'served to the map' can now legitimately differ**, and the admin dashboard compares exactly those two numbers to warn about drift. Left alone, a withheld pin would make that alarm fire forever, and rebuilding would not clear it. So the drift row subtracts the withheld pins, and a rebuild the dashboard itself triggered reads as 'rebuilding after your change' in neutral rather than as drift in red. The reasoning behind that, from the code's own comment, is the transferable part: **a spurious alarm is worse than no alarm, because it trains the reader to dismiss it, and the one time it is real it looks identical.** This is also why the build **names** the withheld records on `/v1/meta` rather than counting them: 'three records withheld' is a number nobody can check.",
           "sources": [
-            { "kind": "project", "label": "worker/src/materialize.js L168-176 (withheld reported by name, not counted)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/src/materialize.js#L168-L176" },
-            { "kind": "project", "label": "worker/src/materialize.js L96-101 (a published record not served is otherwise a silent disagreement)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/src/materialize.js#L96-L101" }
+            { "kind": "project", "label": "worker/src/materialize.js L168-176 (withheld reported by name, not counted)", "url": "https://github.com/nczoning/nc-zoning-board/blob/20fc45673599d8b5fd7b786858bff37c3783af5f/worker/src/materialize.js#L168-L176" },
+            { "kind": "project", "label": "worker/src/materialize.js L96-101 (a published record not served is otherwise a silent disagreement)", "url": "https://github.com/nczoning/nc-zoning-board/blob/20fc45673599d8b5fd7b786858bff37c3783af5f/worker/src/materialize.js#L96-L101" }
           ]
         },
         {
@@ -1139,8 +1146,8 @@
           "heading": "And what a candidate is",
           "body": "The same pass produces the other list you have already met. Every mod tagged `NCZoning` that is **not** on the map and has **not** been dismissed is a **candidate**, published on `/v1/meta` as `skipped`. That definition changed: it used to mean only the mods whose metadata block failed to parse, back when a parseable block published a pin automatically. Nothing publishes from a block any more, so a mod carrying one is a candidate like any other, and filtering the list down to the broken ones would only hide work from the reviewer. If you took TRANSMISSION PROTOCOLS before this course, that is the change behind the `skipped` field you read there.",
           "sources": [
-            { "kind": "project", "label": "worker/src/materialize.js L120-128 (every such mod is listed; the block parser used to filter this list down)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/src/materialize.js#L120-L128" },
-            { "kind": "project", "label": "worker/migrations/0001_initial_schema.sql L65-72 (dismissed_candidates keeps a mod off this list)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/migrations/0001_initial_schema.sql#L65-L72" }
+            { "kind": "project", "label": "worker/src/materialize.js L120-128 (every such mod is listed; the block parser used to filter this list down)", "url": "https://github.com/nczoning/nc-zoning-board/blob/20fc45673599d8b5fd7b786858bff37c3783af5f/worker/src/materialize.js#L120-L128" },
+            { "kind": "project", "label": "worker/migrations/0001_initial_schema.sql L65-72 (dismissed_candidates keeps a mod off this list)", "url": "https://github.com/nczoning/nc-zoning-board/blob/20fc45673599d8b5fd7b786858bff37c3783af5f/worker/migrations/0001_initial_schema.sql#L65-L72" }
           ]
         }
       ],
@@ -1171,8 +1178,8 @@
         ],
         "debrief": "The default case is a real capture from 2026-08-02, when the candidates list happened to be empty: everything tagged had been triaged. The second case is RECONSTRUCTED to show a candidate present. Note what /v1/meta does and does not tell a public reader: it publishes the candidates, and the withheld list is reported to the dashboard rather than to /v1, because a withheld pin is an operational fact about the build rather than part of the public record contract. The thing to carry forward is the reading habit. An empty skipped list is not the absence of information, it is a positive statement that nothing is waiting.",
         "sources": [
-          { "kind": "project", "label": "worker/src/materialize.js L120-128 (skipped is every open candidate)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/src/materialize.js#L120-L128" },
-          { "kind": "project", "label": "worker/src/index.js L165-171 (GET /v1/meta serves discovery_stale and skipped)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/src/index.js#L165-L171" }
+          { "kind": "project", "label": "worker/src/materialize.js L120-128 (skipped is every open candidate)", "url": "https://github.com/nczoning/nc-zoning-board/blob/20fc45673599d8b5fd7b786858bff37c3783af5f/worker/src/materialize.js#L120-L128" },
+          { "kind": "project", "label": "worker/src/index.js L165-171 (GET /v1/meta serves discovery_stale and skipped)", "url": "https://github.com/nczoning/nc-zoning-board/blob/20fc45673599d8b5fd7b786858bff37c3783af5f/worker/src/index.js#L165-L171" }
         ]
       },
       "quiz": [
@@ -1186,7 +1193,7 @@
             { "text": "The row was deleted, and re-imported if the mod returns.", "correct": false, "feedback": "Deleting a record over a third party's action would destroy the coordinates, description and credits somebody wrote. Nothing here deletes on a signal." }
           ],
           "sources": [
-            { "kind": "project", "label": "worker/src/materialize.js L96-105", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/src/materialize.js#L96-L105" }
+            { "kind": "project", "label": "worker/src/materialize.js L96-105", "url": "https://github.com/nczoning/nc-zoning-board/blob/20fc45673599d8b5fd7b786858bff37c3783af5f/worker/src/materialize.js#L96-L105" }
           ]
         },
         {
@@ -1199,8 +1206,8 @@
             { "text": "Waits for a longer confirmation window and then withholds automatically.", "correct": false, "feedback": "Time does not resolve the ambiguity. A mod hidden for twenty minutes and one hidden for a month both need a person to read the reason; waiting only delays the cases that matter." }
           ],
           "sources": [
-            { "kind": "project", "label": "worker/src/materialize.js L96-101 (only confirmed-deleted records are withheld)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/src/materialize.js#L96-L101" },
-            { "kind": "project", "label": "worker/src/nexus.js L160-170 (an absent status field must read as published)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/src/nexus.js#L160-L170" }
+            { "kind": "project", "label": "worker/src/materialize.js L96-101 (only confirmed-deleted records are withheld)", "url": "https://github.com/nczoning/nc-zoning-board/blob/20fc45673599d8b5fd7b786858bff37c3783af5f/worker/src/materialize.js#L96-L101" },
+            { "kind": "project", "label": "worker/src/nexus.js L166-176 (an absent status field must read as published)", "url": "https://github.com/nczoning/nc-zoning-board/blob/20fc45673599d8b5fd7b786858bff37c3783af5f/worker/src/nexus.js#L166-L176" }
           ]
         }
       ],
@@ -1225,8 +1232,8 @@
         },
         "debrief": "A real case, and the reason the deleted/hidden split exists at all. The generalisable rule: **automate on a signal that means one thing; escalate one that means several.** `wastebinned` means deleted and nothing else, so the system acts on it after confirming the signal is real. `hidden` is one string covering an author fixing an upload, a mod being superseded, and a moderation hold, and the API offers no field that distinguishes them. Building a rule on top of that ambiguity does not remove it, it just hides the judgement inside code where nobody can see it being made badly. Note also what the design bought here: because withholding never writes the row, none of this required an admin to remember to undo anything.",
         "sources": [
-          { "kind": "project", "label": "worker/src/materialize.js L96-105 (only wastebinned withholds; everything else is a review entry)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/src/materialize.js#L96-L105" },
-          { "kind": "project", "label": "worker/migrations/0009_nexus_mod_status.sql (per-mod status tracking across sweeps)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/migrations/0009_nexus_mod_status.sql" }
+          { "kind": "project", "label": "worker/src/materialize.js L96-105 (only wastebinned withholds; everything else is a review entry)", "url": "https://github.com/nczoning/nc-zoning-board/blob/20fc45673599d8b5fd7b786858bff37c3783af5f/worker/src/materialize.js#L96-L105" },
+          { "kind": "project", "label": "worker/migrations/0009_nexus_mod_status.sql (per-mod status tracking across sweeps)", "url": "https://github.com/nczoning/nc-zoning-board/blob/20fc45673599d8b5fd7b786858bff37c3783af5f/worker/migrations/0009_nexus_mod_status.sql" }
         ]
       },
       "recap": [
@@ -1271,8 +1278,8 @@
           "heading": "The whole path, once",
           "body": "Everything this course covered lines up in one sequence. A person submits, and the Worker refuses them for cost, for humanity, and for correctness in that order. A pending row waits, carrying no authority. A collaborator is identified by GitHub, checked against the repository's collaborator list by the Worker's own credential, and either approved, refused, or told the check could not answer. On approval the payload is validated **again**, against the registry as it stands now, and becomes rows: a location, its tag links, and an audit entry naming who did it. Within five minutes the materializer reads those rows, decides which are served, and writes the result to KV, where the API you learned in the other course answers from. Nothing in that chain trusts the step before it, and every refusal on it says which step refused.",
           "sources": [
-            { "kind": "project", "label": "worker/src/submissions.js L1-19 (the public write route and what it does not grant)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/src/submissions.js#L1-L19" },
-            { "kind": "project", "label": "worker/src/registry.js L1-15 (one definition, two callers: an approval must produce a record identical to a typed one)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/src/registry.js#L1-L15" }
+            { "kind": "project", "label": "worker/src/submissions.js L1-19 (the public write route and what it does not grant)", "url": "https://github.com/nczoning/nc-zoning-board/blob/20fc45673599d8b5fd7b786858bff37c3783af5f/worker/src/submissions.js#L1-L19" },
+            { "kind": "project", "label": "worker/src/registry.js L1-15 (one definition, two callers: an approval must produce a record identical to a typed one)", "url": "https://github.com/nczoning/nc-zoning-board/blob/20fc45673599d8b5fd7b786858bff37c3783af5f/worker/src/registry.js#L1-L15" }
           ]
         }
       ],
@@ -1306,8 +1313,8 @@
         ],
         "debrief": "Real capture, trimmed to two of fourteen rows. What you can see: slug (the primary key, and the value every location_tags row points at), description (NOT NULL), sort_order (what the list is ordered by), and name resolving to the slug because every row stores NULL there. What you cannot see, and should be able to say why: created_at and updated_at are columns that no consumer needs; admin_notes on a location is admin-only by design and never served; the audit log and the submissions queue are behind the collaborator gate because they contain other people's contact details and reviewers' internal notes. A public read surface that showed everything would not be a more honest API, it would be a different and worse one.",
         "sources": [
-          { "kind": "project", "label": "worker/migrations/0002_tags.sql L20-31 (every column in the tags table)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/migrations/0002_tags.sql#L20-L31" },
-          { "kind": "project", "label": "worker/migrations/0001_initial_schema.sql L36-36 (admin_notes: admin-only, never served on /v1)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/migrations/0001_initial_schema.sql#L36-L36" }
+          { "kind": "project", "label": "worker/migrations/0002_tags.sql L20-31 (every column in the tags table)", "url": "https://github.com/nczoning/nc-zoning-board/blob/20fc45673599d8b5fd7b786858bff37c3783af5f/worker/migrations/0002_tags.sql#L20-L31" },
+          { "kind": "project", "label": "worker/migrations/0001_initial_schema.sql L36-36 (admin_notes: admin-only, never served on /v1)", "url": "https://github.com/nczoning/nc-zoning-board/blob/20fc45673599d8b5fd7b786858bff37c3783af5f/worker/migrations/0001_initial_schema.sql#L36-L36" }
         ]
       },
       "quiz": [
@@ -1325,8 +1332,8 @@
             "The API serves the new record from KV"
           ],
           "sources": [
-            { "kind": "project", "label": "worker/src/submissions.js L192-250", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/src/submissions.js#L192-L250" },
-            { "kind": "project", "label": "worker/src/registry.js L1-15", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/src/registry.js#L1-L15" }
+            { "kind": "project", "label": "worker/src/submissions.js L192-250", "url": "https://github.com/nczoning/nc-zoning-board/blob/20fc45673599d8b5fd7b786858bff37c3783af5f/worker/src/submissions.js#L192-L250" },
+            { "kind": "project", "label": "worker/src/registry.js L1-15", "url": "https://github.com/nczoning/nc-zoning-board/blob/20fc45673599d8b5fd7b786858bff37c3783af5f/worker/src/registry.js#L1-L15" }
           ]
         },
         {
@@ -1339,7 +1346,7 @@
             { "text": "A record was deleted from D1 and the dashboard is caching an old count.", "correct": false, "feedback": "Possible in principle, but it does not fit 'nothing else is red', and it is not the case the system is built to produce. Reach for the designed explanation before the exotic one." }
           ],
           "sources": [
-            { "kind": "project", "label": "worker/src/materialize.js L96-105", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/src/materialize.js#L96-L105" }
+            { "kind": "project", "label": "worker/src/materialize.js L96-105", "url": "https://github.com/nczoning/nc-zoning-board/blob/20fc45673599d8b5fd7b786858bff37c3783af5f/worker/src/materialize.js#L96-L105" }
           ]
         },
         {
@@ -1353,8 +1360,8 @@
             { "text": "\"The KV dataset can be deleted entirely and rebuilt from D1.\"", "correct": false, "feedback": "True, and it is the definition of a derived store. The reverse is not true, which is why D1 has a nightly export and Time Travel behind it." }
           ],
           "sources": [
-            { "kind": "project", "label": "worker/src/submissions.js L17-19 (nothing published by this route reaches the map)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/src/submissions.js#L17-L19" },
-            { "kind": "project", "label": "worker/src/validate.js L41-47", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/src/validate.js#L41-L47" }
+            { "kind": "project", "label": "worker/src/submissions.js L17-19 (nothing published by this route reaches the map)", "url": "https://github.com/nczoning/nc-zoning-board/blob/20fc45673599d8b5fd7b786858bff37c3783af5f/worker/src/submissions.js#L17-L19" },
+            { "kind": "project", "label": "worker/src/validate.js L41-47", "url": "https://github.com/nczoning/nc-zoning-board/blob/20fc45673599d8b5fd7b786858bff37c3783af5f/worker/src/validate.js#L41-L47" }
           ]
         }
       ],
@@ -1380,8 +1387,8 @@
         },
         "debrief": "The reasoning to take away is the order you read the signals in. Start with the one that cannot be ambiguous: the audit log records every write, so an empty one for that record rules out every explanation involving a change that happened and then went away. Then the build's health rules out staleness. Then the person's role tells you which door they came through: a non-collaborator can submit, and submitting is not changing. This is the shape of most registry incidents. Not a failure, but a step somebody believed was further along than it was, and the system's own records saying so plainly to anyone who reads them in the right order.",
         "sources": [
-          { "kind": "project", "label": "worker/src/audit.js L1-12 (every data change is recorded here, because git no longer records it)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/src/audit.js#L1-L12" },
-          { "kind": "project", "label": "worker/src/submissions.js L17-19 (a submission is not a change)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/src/submissions.js#L17-L19" }
+          { "kind": "project", "label": "worker/src/audit.js L1-12 (every data change is recorded here, because git no longer records it)", "url": "https://github.com/nczoning/nc-zoning-board/blob/20fc45673599d8b5fd7b786858bff37c3783af5f/worker/src/audit.js#L1-L12" },
+          { "kind": "project", "label": "worker/src/submissions.js L17-19 (a submission is not a change)", "url": "https://github.com/nczoning/nc-zoning-board/blob/20fc45673599d8b5fd7b786858bff37c3783af5f/worker/src/submissions.js#L17-L19" }
         ]
       },
       "recap": [
