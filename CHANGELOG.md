@@ -11,6 +11,32 @@ file records what a visitor receives.
 
 ## [Unreleased]
 
+## 0.13.1 - 2026-08-02
+
+### Changed
+
+- Glossary definitions are lookup cards again. Nine had grown into short
+  articles, the longest running 688 characters over five sentences, which made
+  the index slow to read exactly where it should have been quickest. Every
+  definition now fits 200 characters. Nothing was lost: in all but one case the
+  material the card had absorbed was already taught in the module, so the card
+  had been repeating the course rather than carrying it.
+- The whole glossary is 20 percent shorter to read, and the longest entry is now
+  shorter than the old average.
+
+### Added
+
+- Module 06 now says plainly that `API_VERSION`, `dataset_version` and the
+  in-game `ApiVersion()` are three different numbers that will not agree, and
+  which question each one answers. This was the one genuinely useful thing
+  buried in an over-long definition.
+- Module 08 now covers how to read the `archives` list without getting it wrong:
+  the entries are bare filenames rather than paths, and an empty list means the
+  files could not be read, never that the mod ships nothing. Reading it the
+  other way tells a player that mods they have installed are missing. It also
+  explains why `.xl` files are listed at all: a removal-only mod ships no
+  `.archive`, so its `.xl` is the only fingerprint there is.
+
 ## 0.13.0 - 2026-08-02
 
 ### Changed
