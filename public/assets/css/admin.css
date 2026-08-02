@@ -19,9 +19,24 @@
   --fs-ui:        13px;
   --fs-label:     11px;
 
+  /* THIS PAGE OWNS ITS SCROLL CONTAINER.
+     `body` is `overflow: hidden` globally (style.css) because the app shell is a
+     fixed-height terminal whose views scroll internally. /admin is not inside
+     that shell, so in document flow it simply could not be scrolled: everything
+     below the fold was unreachable on a phone, which is the one device this page
+     exists for. Fixed + inset + overflow-y is the same contract every other view
+     honours, stated here rather than assumed.
+     `margin-inline: auto` against left:0/right:0 is what keeps the column
+     centred once max-width constrains it. */
+  position: fixed;
+  inset: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+
   display: block;
   max-width: 760px;
-  margin: 0 auto;
+  margin-inline: auto;
   padding: var(--space-6xl) var(--space-2xl) 64px;
   font-family: var(--font-body);
   color: var(--text-body);

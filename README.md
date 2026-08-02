@@ -142,8 +142,16 @@ does not affect existing deployments. Redeploy after you add one.** Seeding a
 fresh deployment:
 
 ```bash
-NCZA_MESSAGES_KV_ID=<id> npm run seed:messages     # validates, then writes messages:manual
+CLOUDFLARE_ACCOUNT_ID=<account> NCZA_MESSAGES_KV_ID=<id> npm run seed:messages
 ```
+
+**Check the account before you write.** More than one Cloudflare account can hold
+a namespace called `nczoning-academy-messages`, and `wrangler` writes to whichever
+one it defaults to, reporting success either way. The account that serves
+`academy.nczoning.net` is the one whose Pages project publishes it: take both the
+account id and the namespace id from that project's dashboard URL and bindings,
+not from `wrangler kv namespace list` alone. Seeding the wrong namespace looks
+identical to seeding the right one, right up to the panel staying empty.
 
 Posting by hand, which is now the fallback rather than the route (see the admin
 API below):
