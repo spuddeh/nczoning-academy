@@ -31,6 +31,11 @@
       }
     },
     "estMinutes": { "type": "integer", "minimum": 1 },
+    "requires": {
+      "type": "array",
+      "description": "Course ids this course assumes the operator has completed. It is a statement about the CONTENT: a course that lists a prerequisite does not re-teach that course's material, so authoring against it is what the field constrains. NOT YET CONSUMED BY THE SHELL, which loads a single course id from config.js and has no picker to gate; wiring it is part of the multi-course shell work. Until then it records the authoring decision and nothing enforces it.",
+      "items": { "type": "string", "pattern": "^[a-z0-9-]+$" }
+    },
     "api": {
       "type": "object",
       "additionalProperties": false,

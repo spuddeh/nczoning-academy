@@ -11,6 +11,71 @@ file records what a visitor receives.
 
 ## [Unreleased]
 
+## 0.15.0 - 2026-08-02
+
+### Added
+
+- A second course: **PERMANENT RECORD**, seven modules on the D1 registry that
+  TRANSMISSION PROTOCOLS reads from. Why the locations left git, the schema and
+  the rules the database enforces, the join that replaced a JSON column and how
+  that swap was proven safe, the public write path and its validation, the
+  collaborator gate and its three outcomes, the materializer, and a capstone.
+  It owns the write path: `POST /submissions`, Turnstile, the admin CRUD and the
+  GitHub App gate are taught here, so the Data API course stays a read-contract
+  course.
+- The course assumes TRANSMISSION PROTOCOLS and says so in a new `requires`
+  field. HTTP, JSON and the envelope are not re-taught; SQL and databases are
+  taught from a plain baseline, since the audience floor assumes neither.
+
+### Changed
+
+- `npm run probe:glossary` reads which course to drive from `config.js` instead
+  of hardcoding `data-api`, and takes the first module's id from the course
+  instead of assuming `m01`. With a second course in the repo the old version
+  would have checked one course's glossary against another course on screen, and
+  every assertion would have failed for the wrong reason. `COURSE=<id>` probes a
+  specific one. Both courses now pass all fourteen checks.
+
+### Known gap
+
+- The shell still loads a single course id from `config.js` and has no picker,
+  so PERMANENT RECORD is not reachable in the app yet and `requires` is not
+  enforced. Tracked separately; the course content and the shell work are
+  deliberately separate changes.
+
+## 0.14.0 - 2026-08-02
+
+### Fixed
+
+- The Data API course was teaching two things that had stopped being true. It
+  said a breaking change would ship as `/v2` and that `MINOR` meant "a field was
+  added". The API is in a pre-1.0 window where those rules are inverted: a
+  breaking change bumps `MINOR`, an additive one bumps `PATCH`, and the path
+  stays `/v1` throughout. The `1.3.0` the course reported as settled history was
+  rolled back to `0.3.0` and the API is now at `0.5.1`. Module 06 carries the
+  rule as a policy callout and a new question; module 01's contract callout no
+  longer promises a `/v2` that is not coming.
+- The `source` field and the synthetic `nczoning` tag were removed from the API
+  and are gone from the record table and both canned lab responses.
+- `/v1/meta.skipped` no longer means "mods whose metadata block failed to
+  parse". It lists every open candidate: a tagged mod that is not on the map and
+  has not been dismissed.
+- Neither consumer sends `?full=1` any more. The website and the in-game mod
+  dropped it separately, which is the no-op alias doing the job it was kept for,
+  and module 08 now teaches it that way.
+
+### Changed
+
+- Module 03 stopped calling KV "the store". There are two stores with different
+  jobs: D1 is the location registry of record, and KV is a derived copy the
+  rebuild writes and the read routes serve. Delete KV and the next rebuild puts
+  it back; lose D1 and the data is gone.
+- Re-audited against `nczoning/nc-zoning-board` at `091b069` (49 worker commits
+  and a six-phase migration to D1 since the last pin) and
+  `spuddeh/nc-zoning-core` at `b8c2512`. All 131 project citations were
+  line-verified, including the ones pointing into a file that has since been
+  deleted.
+
 ## 0.13.1 - 2026-08-02
 
 ### Changed
