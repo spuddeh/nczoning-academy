@@ -139,6 +139,24 @@ try {
   await expectSelector(seeded, '.player-wrap', { what: 'module player (seeded)' });
   await sleep(1200);
 
+  // The seeded record must SURVIVE the navigation above, which is a full page
+  // load: the app re-boots, restores from the session snapshot, and adopts it.
+  // Issue #73 broke exactly this. The footer checks below caught it only as a
+  // side effect and read as "the footer is broken", so assert the record
+  // directly and name the real fault.
+  const survived = await seeded.evaluate(() => ({
+    balance: document.getElementById('op-balance')?.textContent?.replace(/[^0-9]/g, '') ?? '',
+    stage: document.body.innerText.match(/STAGE\s+(\d+)\s*\/\s*(\d+)/)?.slice(1, 3) ?? null,
+  }));
+  console.log(`
+  after reload: balance ${survived.balance}, stage ${(survived.stage ?? []).join('/')}`);
+  check('a seeded record survives the reload (balance)', survived.balance, '1400');
+  check(
+    'a completed module reads as complete after the reload',
+    survived.stage ? survived.stage[0] === survived.stage[1] : false,
+    true,
+  );
+
   await openGlossary(seeded);
   const legacy = await readGlossary(seeded);
   console.log(`\n  legacy shard: ${legacy.count}`);
