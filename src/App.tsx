@@ -32,6 +32,7 @@ import {
 import { Sfx, attachPointerTick } from './lib/sfx';
 import { clearSession, hasSession, readSession, writeSession } from './lib/session';
 import { fetchMessages, markSeen, readSeenIds } from './lib/messages';
+import { useHeaderHeightVar, useNavTuck } from './lib/headerChrome';
 import { AlertStrip } from './components/AlertStrip';
 import { BroadcastFeed } from './components/BroadcastFeed';
 import type { QuizApi } from './components/player/QuizView';
@@ -155,6 +156,13 @@ export function App() {
   const ioRaf = useRef(0);
   const ioGuard = useRef<number | undefined>(undefined);
   const ioClear = useRef<number | undefined>(undefined);
+
+  // Header chrome that CSS cannot express on its own: the nav row tucks away
+  // while you scroll down a view, and the header publishes its live height so
+  // the bell popover can sit under it whatever number of rows it has.
+  const navTucked = useNavTuck(signedIn, path);
+  const [headerEl, setHeaderEl] = useState<HTMLElement | null>(null);
+  useHeaderHeightVar(headerEl);
 
   // Live-state ref so adapter/economy callbacks never capture a stale render.
   const live = useRef({ op, course, radioSt, sfxMuted, sfxVol, preAuth, signedIn, radioClosed });
@@ -894,8 +902,9 @@ export function App() {
   );
 
   const shell = (content: React.ReactNode) => signedIn ? (
-    <div className={`app-shell${alertShowing ? ' has-alert' : ''}`}>
+    <div className={`app-shell${alertShowing ? ' has-alert' : ''}${navTucked ? ' nav-tucked' : ''}`}>
       <AppHeader
+        rootRef={setHeaderEl}
         course={course}
         moduleDone={op.moduleDone}
         eddies={eddiesShown}

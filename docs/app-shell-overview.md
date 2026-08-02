@@ -117,11 +117,62 @@ tracks.
   to the shard.
 
 ### Responsive shell
-Phone (<~640px), tablet (~640–1024px), and desktop breakpoints preserving the
-sharp Night Corp look (no softened corners, borders, or type). Finger-sized
-touch targets, horizontally-scrolling wrappers for code blocks / tables / lab
-JSON so the page never scrolls sideways, and gesture-proofed hover states with
-tap/active equivalents.
+Phone (≤640px), tablet (≤1024px) and desktop, plus two narrow blocks for the
+places a 320px screen still runs out of room: ≤400px scales the shard reader
+(`record.css`), ≤350px drops the brand monogram (`style.css`). Breakpoints are
+bare pixel literals, not tokens: a custom property cannot be used in a media
+condition. The sharp Night Corp look is preserved throughout (no softened
+corners, borders, or type), touch targets are finger-sized, code blocks / tables
+/ lab JSON scroll inside their own wrappers, and hover states have tap/active
+equivalents.
+
+Four rules the shell holds to, each of which was learned by breaking it (#5):
+
+- **A view's type sizes are rebound in the view's own stylesheet.** Both
+  `style.css` and `dashboard.css` bind the `--fs-*` roles on `.dash-scroll`,
+  `dashboard.css` is linked later, and a media query adds no specificity — so
+  the phone sizes that lived in `style.css` lost the cascade and did nothing.
+  Rebinding the role is still the pattern; the file it happens in is part of it.
+- **Decide who gives way.** In the header the controls never shrink, the nav
+  scrolls, the brand truncates last. Three `flex: none` children under
+  `space-between` have a hard minimum width and simply overflow below it, and
+  hiding one more element per breakpoint only moves where that happens.
+- **A height problem is capped by height.** The radio panel and the broadcast
+  popover cap against `100vh`, not inside the ≤640px block: a phone in landscape
+  is 844px wide and 390px tall.
+- **Every fixed scrim owns its scroll.** `body { overflow: hidden }` means an
+  overlay taller than the viewport is unreachable rather than merely awkward.
+- **Judge a phone type size by the render, not the number.** Night Corp Display
+  is a very wide identity face: TRANSACTION HISTORY measures ~250px at 12px in
+  it. The phone titlebar sizes look small written down and are not on screen.
+- **`text-overflow` does nothing on a flex container.** Both modal titles are
+  flex rows, so the ellipsis has to sit on the text span inside; without that
+  they hard-clip mid-letter and read as broken rather than truncated.
+
+The phone header is two rows at every width — monogram plus controls, then the
+two destinations as full-width tabs. `.hdr-meta` is the one thing in it that
+never gives way (four 44px finger targets and the balance figure, 258px, none of
+it decorative), so the second row is paid for out of everything else: the ZONING
+ACADEMY wordmark goes, the GLOSSARY label drops to its icon, the gap to the now
+empty brand column goes, and below 350px the monogram goes too. `src/lib/headerChrome.ts` adds the two behaviours CSS
+cannot express:
+
+- **`useNavTuck`** slides the destinations away on scroll down and back on
+  scroll up. It listens on `document` in the capture phase, because `scroll`
+  does not bubble and the app scrolls inside per-view containers, and it ignores
+  everything that is not a view scroller so a modal's own scroll does not move
+  the header. It also holds still for one transition after each change: **the
+  tuck moves the thing it is measured from**, since collapsing a 44px row inside
+  a `height: 100vh` flex column makes the scroll container 44px taller, which
+  clamps `scrollTop` down, which reads as scrolling up. That oscillates.
+- **`useHeaderHeightVar`** publishes the header's measured height as
+  `--header-live-h`, which the bell popover anchors to. It takes the element,
+  not a flag: the first version looked the header up by selector when `signedIn`
+  flipped, which happens one commit before the shell exists, so it silently did
+  nothing.
+
+`npm run harness:overflow <label>` measures all of this — see
+`scripts/parity/README.md`.
 
 ## Files
 

@@ -48,6 +48,12 @@
   letter-spacing: var(--tracking-tight);
   margin: 0;
   color: var(--text);
+  /* Wrap the words, not the row. A flex item floors at min-content by default,
+     so on a phone the whole heading was pushed onto its own line beneath the
+     shard icon and THEN wrapped again — icon, then two lines of text, three
+     rows for a title. With this it wraps inside the space left beside the icon:
+     one row, icon at its full size, two lines of text next to it. */
+  min-width: 0;
 }
 
 .record-lede {
@@ -371,11 +377,16 @@
   justify-content: center;
   background: rgb(from var(--field-bg) r g b / 0.78);
   backdrop-filter: blur(3px);
+  padding: var(--scrim-pad) var(--space-lg);
+  overflow: auto; /* see .confirm-scrim: a clipped dialog is an unreachable one */
 }
 
 .shard-box {
   width: 460px;
-  max-width: 92%;
+  /* 100%, not 92%: the scrim now supplies the breathing room as padding, so the
+     box can use all of what is left. At 390px that is 366px, and .shard-stage
+     is a fixed 270px plus 64px of wrap padding. */
+  max-width: 100%;
   background: rgb(from var(--field-bg) r g b / 0.97);
   border: 1px solid var(--shard-accent);
   box-shadow: 0 0 44px var(--shard-glow);
@@ -414,10 +425,21 @@
   padding: 36px var(--scrim-pad) var(--space-5xl);
   display: flex;
   justify-content: center;
+  /* The chip is absolutely positioned and ends its travel 20px past the stage's
+     own right edge. It has room inside this box at every width the phone rules
+     below allow, but clip anyway: an escaped chip would paint over the card
+     border rather than simply look wrong. */
+  overflow: hidden;
 }
 
 .shard-stage {
   position: relative;
+  /* flex: none, because the reader (152px) and the chip's 120px travel are
+     absolute and composed against exactly 270px. As a shrinkable flex item its
+     min-content is 0 — the stage would collapse on a narrow screen and leave
+     the animation painting outside it. It keeps its width; the wrap gives up
+     padding instead (see the ≤640px block). */
+  flex: none;
   width: 270px;
   height: 92px;
 }
@@ -526,6 +548,48 @@
   &.err { color: var(--danger); }
 }
 
+/* ---- phone (≤640px) ---- */
+/* Rebind the gutter token rather than !important the padding at the call site
+   (house pattern). 40px each side is a fifth of a 390px screen. */
+
+@media (max-width: 640px) {
+  .record-main {
+    --frame-gutter: var(--space-xl);
+    /* 38px is a desktop hero size: in the identity face it filled the full
+       352px column and stood three lines tall on a 390px screen, a third of the
+       viewport before a word of the record itself.
+       18px rather than the dashboard's 21px, because this heading does not get
+       the whole column — the 68px shard icon sits beside it, leaving 274px.
+       "SERVICE RECORD" measures 299px at 21px and 258px at 18px, so 21px broke
+       it into three lines (SERVICE / RECORD / SHARD) and 18px gives the two the
+       icon is sized to sit against. Measured, not chosen. */
+    --fs-title: 18px;
+  }
+  /* 10px, not 16: every pixel here is one the heading does not get. */
+  .record-title-row { gap: var(--space-md); }
+  /* The shard stage cannot shrink, so the padding around it must: 270px of
+     stage needs the wrap down to 10px a side to survive a 390px screen. */
+  .shard-stage-wrap { padding: var(--space-6xl) var(--space-md) var(--space-xl); }
+}
+
+/* Below 400px the padding has nothing left to give and the chip's 120px travel
+   lands 8px outside the card. `zoom`, not `transform: scale()`: the stage is a
+   fixed 270px composition with everything inside it positioned in absolute
+   pixels against that number, so it has to shrink in LAYOUT, not just in paint.
+   A transform would leave the 270px box — and the overflow — exactly where it
+   was, and only make the picture smaller. */
+@media (max-width: 400px) {
+  .shard-stage { zoom: 0.82; }
+}
+
+/* Below 350px the shard mark stands down and the heading takes the full column,
+   the same trade the header makes with the brand monogram at this width: the
+   icon leaves only 204px beside it, which puts SERVICE RECORD SHARD back on
+   three lines. Without it the heading fits two. */
+@media (max-width: 350px) {
+  .record-title-row img { display: none; }
+}
+
 /* ---- red confirm dialogs (slot overwrite / purge), z 9999 ---- */
 
 /* Its own root: also used by the player's purge/overwrite confirms. */
@@ -543,6 +607,10 @@
   align-items: center;
   justify-content: center;
   padding: var(--scrim-pad);
+  /* body { overflow: hidden } means an overlay that outgrows the viewport is
+     not awkward, it is unreachable — no CANCEL, no CONFIRM, no way to scroll to
+     them. A landscape phone is 390px tall. Every fixed scrim owns its scroll. */
+  overflow: auto;
 }
 
 .confirm-box {
@@ -586,6 +654,7 @@
 .confirm-actions {
   display: flex;
   gap: var(--space-lg);
+  flex-wrap: wrap; /* the two buttons do not fit one line at 320px */
 }
 
 .confirm-primary {

@@ -17,7 +17,12 @@ const LINKS: Relay[] = [
   { label: 'NC ZONING MAP', icon: 'map', url: 'https://nczoning.net', kind: 'cyan' },
   { label: 'LOCATIONS HUB DISCORD', icon: 'discord', url: 'https://discord.gg/sc4yEx2fNf', kind: 'cyan' },
   { label: 'SUPPORT ON KO-FI', icon: 'kofi', url: 'https://ko-fi.com/nczoning', kind: 'gold' },
-  { label: 'MAP REPOSITORY', icon: 'github', url: 'https://github.com/spuddeh/nc-zoning-board', kind: 'gray' },
+  // The two repositories share the GitHub mark, which is fine while the labels
+  // are showing and useless once they are icons on a phone (#5). The map's
+  // repository joins the cyan family its own two links already sit in, and the
+  // Academy's stays grey, so every relay in the row is now unique on glyph or
+  // colour rather than only on the tooltip.
+  { label: 'MAP REPOSITORY', icon: 'github', url: 'https://github.com/spuddeh/nc-zoning-board', kind: 'cyan' },
   { label: 'ACADEMY REPOSITORY', icon: 'github', url: 'https://github.com/spuddeh/nczoning-academy', kind: 'gray' },
 ];
 
@@ -103,9 +108,21 @@ export function Dashboard({ course, moduleDone, revealedBy, onOpenCourse }: Dash
           <div className="dash-section-hdr dash-relays-hdr">TRANSMISSION RELAYS <b>// EXTERNAL LINKS</b></div>
           <div className="dash-links">
             {LINKS.map((l) => (
-              <a key={l.url} className={`dash-link ${l.kind}`} href={l.url} target="_blank" rel="noreferrer">
+              // aria-label and title are load-bearing, not decoration: the
+              // label span is hidden at ≤640px and the row becomes five bare
+              // icons, so without them these links have no accessible name at
+              // all on a phone. Two of them are the same GitHub mark.
+              <a
+                key={l.url}
+                className={`dash-link ${l.kind}`}
+                href={l.url}
+                target="_blank"
+                rel="noreferrer"
+                aria-label={l.label}
+                title={l.label}
+              >
                 <RelayIcon icon={l.icon} />
-                <span>{l.label}</span>
+                <span className="dash-link-txt">{l.label}</span>
               </a>
             ))}
           </div>

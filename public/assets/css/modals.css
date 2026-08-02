@@ -69,6 +69,7 @@
 }
 
 .modal-close {
+  flex: none; /* the title gives way, never the way out of the modal */
   background: transparent;
   border: 1px solid rgb(from var(--bg) r g b / 0.5);
   color: var(--bg);
@@ -403,8 +404,47 @@
 /* ---- narrow (≤640px) ---- */
 
 @media (max-width: 640px) {
-  .modal-scrim.txn { padding: var(--space-4xl) var(--space-sm); }
-  .modal-box.gold { max-height: calc(100vh - 40px); }
+  /* Both modals, not just the ledger (#5). The 56px top inset and the
+     `100vh - 112px` cap were written for the ledger and left the glossary
+     paying a desktop scrim on a phone. Same shell, same treatment. */
+  .modal-scrim { padding: var(--space-4xl) var(--space-sm); }
+  .modal-box { max-height: calc(100vh - 40px); }
+
+  /* a long term must not push its badge off the edge */
+  .gloss-body { padding: var(--space-5xl) var(--space-xl) var(--space-5xl); }
+  .gloss-card { padding: var(--space-2xl) var(--space-xl); }
+  .gloss-term-row { flex-wrap: wrap; }
+  .gloss-term { min-width: 0; overflow-wrap: anywhere; }
+  /* Its own row. The desktop `min-width: 240px` forced a wrap that fitted at
+     390px and overflowed at 320px; relaxing it to 0 fixed the overflow and
+     collapsed the field to 24px beside the tier chips, which is worse. Say
+     what is actually wanted: full width, chips underneath. */
+  .gloss-search { min-width: 0; flex: 1 0 100%; }
+
+  /* The titlebar is a space-between row and the title does not shrink, so on a
+     320px screen it pushed [ CLOSE ] off the card entirely. */
+  /* FIELD GLOSSARY and TRANSACTION HISTORY were the only titlebars in the app
+     above 14px — the others (shard, confirm, name prompt, certificate) sit at
+     12-14px. At 16px in the identity face with wide tracking they took 194px of
+     a 374px bar, which reads as a heading rather than as chrome. Rebound on the
+     titlebar, not the box: nothing else in here uses the role. */
+  .modal-titlebar {
+    padding: var(--space-lg) var(--space-xl);
+    gap: var(--space-md);
+    /* 12px, and that is not as small as it sounds: Night Corp Display is a very
+       wide identity face, so TRANSACTION HISTORY still measures ~250px here
+       against ~194px at 16px in a normal face. Judge this one by the render,
+       not the number — see the font-size-is-not-visual-size learning. */
+    --fs-secondary: 12px;
+  }
+  .modal-title { min-width: 0; }
+  /* The truncation goes on the text, not on .modal-title: text-overflow does
+     nothing on a flex container, so the title was hard-clipped mid-word with no
+     ellipsis to show for it. */
+  .modal-title-txt { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .modal-title-sub { display: none; }
+  .modal-close-key { display: none; } /* 62px of "[ ESC ] " on a keyless device */
+
   .txn-body { padding: var(--space-2xl) var(--space-xl) var(--space-5xl); }
   .txn-cell { flex: 1 1 calc(50% - 6px); min-width: calc(50% - 6px); padding: var(--space-md) var(--space-lg); }
   .txn-cell-val { font-size: var(--fs-secondary); }

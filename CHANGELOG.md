@@ -11,6 +11,62 @@ file records what a visitor receives.
 
 ## [Unreleased]
 
+## 0.12.0 - 2026-08-02
+
+### Added
+
+- On a phone, DASHBOARD and SERVICE RECORD slide out of the way as you scroll
+  down a page and come back the moment you scroll up. They are worth a row while
+  you are choosing where to go and worth nothing while you are reading, so
+  reading gets the space back.
+
+### Fixed
+
+- The Academy works on a phone. The lock screen was the worst of it: the
+  wordmark, the broadcast panel and the LOGIN button all hung off the right edge
+  with no way to scroll to them, so the site could not be entered at all from a
+  390px screen. The certificate hung 165px off the same edge, and on any screen
+  narrower than a laptop the header pushed the balance, the bell and JACK OUT
+  past the edge as well.
+- The header now decides what gives way when it runs out of room, instead of
+  overflowing. The controls never shrink, the two destinations scroll (and fade
+  at the edge, so a clipped nav looks clipped rather than broken), and the brand
+  truncates last. On a phone the destinations get a row to themselves as
+  full-width tabs, rather than sharing 54px with everything else. The ZONING
+  ACADEMY wordmark and the GLOSSARY label stand down so that row costs nothing:
+  the monogram and the book icon say the same thing in a fifth of the width, and
+  the header is two rows and shorter than it was before any of this. On a screen
+  as narrow as an iPhone SE the monogram goes too, rather than spend a third row
+  on it.
+- NC Radio's corner pill becomes a single icon on a phone, so it no longer parks
+  a 205px readout over the bottom-right of whatever you are reading, and it
+  steps out of the way entirely while the module map drawer is open. The radio
+  panel, the broadcast popover and every dialog now scroll on their own when
+  they are taller than the screen; previously a phone held sideways could show a
+  dialog with its buttons unreachable.
+- Headings no longer run off the edge of their column: OPERATOR DASHBOARD ended
+  in "DASHBOA" on a phone, and module and course titles did the same. Finger
+  targets that were quietly under size (JACK OUT, the bell, the glossary) now
+  meet the 44px floor, and the module completion notice, the certificate, the
+  glossary search and the shard reader all fit a 320px screen.
+- Titles are sized for a phone rather than a desktop. SERVICE RECORD SHARD was
+  set at 38px, which on a 390px screen filled the width and stood three lines
+  tall before a word of the record itself; it now matches OPERATOR DASHBOARD.
+  FIELD GLOSSARY and TRANSACTION HISTORY were the only titlebars in the app
+  above 14px and were being cut off mid-word by their own CLOSE button, which
+  in turn was carrying a keyboard shortcut no phone has. Both now fit, and where
+  a title genuinely cannot, it ends in an ellipsis instead of mid-letter.
+- The external-link buttons at the foot of the dashboard are centred icons on a
+  phone. Spelled out they were up to 243px each in a 352px column, so five links
+  became five full-width rows and the footer outgrew the course card above it.
+  MAP REPOSITORY now carries the same cyan as the map's other two links, which
+  both groups it with them and tells it apart from ACADEMY REPOSITORY — without
+  labels the two were the same grey GitHub mark twice.
+- The Service Record heading sits beside its shard icon rather than under it.
+  At the desktop size the heading was pushed onto its own line and then wrapped
+  again, so the icon and two lines of title took three rows; it now reads as one
+  block, at the size that fits the space the icon leaves it.
+
 ## 0.11.0 - 2026-08-02
 
 ### Added

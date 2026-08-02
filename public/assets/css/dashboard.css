@@ -43,6 +43,12 @@
   letter-spacing: var(--tracking-label);
   color: var(--text);
   margin: 0 0 var(--space-xs);
+  /* DASHBOARD is one unbreakable word, and in Night Corp Display at tracking it
+     was 414px wide in a 352px column — the border box fitted, so no rect check
+     saw it, and the word simply rendered as "DASHBOAR" (#5). The type step-down
+     in the ≤640px block handles today's copy; this handles the day a longer
+     word lands here. */
+  overflow-wrap: break-word;
 }
 .dash-lead {
   font-family: var(--font-body);
@@ -279,3 +285,39 @@
 }
 .dash-link-icon { display: inline-flex; line-height: 0; }
 .dash-link-kofi { width: 19px; height: 19px; display: block; object-fit: contain; }
+
+/* ---- phone (≤640px) ---- */
+/* These sizes must live HERE, not in style.css's phone block, even though the
+   header and the rest of the shell's responsive rules do. Both files bind the
+   roles on .dash-scroll, dashboard.css is linked after style.css, and a media
+   query adds no specificity — so the copies that sat in style.css lost the
+   cascade and had been dead since the stylesheet split (#5). The symptom: the
+   hero rendered at its 38px desktop size on a 390px screen, 414px of OPERATOR
+   DASHBOARD in a 352px column, and the word DASHBOARD simply ended in "DASHBOA".
+   Rebinding the role is still the pattern; the file it happens in is the fix. */
+
+@media (max-width: 640px) {
+  .dash-scroll {
+    --fs-title: 21px;
+    --fs-heading: 17px;
+    --fs-body: 14px;
+  }
+
+  /* The five relays are icon-only here. Spelled out they are 173-243px each in
+     a 352px column, so they stacked into five full-width rows and the footer
+     was taller than the course card above it. Every relay already ships an
+     icon, so the label is the only thing that has to go — and it goes to
+     aria-label/title rather than nowhere, because two of these are the same
+     GitHub mark and none of them would otherwise have an accessible name. */
+  .dash-link-txt { display: none; }
+  .dash-link {
+    gap: 0;
+    padding: var(--space-md);
+    min-width: 44px;
+    min-height: 44px;
+    justify-content: center;
+  }
+  /* Centred: five 44px squares left-aligned under a full-width rule read as a
+     row that ran out, rather than as the whole set. */
+  .dash-links { gap: var(--space-md); justify-content: center; }
+}

@@ -214,6 +214,9 @@
   letter-spacing: var(--tracking-tight);
   margin: 0 0 var(--space-xs);
   color: var(--text);
+  /* module titles are authored, so no type size can guarantee they fit; see
+     .dash-h1 for the failure this prevents */
+  overflow-wrap: break-word;
 }
 .player-sub { color: var(--text-body); font-size: var(--fs-secondary); }
 .player-bar {
@@ -835,6 +838,8 @@
   justify-content: center;
   background: rgb(from var(--field-bg) r g b / 0.72);
   backdrop-filter: blur(3px);
+  padding: var(--scrim-pad) var(--space-lg);
+  overflow: auto; /* see .confirm-scrim: a clipped dialog is an unreachable one */
 }
 .transfer-box {
   width: 480px;
@@ -897,6 +902,17 @@
 
 @media (max-width: 1024px) {
   .player-rail { width: 224px !important; }
+  /* The corner stamp is absolute with `right: 0`, and an absolutely positioned
+     child still counts toward its relative parent's scrollWidth — once the rail
+     takes 224px off the column it ran 23px past the card. It joins the flow
+     here rather than at ≤640px. */
+  .complete-copy.stamped { padding-right: 0; }
+  .complete-stamp {
+    position: static;
+    display: inline-block;
+    margin-bottom: var(--space-2xl);
+    transform-origin: left center; /* pivot inward, so the tilt adds no width */
+  }
 }
 @media (max-width: 640px) {
   .rail-toggle {
@@ -941,5 +957,18 @@
     background: rgb(from var(--field-bg) r g b / 0.62);
     z-index: var(--z-rail-backdrop);
   }
-  .player-main { width: 100%; }
+  .player-main {
+    width: 100%;
+    /* Rebind the tokens, don't !important the call sites (house pattern). The
+       40px page gutter was measured for a desktop column; on a 390px screen it
+       spends 20% of the viewport on empty margin. The player never had a phone
+       title size at all — it inherited :root's 34px, and the module title ran
+       68px past its column. */
+    --frame-gutter: var(--space-xl);
+    /* 22px, a step above the two browse heroes at 21px and no more: this is the
+       same kind of thing they are, the view's H1, and the module title is the
+       one a reader passes every stage. (.transfer-bal also reads --fs-title but
+       lives on a fixed root at App level, so it inherits :root, not this.) */
+    --fs-title: 22px;
+  }
 }

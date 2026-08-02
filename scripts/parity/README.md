@@ -75,6 +75,41 @@ Each script wipes its own bucket in `out/` on the way in, so a rerun replaces it
 artefacts rather than accumulating them. `out/` is gitignored; `out/chrome-profile`
 is the reused browser profile, and only `harness:clean` removes it.
 
+## Proving the app fits a phone
+
+```bash
+npm run dev
+node scripts/parity/overflow-audit.mjs before      # baseline
+# ...change the CSS...
+node scripts/parity/overflow-audit.mjs after       # exit 0 = nothing overflows
+PROBE_WIDTH=844 PROBE_HEIGHT=390 node scripts/parity/overflow-audit.mjs landscape
+```
+
+Drives 14 states at 390×844 by default (`PROBE_WIDTH`/`PROBE_HEIGHT` to change
+it) and reports two kinds of finding per state:
+
+- **past the edge** — an element's border box crosses the viewport edge.
+- **clipped content** — an element's own content is wider than its box. This one
+  exists because the rect test cannot see it: `OPERATOR DASHBOARD` rendered as
+  `DASHBOA` while the `<h1>`'s border box fitted the column perfectly.
+
+Both are checked because `body { overflow: hidden }` turns every overflow into a
+*clip*, so a screenshot of a broken view looks like a screenshot of a view that
+was designed to end at the edge. Only a measurement tells them apart.
+
+**The allowlist is hand-written, and it has to be.** The first version inferred
+intent from computed `overflow-x: auto|scroll`, which looks rigorous and is not:
+`overflow-y: auto` makes `overflow-x` COMPUTE to `auto` on the same element, so
+every vertical scroller in the app read as a deliberate horizontal one. It
+pardoned the certificate overflowing by 165px and reported the view clean. An
+allowlist is a claim about intent; a computed value is not. Two things are
+excused automatically, and both are declarations rather than inferences: an
+ancestor with `text-overflow: ellipsis` (a truncation that announces itself),
+and an element parked entirely off-screen (the closed off-canvas rail).
+
+`overflow-x: hidden` is deliberately NOT an excuse. That was the lock screen's
+bug: a silent clip with nothing to signal it.
+
 ## Writing a new probe
 
 ```js

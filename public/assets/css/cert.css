@@ -30,6 +30,13 @@
   flex-direction: column;
   align-items: center;
   gap: var(--space-3xl);
+  /* The lock screen's bug wearing the other layout mode (#5). A flex item's
+     default `min-width: auto` floors it at min-content, and the nowrap titlebar
+     plus the nowrap control row pushed that to 523px — so #cert-print's
+     `max-width: 100%` resolved against 523px, not the 390px viewport, and the
+     whole certificate hung 165px off the right edge. Grid's version of this
+     escape is the track definition (`minmax(0, 1fr)`); flex's is here. */
+  min-width: 0;
 }
 
 #cert-print {
@@ -106,6 +113,7 @@
   letter-spacing: var(--tracking-label);
   color: var(--text);
   margin-bottom: var(--space-xs);
+  overflow-wrap: break-word; /* course titles are authored; see .dash-h1 */
 }
 
 .cert-course-sub {
@@ -188,6 +196,9 @@
 #cert-controls {
   display: flex;
   gap: var(--space-lg);
+  /* three buttons at ~130px each do not fit a phone on one line */
+  flex-wrap: wrap;
+  justify-content: center;
 }
 
 .cert-btn {
@@ -233,6 +244,7 @@
   align-items: center;
   justify-content: center;
   padding: var(--scrim-pad);
+  overflow: auto; /* see .confirm-scrim: a clipped dialog is an unreachable one */
 }
 
 .nameprompt-box {
@@ -290,6 +302,7 @@
 .nameprompt-actions {
   display: flex;
   gap: var(--space-lg);
+  flex-wrap: wrap; /* CONFIRM + CANCEL run 51px over at 320px on one line */
 }
 
 .nameprompt-issue {
@@ -321,6 +334,24 @@
   letter-spacing: var(--tracking-mid);
   padding: var(--space-lg) var(--space-3xl);
   cursor: pointer;
+}
+
+/* ---- phone (≤640px) ----
+   The certificate is a fixed-proportion printed document: it does not reflow,
+   it shrinks. What has to give is the padding, measured for a 720px sheet and
+   eating 96px of a 390px screen. Above 640px nothing here applies, so the
+   print rules below are untouched (print media is ~816px wide). */
+
+@media (max-width: 640px) {
+  .cert-scrim { padding: var(--space-xl) var(--space-md); }
+  .cert-body { padding: var(--space-6xl) var(--space-xl) var(--space-5xl); }
+  .cert-titlebar { padding: var(--space-md) var(--space-xl); }
+  /* the awarded name is the point of the document; let it wrap rather than
+     set the card's min-content width */
+  .cert-name { overflow-wrap: anywhere; }
+  /* the certificate is the widest fixed-proportion surface in the app; at
+     320px its 30px course title still does not fit the card */
+  .cert-scrim { --fs-title: 22px; --fs-heading: 22px; }
 }
 
 /* ---- print: the certificate is the page ----

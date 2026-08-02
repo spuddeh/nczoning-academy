@@ -1,8 +1,9 @@
 // Shared app header chrome: brand, nav tabs, clearance + balance cluster.
 // Measured spec: docs/monolith-parity-spec.md, "App shell". The balance
-// button opens the transaction-history modal; the header GLOSSARY button is
-// the ≤640px opener (the FAB hides there). DASHBOARD is the active tab for
-// both the dashboard and player views (the monolith's navTabStyle rule).
+// button opens the transaction-history modal; the header GLOSSARY button is the
+// ≤640px opener (the FAB hides there, and the label drops to its icon).
+// DASHBOARD is the active tab for both the dashboard and player views (the
+// monolith's navTabStyle rule).
 import { useMemo } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { IDENTITY, clearanceAndRank } from '../lib/academy';
@@ -22,11 +23,13 @@ interface AppHeaderProps {
   alertLive: boolean;
   broadcastOpen: boolean;
   onToggleBroadcast: () => void;
+  /** Handed to useHeaderHeightVar, which measures this element (issue #5). */
+  rootRef?: (el: HTMLElement | null) => void;
 }
 
 export function AppHeader({
   course, moduleDone, eddies, balPulse, glossaryOpen, onOpenGlossary, onOpenTxns, onLogout,
-  unread, alertLive, broadcastOpen, onToggleBroadcast,
+  unread, alertLive, broadcastOpen, onToggleBroadcast, rootRef,
 }: AppHeaderProps) {
   const navigate = useNavigate();
   const path = useLocation().pathname;
@@ -38,7 +41,7 @@ export function AppHeader({
   const symbol = course?.economy?.symbol ?? '€$';
 
   return (
-    <header className="app-header">
+    <header className="app-header" ref={rootRef}>
       <div className="hdr-brand">
         <img className="hdr-logo" src="/assets/nightcorp-logo.svg" alt="Night Corp" />
         <div>
@@ -59,7 +62,11 @@ export function AppHeader({
           type="button"
           onClick={() => navigate('/record')}
         >
-          SERVICE RECORD
+          {/* Same trick as .hdr-logout-txt: the nav row is the flex child that
+              gets squeezed on a phone, and the label was clipping mid-word with
+              no scroll affordance (#5). Dropping the first word at ≤640px is
+              what makes the two-row header fit. */}
+          <span className="hdr-nav-word">SERVICE </span>RECORD
         </button>
       </nav>
       <div className="hdr-meta">
@@ -70,7 +77,10 @@ export function AppHeader({
           onClick={onOpenGlossary}
         >
           <BookIcon size={14} />
-          GLOSSARY
+          {/* dropped on a phone, where .hdr-meta's width is what the nav and
+              the brand have to work around; the book icon carries it, same as
+              JACK OUT's power glyph */}
+          <span className="gloss-hdr-txt">GLOSSARY</span>
         </button>
         <div className="hdr-clearance">
           <div className="hdr-clearance-label">OPERATOR CLEARANCE</div>

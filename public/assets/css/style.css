@@ -165,6 +165,8 @@ input::placeholder {
   #scanlines { display: none; }
   .ledblink,
   .cursor { animation: none !important; }
+  /* the nav still tucks, it just stops sliding */
+  .hdr-nav { transition: none !important; }
 }
 
 /* ---- app header (shared chrome, renders on every view) ---- */
@@ -187,13 +189,35 @@ input::placeholder {
   backdrop-filter: blur(8px);
   border-bottom: 1px solid rgb(from var(--primary) r g b / 0.2);
 }
-.hdr-brand { display: flex; align-items: center; gap: var(--space-2xl); flex: none; }
+
+/* WHO GIVES WAY WHEN THE ROW IS TOO NARROW (#5).
+   All three children were `flex: none` under space-between, so the row had a
+   hard min-content width and simply overflowed below it — measured overflowing
+   at 641px, 720px, 844px AND 1180px, every one of them pushing the meta
+   cluster (balance, bell, JACK OUT) off the right edge with
+   body { overflow: hidden } to stop you scrolling to it. Hiding one more
+   element per breakpoint only moves the width at which it breaks; the row has
+   to be able to shrink. The order of sacrifice is deliberate:
+
+     meta    never — it is the controls, and unreachable controls are the bug
+     nav     scrolls (and fades, see the ≤640px block) — two known destinations
+     brand   truncates last — decorative, and the logo still identifies it */
+.hdr-brand {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2xl);
+  flex: 0 1 auto;
+  min-width: 0;
+  overflow: hidden;
+}
+.hdr-meta { flex: none; }
 .hdr-logo {
   height: 40px;
   width: auto;
   display: block;
   filter: brightness(0) invert(1) drop-shadow(0 0 6px rgb(from var(--primary) r g b / 0.35));
 }
+.hdr-brand > div { min-width: 0; } /* the title/sub column, so it can shrink */
 .hdr-brand-title {
   font-family: var(--font-identity);
   font-weight: 400;
@@ -201,6 +225,9 @@ input::placeholder {
   letter-spacing: var(--tracking-mid);
   color: var(--text);
   line-height: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .hdr-sub {
   font-family: var(--font-mono);
@@ -209,9 +236,23 @@ input::placeholder {
   color: var(--muted);
   margin-top: 3px;
   white-space: nowrap;
+  /* the brand is the piece that gives way when the row is tight (see
+     .hdr-brand), so truncate legibly rather than hard-clip mid-word */
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.hdr-nav { display: flex; align-items: center; gap: var(--space-xs); }
+.hdr-nav {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  /* shrinks before the brand does, and scrolls rather than clips */
+  flex: 0 1 auto;
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.hdr-nav::-webkit-scrollbar { display: none; }
 .hdr-nav-btn {
   font-family: var(--font-display);
   font-size: var(--fs-label);
@@ -478,6 +519,11 @@ input::placeholder {
   max-width: calc(100vw - 44px);
   z-index: var(--z-broadcast);
   box-shadow: 0 8px 28px rgba(0, 0, 0, 0.55);
+  /* Height, so it is capped at every width, not only on the ≤640px block: the
+     inner .broadcast-list caps at 220px but the panel around it did not, and a
+     phone in landscape is only 390px tall. */
+  max-height: calc(100vh - 92px);
+  overflow-y: auto;
 }
 .broadcast-pop-empty {
   border: 1px solid rgb(from var(--primary) r g b / 0.28);
@@ -642,7 +688,22 @@ input::placeholder {
 /* Tablet (≤1024px): drop the clearance cluster, tighten the dash padding */
 @media (max-width: 1024px) {
   .hdr-clearance { display: none !important; }
+  /* Nothing in this single-row header shrinks — brand, nav and meta are all
+     `flex: 0 0 auto` under space-between — so between 641px and about 940px
+     the row's min-content beat the viewport and pushed the meta cluster
+     (balance, bell, JACK OUT) up to 95px off the right edge, with
+     body { overflow: hidden } to make sure you could not scroll to it. That
+     band is where a phone in landscape lives: the 390px device in #5 is 844px
+     on its side. Measured at 844px: brand 395 + nav 227 + meta 295 + 44 gutter
+     = 961 in an 844px row. The two widest pieces give way. */
+  .hdr-sub { display: none !important; }
+  .app-header { --fs-heading: 16px; } /* rebind the role, not the call site */
+  .hdr-logout-txt { display: none; }  /* icon-only, as on the phone */
   .dash-scroll { padding: 36px var(--space-6xl) 54px !important; }
+  /* The readout parks beside the player rail, and the rail narrows to 224px in
+     this block (player.css) — so its 306px offset was 82px too far, and at
+     641px that hung the telemetry line off the right edge. */
+  .sys-readout.player { left: 242px; }
 }
 
 /* Phone (≤640px): wrapping header, single-column grids, finger targets */
@@ -656,36 +717,116 @@ input::placeholder {
   .sys-readout { display: none !important; }
   .hdr-sub { display: none !important; }
   .hdr-clearance { display: none !important; }
-  /* re-bind the role, don't !important the call site */
-  .app-header { --fs-heading: 15px; }
-  .hdr-brand { width: 100%; }
+  /* Two rows: the monogram and the controls share the first, the two
+     destinations take the second as full-width tabs (#5).
+     The nav cannot share a row with .hdr-meta — that left it 54px at 360px,
+     half of the word DASHBOARD, scrolling 168px sideways for the rest, which is
+     the "can't see the buttons without scrolling sideways" in the report. And
+     .hdr-meta cannot give the space back: four controls at a 44px finger target
+     is 264px and none of it is decorative.
+     So the ZONING ACADEMY wordmark goes instead. It is the one piece of the
+     header that is purely decorative on a phone, the monogram still identifies
+     the site, and dropping it is what buys the nav its row without a third one.
+     No --fs-heading rebinding here: nothing left in the header uses that role. */
+  .hdr-brand-title { display: none; }
+  .hdr-logo { height: 30px; }
+  /* Both text lines are hidden here, so the gap to them is 16px spent on an
+     empty column — and 16px of a 320px header row is a third of what stops the
+     brand and the controls sharing one. */
+  .hdr-brand { gap: 0; }
+  .hdr-meta { order: 2; margin-left: auto; gap: var(--space-sm) !important; }
   .hdr-nav {
-    order: 2;
-    flex: 1;
-    min-width: 0;
-    justify-content: flex-start;
+    order: 3;
+    width: 100%;
+    flex: none;
     gap: var(--space-xs);
+    /* Still a scroller, for whenever a third destination lands, and now with an
+       affordance: fade the trailing 18px so a clipped nav looks clipped rather
+       than simply ending mid-word. Harmless when it is not scrolling. */
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
+    mask-image: linear-gradient(to right, #000 calc(100% - 18px), transparent);
+    /* Tucked away while the reader scrolls down: on a phone the destinations
+       are worth a row when you are choosing where to go and worth nothing while
+       you are reading. `max-height` rather than `display: none` so it can
+       animate; the negative margin swallows the header's own row gap so the
+       collapse leaves nothing behind. See useNavTuck in src/lib/headerChrome.ts
+       — the class is set at every width and only means anything here. */
+    transition: max-height 0.22s ease, opacity 0.16s ease, margin-bottom 0.22s ease;
+    max-height: 52px;
   }
-  .hdr-nav button { min-height: 40px; white-space: nowrap; }
-  .hdr-meta { order: 3; margin-left: auto; gap: var(--space-md) !important; }
-  /* glossary moves into the header row; the fixed floater hides */
+  .app-shell.nav-tucked .hdr-nav {
+    max-height: 0;
+    opacity: 0;
+    margin-bottom: calc(-1 * var(--space-sm));
+    pointer-events: none;
+  }
+  /* Labels never wrap (a two-line button in a 44px row looks broken), so the
+     phone drops the first word of SERVICE RECORD — see .hdr-nav-word in
+     AppHeader.tsx. With a row to themselves the two tabs split it evenly. */
+  .hdr-nav button { flex: 1; min-height: 44px; white-space: nowrap; }
+  .hdr-nav-word { display: none; }
+  /* Glossary moves into the header row and the fixed floater hides. Icon-only
+     here, like JACK OUT: .hdr-meta is the one thing in this header that never
+     gives way (see .hdr-brand), so every word it carries is width the nav and
+     the brand have to find somewhere else. The book glyph is the same
+     affordance for 46px less, and it keeps the cluster at 264px — the margin
+     that stops a fourth control forcing the header back to three rows. */
   .gloss-fab { display: none !important; }
-  .gloss-hdr { display: inline-flex !important; padding: var(--space-xs) var(--space-md) !important; min-height: 40px; }
-  /* icon-only jack-out: the label doesn't fit the wrapped meta row */
-  .hdr-logout { padding: var(--space-xs) var(--space-md) !important; min-height: 40px; }
-  .hdr-logout-txt { display: none; }
-  /* the wrapped header is taller; anchor the bell popover below it */
-  .broadcast-pop { top: 118px; right: 10px; left: 10px; width: auto; }
-
-  .dash-scroll {
-    padding: var(--space-5xl) var(--space-xl) 46px !important;
-    --fs-title: 25px;
-    --fs-body:  14px;
+  .gloss-hdr {
+    display: inline-flex !important;
+    padding: var(--space-xs) var(--space-md) !important;
+    min-height: 44px;
+    min-width: 44px;
+    justify-content: center;
   }
+  .gloss-hdr-txt { display: none; }
+  /* JACK OUT is already icon-only from the tablet block up. What the phone
+     adds is the finger target: padding around a 13px glyph gave it a 29px-wide
+     hit area, under the 44px floor this block sets for every other button. */
+  .hdr-logout {
+    padding: var(--space-xs) var(--space-md) !important;
+    min-height: 44px;
+    min-width: 44px;
+    justify-content: center;
+  }
+  .hdr-bell { min-height: 44px; min-width: 44px; justify-content: center; }
+  /* The wrapped header is taller; anchor the bell popover below it, and cap it
+     so a long feed cannot run off the bottom of a phone with body:overflow
+     hidden underneath it. */
+  /* Measured live, not guessed. The header is two rows here, one while the nav
+     is tucked, and one at desktop width — a literal is correct for exactly one
+     of those. `--header-live-h` is published by a ResizeObserver in
+     src/lib/headerChrome.ts, so the popover follows the header instead of being
+     re-guessed every time a row is added or removed. The fallback matches the
+     untucked two-row height for the frame before the observer first fires. */
+  .broadcast-pop {
+    top: calc(var(--header-live-h, 122px) + var(--space-sm));
+    right: 10px;
+    left: 10px;
+    width: auto;
+    max-height: calc(100vh - var(--header-live-h, 122px) - var(--space-4xl));
+  }
+
+  /* The phone type sizes for this view live in dashboard.css, NOT here. Both
+     files bind them on .dash-scroll, dashboard.css is linked later, and a media
+     query adds no specificity — so the copies that used to sit here lost the
+     cascade and had been dead since the stylesheet split. See #5. */
+  .dash-scroll { padding: var(--space-5xl) var(--space-xl) 46px !important; }
   .course-grid { grid-template-columns: 1fr !important; }
 
   button { min-height: 44px; }
   input:not([type="file"]) { min-height: 44px; }
+}
+
+/* Very small phone (≤350px): the monogram stands down too.
+   The controls cost 258px and none of that is decoration — four 44px finger
+   targets and the balance figure. Add the monogram's 46px and the row gap and
+   the first header row wants 318px, which a 320px screen (iPhone SE 1) does not
+   have, so the brand wrapped and the header went back to three rows. Between
+   the mark and a whole extra row of chrome on the smallest screen we support,
+   the row is worth more: the nav below still says where you are. Everything
+   from 360px up keeps the monogram. */
+@media (max-width: 350px) {
+  .hdr-brand { display: none; }
 }
