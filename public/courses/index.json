@@ -9,10 +9,10 @@
       "status": "draft"
     },
     {
-      "id": "d1",
+      "id": "d1-database",
       "title": "PERMANENT RECORD",
       "subtitle": "The D1 registry and the write path",
-      "file": "d1.json",
+      "file": "d1-database.json",
       "status": "draft",
       "requires": ["data-api"]
     }
