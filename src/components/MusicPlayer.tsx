@@ -212,13 +212,16 @@ export function MusicPlayer({
           </div>
         </div>
         <div className="radio-transport">
-          <button className="radio-tbtn" type="button" onClick={onPrev}>{'⏮'}</button>
+          <button className="radio-tbtn" type="button" onClick={onPrev} aria-label="Previous track"><PrevIcon /></button>
           <button className="radio-tbtn big" type="button" onClick={onTogglePlay}>
-            {st.paused ? '▶ PLAY' : '⏸ PAUSE'}
+            {st.paused ? <PlayIcon /> : <PauseIcon />}
+            {st.paused ? ' PLAY' : ' PAUSE'}
           </button>
-          <button className="radio-tbtn" type="button" onClick={onNext}>{'⏭'}</button>
+          <button className="radio-tbtn" type="button" onClick={onNext} aria-label="Next track"><NextIcon /></button>
         </div>
-        <div className="radio-caption">{`TRACK ${tnum} / ${tcount}  ·  ⏮ ⏭ STEP TRACKS`}</div>
+        <div className="radio-caption">
+          {`TRACK ${tnum} / ${tcount}  ·  `}<PrevIcon /> <NextIcon />{' STEP TRACKS'}
+        </div>
         <div className="radio-chips">
           {all.map((stn, i) => (
             <button
@@ -246,4 +249,30 @@ export function MusicPlayer({
       </div>
     </div>
   );
+}
+
+/* Transport glyphs as SVG, not characters.
+   U+23EE ⏮, U+23ED ⏭, U+23F8 ⏸ and U+25B6 ▶ all carry Emoji_Presentation=Yes,
+   so a platform with an emoji font for them renders full-colour emoji unless
+   asked otherwise — reported from a real Android phone, where the pause control
+   came out as a picture. The U+FE0E text-presentation selector is the nominal
+   fix and is not reliably honoured on Android, so these are drawn instead. They
+   inherit currentColor, which is what the .radio-tbtn states already drive. */
+
+// No inline `display`: these render both inside a flex button and inline in the
+// caption sentence, and an inline style would win over whichever the call site
+// needs. radio.css sets it per context.
+const TBTN = { width: 13, height: 13, viewBox: '0 0 24 24', fill: 'currentColor', 'aria-hidden': true } as const;
+
+export function PrevIcon() {
+  return <svg {...TBTN}><path d="M7 12 18 5v14zM6 5h2v14H6z" /></svg>;
+}
+export function NextIcon() {
+  return <svg {...TBTN}><path d="M17 12 6 19V5zM16 5h2v14h-2z" /></svg>;
+}
+export function PlayIcon() {
+  return <svg {...TBTN}><path d="M7 4.5 19 12 7 19.5z" /></svg>;
+}
+export function PauseIcon() {
+  return <svg {...TBTN}><path d="M6.5 4.5h4v15h-4zM13.5 4.5h4v15h-4z" /></svg>;
 }

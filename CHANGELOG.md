@@ -11,7 +11,24 @@ file records what a visitor receives.
 
 ## [Unreleased]
 
-## 0.12.0 - 2026-08-02
+## 0.12.1 - 2026-08-02
+
+### Fixed
+
+- The dashboard would not scroll on a real phone, and its last rows sat under
+  the browser's address bar with no way to reach them. The app shell was sized
+  to `100vh`, which on a phone is the height the page would have if the address
+  bar were hidden, not the height you can actually see. A view whose content was
+  a little taller than the screen but shorter than that phantom height had
+  nothing to scroll and simply hung its bottom off the visible area. Every
+  view now measures against the visible height instead, and follows it as the
+  address bar hides and returns.
+- NC Radio's button no longer sits on top of CONTINUE in a module. It moves
+  above the button on that view, and clears the home indicator on phones that
+  have one.
+- The radio's transport controls are drawn rather than typed. Android renders
+  the play, pause and skip characters as full-colour emoji, which is not what
+  the rest of the panel looks like.
 
 ### Added
 

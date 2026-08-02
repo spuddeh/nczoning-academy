@@ -22,6 +22,7 @@
   display: flex;
   flex-direction: column;
   max-height: calc(100vh - 112px);
+  max-height: calc(100dvh - 112px); /* the visible viewport, not the large one */
 
   /* glossary: a reading surface, so it takes the same measure as a lesson:
      + 64px .gloss-body padding + 40px .gloss-card padding */
@@ -408,7 +409,7 @@
      `100vh - 112px` cap were written for the ledger and left the glossary
      paying a desktop scrim on a phone. Same shell, same treatment. */
   .modal-scrim { padding: var(--space-4xl) var(--space-sm); }
-  .modal-box { max-height: calc(100vh - 40px); }
+  .modal-box { max-height: calc(100vh - 40px); max-height: calc(100dvh - 40px); }
 
   /* a long term must not push its badge off the edge */
   .gloss-body { padding: var(--space-5xl) var(--space-xl) var(--space-5xl); }
