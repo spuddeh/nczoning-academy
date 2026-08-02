@@ -38,7 +38,19 @@ body {
 .app-shell {
   display: flex;
   flex-direction: column;
+  /* 100vh is the LARGE viewport on a phone — the height the page would have if
+     the browser's address bar were hidden. It is not what you can see. With the
+     bar showing, a 100vh shell runs ~100px past the bottom of the screen, and
+     every view's scroll container is that much taller than its visible area. A
+     dashboard whose content is a little taller than the screen but shorter than
+     the shell then has NO overflow to scroll and simply hangs its last rows
+     under the browser chrome: reported from a real phone as "the dashboard
+     doesn't scroll". 100dvh is the visible height and tracks the bar as it
+     hides. The 100vh line stays as the fallback for anything without dvh.
+     Not reproducible in the harness: a headless viewport has no browser chrome,
+     so dvh and vh are the same number there. */
   height: 100vh;
+  height: 100dvh;
   overflow: hidden;
 }
 
@@ -523,6 +535,7 @@ input::placeholder {
      inner .broadcast-list caps at 220px but the panel around it did not, and a
      phone in landscape is only 390px tall. */
   max-height: calc(100vh - 92px);
+  max-height: calc(100dvh - 92px);
   overflow-y: auto;
 }
 .broadcast-pop-empty {
@@ -806,6 +819,7 @@ input::placeholder {
     left: 10px;
     width: auto;
     max-height: calc(100vh - var(--header-live-h, 122px) - var(--space-4xl));
+    max-height: calc(100dvh - var(--header-live-h, 122px) - var(--space-4xl));
   }
 
   /* The phone type sizes for this view live in dashboard.css, NOT here. Both

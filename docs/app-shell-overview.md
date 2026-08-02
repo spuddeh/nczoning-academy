@@ -148,6 +148,15 @@ Four rules the shell holds to, each of which was learned by breaking it (#5):
 - **`text-overflow` does nothing on a flex container.** Both modal titles are
   flex rows, so the ellipsis has to sit on the text span inside; without that
   they hard-clip mid-letter and read as broken rather than truncated.
+- **`100vh` is not the visible height on a phone**, it is the height the page
+  would have with the address bar hidden. The shell sizes to `100dvh` with a
+  `100vh` fallback; every `calc(100vh - …)` cap has a `dvh` twin. **The harness
+  cannot catch this** — a headless viewport has no browser chrome, so the two
+  units are the same number there. It needs a real device.
+- **Symbols that are emoji codepoints render as emoji.** U+23EE/23ED/23F8/25B6
+  (skip, pause, play) all carry `Emoji_Presentation=Yes` and came out as
+  pictures on Android. Drawn as SVG rather than typed; U+FE0E is the nominal
+  fix and is not reliably honoured there.
 
 The phone header is two rows at every width — monogram plus controls, then the
 two destinations as full-width tabs. `.hdr-meta` is the one thing in it that

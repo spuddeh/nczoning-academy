@@ -93,6 +93,7 @@
      at all, so its titlebar (with the only way to close it) rose off the top
      of the screen with body { overflow: hidden } underneath. */
   max-height: calc(100vh - 44px);
+  max-height: calc(100dvh - 44px);
   overflow-y: auto;
   background: rgba(8, 18, 34, 0.97);
   border: 1px solid var(--primary);
@@ -247,6 +248,9 @@
     border-color: var(--primary);
     color: var(--primary);
   }
+  /* PLAY/PAUSE is a drawn glyph plus a word; the label keeps its leading space
+     so the pair reads as one control (see MusicPlayer.tsx) */
+  svg { display: block; flex: none; }
 }
 .radio-caption {
   margin-top: var(--space-sm);
@@ -254,6 +258,10 @@
   font-size: var(--fs-micro);
   letter-spacing: var(--tracking-caps);
   color: var(--muted);
+
+  /* the step glyphs are drawn, not typed (see MusicPlayer.tsx): sit them on the
+     text baseline rather than on the line box */
+  svg { display: inline-block; vertical-align: -1px; }
 }
 
 /* station chips */
@@ -372,4 +380,17 @@
      floated over an open drawer and above its backdrop. Same :has() scoping
      admin.css uses to opt one view out of the shell's scroll rules. */
   body:has(.player-rail.open) .radio-pill { display: none; }
+
+  /* In the player the FAB sits ABOVE the CONTINUE button rather than on it.
+     CONTINUE is full-width, so a bottom-right FAB lands on it whenever it comes
+     to rest at the foot of the screen — reported from a real phone. The player
+     gives up most of its bottom padding (player.css) and the FAB clears what is
+     left. Measured at the foot of the scroll: CONTINUE comes to rest with its
+     top 83px above the bottom of the viewport, so the FAB sits at 94px and
+     leaves 11px of air. Scoped with :has() because the pill is a sibling of the
+     views, mounted at App root. */
+  body:has(.player-wrap) .radio-pill { bottom: 94px; }
+
+  /* Clear of the home indicator on a phone with a gesture bar; zero elsewhere. */
+  .radio-pill, .radio-panel { margin-bottom: env(safe-area-inset-bottom, 0px); }
 }

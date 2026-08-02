@@ -971,4 +971,8 @@
        lives on a fixed root at App level, so it inherits :root, not this.) */
     --fs-title: 22px;
   }
+  /* 80px of bottom padding was room for a corner pill that no longer sits
+     there: the radio FAB moves above CONTINUE on this view (radio.css), so the
+     page does not also need to hold a gap open underneath it. */
+  .player-body { padding-bottom: var(--space-6xl); }
 }
