@@ -169,11 +169,20 @@ const lintAuditSha = (rel, course) => {
       }
     }
   };
-  (course.changelog ?? []).forEach((entry, i) =>
-    (entry.changes ?? []).forEach((line, j) =>
-      proseSha(line, `/changelog/${i}/changes/${j}`),
-    ),
-  );
+  // Only the entry being SHIPPED is judged. A released entry names the SHA that
+  // was the pin at that release, which is history and stays true; judging it
+  // against the current pin would make the changelog un-appendable, since every
+  // re-audit would fail until it rewrote what earlier releases said. The drift
+  // this check exists to catch is a stale restatement of the CURRENT pin, and
+  // that can only live in the entry for the current version.
+  (course.changelog ?? [])
+    .map((entry, i) => [entry, i])
+    .filter(([entry]) => entry.version === course.version)
+    .forEach(([entry, i]) =>
+      (entry.changes ?? []).forEach((line, j) =>
+        proseSha(line, `/changelog/${i}/changes/${j}`),
+      ),
+    );
   if (audit.auditNote) proseSha(audit.auditNote, "/contentAudit/auditNote");
 };
 
