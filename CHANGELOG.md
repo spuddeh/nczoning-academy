@@ -11,6 +11,30 @@ file records what a visitor receives.
 
 ## [Unreleased]
 
+## 0.16.0 - 2026-08-02
+
+### Added
+
+- Module 04 gains a real incident, replacing an assumption. Both freshness
+  signals the course teaches (`discovery_stale` and the cron heartbeat) rest on
+  something writing down that a refresh failed. On 2026-08-02 four consecutive
+  production cron ticks failed, alerted every five minutes, and left
+  `discovery_stale` at `false` with a frozen `last_refresh_at` behind them: the
+  failure handler only wrote its update if the previous read returned something,
+  and a key-value read answers `null` both before the first run and when the
+  stored value is unreadable. The recovery all-clear could not fire either,
+  because it needs a stale flag to recover from. The transferable rule is now a
+  recap line: a health flag is only as trustworthy as the code that sets it.
+
+### Changed
+
+- Both courses re-pinned to `nczoning/nc-zoning-board@20fc456`. Two worker
+  commits landed after the previous pin, and every cited range in `refresh.js`
+  and `nexus.js` moved with them. All 152 citations were re-verified and each
+  moved range was checked to still land on the code it describes. No claim
+  changed, which is what pinning is for: the previous URLs kept resolving to the
+  code they described the whole time.
+
 ## 0.15.0 - 2026-08-02
 
 ### Added
