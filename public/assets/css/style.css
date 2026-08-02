@@ -165,6 +165,8 @@ input::placeholder {
   #scanlines { display: none; }
   .ledblink,
   .cursor { animation: none !important; }
+  /* the nav still tucks, it just stops sliding */
+  .hdr-nav { transition: none !important; }
 }
 
 /* ---- app header (shared chrome, renders on every view) ---- */
@@ -715,17 +717,19 @@ input::placeholder {
   .sys-readout { display: none !important; }
   .hdr-sub { display: none !important; }
   .hdr-clearance { display: none !important; }
-  /* re-bind the role, don't !important the call site */
-  .app-header { --fs-heading: 15px; }
-  /* Three rows, not two: brand, then the controls, then the nav across the
-     full width (#5). Sharing row two with .hdr-meta left the nav 54px at 360px
-     — half of the word DASHBOARD, scrolling 168px sideways to reach the rest,
-     which is the "can't see the buttons without scrolling sideways" in the
-     report. Meta cannot give the space back: four controls at a 44px finger
-     target is 264px and none of it is decorative. So the nav takes a row of its
-     own and the two destinations become full-width tabs. */
-  .hdr-brand { width: 100%; }
-  .hdr-logo { height: 28px; } /* a third row costs height; take it back here */
+  /* Two rows: the monogram and the controls share the first, the two
+     destinations take the second as full-width tabs (#5).
+     The nav cannot share a row with .hdr-meta — that left it 54px at 360px,
+     half of the word DASHBOARD, scrolling 168px sideways for the rest, which is
+     the "can't see the buttons without scrolling sideways" in the report. And
+     .hdr-meta cannot give the space back: four controls at a 44px finger target
+     is 264px and none of it is decorative.
+     So the ZONING ACADEMY wordmark goes instead. It is the one piece of the
+     header that is purely decorative on a phone, the monogram still identifies
+     the site, and dropping it is what buys the nav its row without a third one.
+     No --fs-heading rebinding here: nothing left in the header uses that role. */
+  .hdr-brand-title { display: none; }
+  .hdr-logo { height: 30px; }
   .hdr-meta { order: 2; margin-left: auto; gap: var(--space-md) !important; }
   .hdr-nav {
     order: 3;
@@ -738,6 +742,20 @@ input::placeholder {
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
     mask-image: linear-gradient(to right, #000 calc(100% - 18px), transparent);
+    /* Tucked away while the reader scrolls down: on a phone the destinations
+       are worth a row when you are choosing where to go and worth nothing while
+       you are reading. `max-height` rather than `display: none` so it can
+       animate; the negative margin swallows the header's own row gap so the
+       collapse leaves nothing behind. See useNavTuck in src/lib/headerChrome.ts
+       — the class is set at every width and only means anything here. */
+    transition: max-height 0.22s ease, opacity 0.16s ease, margin-bottom 0.22s ease;
+    max-height: 52px;
+  }
+  .app-shell.nav-tucked .hdr-nav {
+    max-height: 0;
+    opacity: 0;
+    margin-bottom: calc(-1 * var(--space-sm));
+    pointer-events: none;
   }
   /* Labels never wrap (a two-line button in a 44px row looks broken), so the
      phone drops the first word of SERVICE RECORD — see .hdr-nav-word in
@@ -760,15 +778,18 @@ input::placeholder {
   /* The wrapped header is taller; anchor the bell popover below it, and cap it
      so a long feed cannot run off the bottom of a phone with body:overflow
      hidden underneath it. */
-  /* Measured, not guessed: the three-row phone header is 156px tall at every
-     width from 320px to 640px (brand 28 + meta 47 + nav 44 + gaps + padding).
-     If the header's rows change, this number changes with them. */
+  /* Measured live, not guessed. The header is two rows here, one while the nav
+     is tucked, and one at desktop width — a literal is correct for exactly one
+     of those. `--header-live-h` is published by a ResizeObserver in
+     src/lib/headerChrome.ts, so the popover follows the header instead of being
+     re-guessed every time a row is added or removed. The fallback matches the
+     untucked two-row height for the frame before the observer first fires. */
   .broadcast-pop {
-    top: 164px;
+    top: calc(var(--header-live-h, 122px) + var(--space-sm));
     right: 10px;
     left: 10px;
     width: auto;
-    max-height: calc(100vh - 176px);
+    max-height: calc(100vh - var(--header-live-h, 122px) - var(--space-4xl));
   }
 
   /* The phone type sizes for this view live in dashboard.css, NOT here. Both

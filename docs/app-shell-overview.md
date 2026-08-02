@@ -142,6 +142,25 @@ Four rules the shell holds to, each of which was learned by breaking it (#5):
 - **Every fixed scrim owns its scroll.** `body { overflow: hidden }` means an
   overlay taller than the viewport is unreachable rather than merely awkward.
 
+The phone header is two rows — monogram plus controls, then the two
+destinations as full-width tabs — and the ZONING ACADEMY wordmark is dropped to
+pay for the second row. `src/lib/headerChrome.ts` adds the two behaviours CSS
+cannot express:
+
+- **`useNavTuck`** slides the destinations away on scroll down and back on
+  scroll up. It listens on `document` in the capture phase, because `scroll`
+  does not bubble and the app scrolls inside per-view containers, and it ignores
+  everything that is not a view scroller so a modal's own scroll does not move
+  the header. It also holds still for one transition after each change: **the
+  tuck moves the thing it is measured from**, since collapsing a 44px row inside
+  a `height: 100vh` flex column makes the scroll container 44px taller, which
+  clamps `scrollTop` down, which reads as scrolling up. That oscillates.
+- **`useHeaderHeightVar`** publishes the header's measured height as
+  `--header-live-h`, which the bell popover anchors to. It takes the element,
+  not a flag: the first version looked the header up by selector when `signedIn`
+  flipped, which happens one commit before the shell exists, so it silently did
+  nothing.
+
 `npm run harness:overflow <label>` measures all of this — see
 `scripts/parity/README.md`.
 

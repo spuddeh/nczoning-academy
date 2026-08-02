@@ -22,11 +22,13 @@ interface AppHeaderProps {
   alertLive: boolean;
   broadcastOpen: boolean;
   onToggleBroadcast: () => void;
+  /** Handed to useHeaderHeightVar, which measures this element (issue #5). */
+  rootRef?: (el: HTMLElement | null) => void;
 }
 
 export function AppHeader({
   course, moduleDone, eddies, balPulse, glossaryOpen, onOpenGlossary, onOpenTxns, onLogout,
-  unread, alertLive, broadcastOpen, onToggleBroadcast,
+  unread, alertLive, broadcastOpen, onToggleBroadcast, rootRef,
 }: AppHeaderProps) {
   const navigate = useNavigate();
   const path = useLocation().pathname;
@@ -38,7 +40,7 @@ export function AppHeader({
   const symbol = course?.economy?.symbol ?? '€$';
 
   return (
-    <header className="app-header">
+    <header className="app-header" ref={rootRef}>
       <div className="hdr-brand">
         <img className="hdr-logo" src="/assets/nightcorp-logo.svg" alt="Night Corp" />
         <div>

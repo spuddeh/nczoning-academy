@@ -13,6 +13,13 @@ file records what a visitor receives.
 
 ## 0.12.0 - 2026-08-02
 
+### Added
+
+- On a phone, DASHBOARD and SERVICE RECORD slide out of the way as you scroll
+  down a page and come back the moment you scroll up. They are worth a row while
+  you are choosing where to go and worth nothing while you are reading, so
+  reading gets the space back.
+
 ### Fixed
 
 - The Academy works on a phone. The lock screen was the worst of it: the
@@ -25,7 +32,9 @@ file records what a visitor receives.
   overflowing. The controls never shrink, the two destinations scroll (and fade
   at the edge, so a clipped nav looks clipped rather than broken), and the brand
   truncates last. On a phone the destinations get a row to themselves as
-  full-width tabs, rather than sharing 54px with everything else.
+  full-width tabs, rather than sharing 54px with everything else, and the ZONING
+  ACADEMY wordmark stands down so that row costs nothing: the monogram carries
+  the identity and the header is no taller than it was.
 - NC Radio's corner pill becomes a single icon on a phone, so it no longer parks
   a 205px readout over the bottom-right of whatever you are reading, and it
   steps out of the way entirely while the module map drawer is open. The radio
