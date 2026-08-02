@@ -11,6 +11,38 @@ file records what a visitor receives.
 
 ## [Unreleased]
 
+## 0.15.0 - 2026-08-02
+
+### Added
+
+- A second course: **PERMANENT RECORD**, seven modules on the D1 registry that
+  TRANSMISSION PROTOCOLS reads from. Why the locations left git, the schema and
+  the rules the database enforces, the join that replaced a JSON column and how
+  that swap was proven safe, the public write path and its validation, the
+  collaborator gate and its three outcomes, the materializer, and a capstone.
+  It owns the write path: `POST /submissions`, Turnstile, the admin CRUD and the
+  GitHub App gate are taught here, so the Data API course stays a read-contract
+  course.
+- The course assumes TRANSMISSION PROTOCOLS and says so in a new `requires`
+  field. HTTP, JSON and the envelope are not re-taught; SQL and databases are
+  taught from a plain baseline, since the audience floor assumes neither.
+
+### Changed
+
+- `npm run probe:glossary` reads which course to drive from `config.js` instead
+  of hardcoding `data-api`, and takes the first module's id from the course
+  instead of assuming `m01`. With a second course in the repo the old version
+  would have checked one course's glossary against another course on screen, and
+  every assertion would have failed for the wrong reason. `COURSE=<id>` probes a
+  specific one. Both courses now pass all fourteen checks.
+
+### Known gap
+
+- The shell still loads a single course id from `config.js` and has no picker,
+  so PERMANENT RECORD is not reachable in the app yet and `requires` is not
+  enforced. Tracked separately; the course content and the shell work are
+  deliberately separate changes.
+
 ## 0.14.0 - 2026-08-02
 
 ### Fixed

@@ -7,6 +7,13 @@
       "subtitle": "The NC Zoning Data API",
       "file": "data-api.json",
       "status": "draft"
+    },
+    {
+      "id": "d1",
+      "title": "PERMANENT RECORD",
+      "subtitle": "The D1 registry and the write path",
+      "file": "d1.json",
+      "status": "draft"
     }
   ]
 }

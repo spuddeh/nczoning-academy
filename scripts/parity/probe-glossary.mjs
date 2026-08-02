@@ -13,9 +13,30 @@ import {
 } from './lib/drive.mjs';
 import { NAME, RECORD_M01 } from './lib/fixtures.mjs';
 
+// The first module's id, from the course rather than spelled 'm01': a second
+// course numbers its modules differently (d01..), and a hardcoded id navigates
+// to a route that does not exist while every assertion reports the wrong cause.
+
 const APP = process.env.REBUILD_URL ?? 'http://localhost:5173/';
-const OUT = outDir('glossary', { clean: true });
-const course = JSON.parse(fs.readFileSync(new URL('../../public/courses/data-api.json', import.meta.url), 'utf8'));
+// Which course the app will actually load, so the probe's expectations come
+// from the same file the shell renders. Read from config.js rather than
+// hardcoded: with a second course in the repo, a hardcoded id silently checks
+// data-api's glossary against whatever course is on screen, and every
+// assertion fails for the wrong reason. Override with COURSE=<id> to probe
+// another one without editing config.
+const CONFIG = fs.readFileSync(new URL('../../public/config.js', import.meta.url), 'utf8');
+const COURSE_ID = process.env.COURSE ?? CONFIG.match(/course:\s*"([a-z0-9-]+)"/)?.[1] ?? 'data-api';
+const OUT = outDir(`glossary-${COURSE_ID}`, { clean: true });
+const course = JSON.parse(fs.readFileSync(new URL(`../../public/courses/${COURSE_ID}.json`, import.meta.url), 'utf8'));
+const FIRST = course.modules[0].id;
+// The legacy shard fixture is keyed on a module id. Re-key it onto whichever
+// module is first in THIS course, so the backfill check exercises the same
+// pre-modulesSeen path for any course.
+const seedRecord = {
+  ...RECORD_M01,
+  moduleDone: { [FIRST]: true },
+  revealedBy: { [FIRST]: course.modules[0].fieldNotes.glossaryTerms.length },
+};
 
 const fail = [];
 const check = (name, got, want) => {
@@ -85,7 +106,7 @@ try {
   await closeGlossary(page);
 
   // ---- 2. open m01: its terms declassify, and only its terms ----
-  await page.goto(`${APP.replace(/\/$/, '')}/module/m01`, { waitUntil: 'networkidle2' });
+  await page.goto(`${APP.replace(/\/$/, '')}/module/${FIRST}`, { waitUntil: 'networkidle2' });
   await expectSelector(page, '.player-wrap', { what: 'module player' });
   await sleep(900);
 
@@ -112,9 +133,9 @@ try {
   // module reveals every stage, so the footer is reachable without answering
   // the quiz. RECORD_M01 predates modulesSeen, so this doubles as the
   // backfill check: a returning operator must not lose earned terms.
-  const seeded = await openApp(browser, { url: APP, label: 'seeded', record: RECORD_M01, name: NAME });
+  const seeded = await openApp(browser, { url: APP, label: 'seeded', record: seedRecord, name: NAME });
   await signIn(seeded, NAME);
-  await seeded.goto(`${APP.replace(/\/$/, '')}/module/m01`, { waitUntil: 'networkidle2' });
+  await seeded.goto(`${APP.replace(/\/$/, '')}/module/${FIRST}`, { waitUntil: 'networkidle2' });
   await expectSelector(seeded, '.player-wrap', { what: 'module player (seeded)' });
   await sleep(1200);
 

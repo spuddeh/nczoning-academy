@@ -1,0 +1,1399 @@
+{
+  "schemaVersion": "academy-course/v1",
+  "id": "d1",
+  "title": "PERMANENT RECORD",
+  "subtitle": "The D1 registry and the write path",
+  "version": "1.0.0",
+  "changelog": [
+    {
+      "version": "1.0.0",
+      "date": "2026-08-02",
+      "changes": [
+        "Initial seven-module course on the location registry that TRANSMISSION PROTOCOLS reads from: why the registry left git for Cloudflare D1, the schema, the join that replaced a JSON column, the public write path and its validation, the collaborator gate, the materializer, and a capstone.",
+        "Assumes TRANSMISSION PROTOCOLS. HTTP, JSON, endpoints, the envelope and the KV serving copy are taught there and are not re-taught here; SQL and databases are assumed to be new and are taught from a plain baseline.",
+        "Audited against nc-zoning-board at 091b069, the same commit TRANSMISSION PROTOCOLS v2.2.0 pins."
+      ]
+    }
+  ],
+  "estMinutes": 95,
+  "requires": ["data-api"],
+  "api": {
+    "baseUrl": "https://api.nczoning.net",
+    "rateLimit": "100 req / 10s / IP"
+  },
+  "ranks": [
+    { "clearance": 1, "title": "RECORDS CLERK" },
+    { "clearance": 2, "title": "REGISTRY CLERK" },
+    { "clearance": 3, "title": "DATA STEWARD" },
+    { "clearance": 4, "title": "INTAKE OFFICER" },
+    { "clearance": 5, "title": "REVIEW OFFICER" },
+    { "clearance": 6, "title": "REGISTRAR" },
+    { "clearance": 7, "title": "CERTIFIED REGISTRAR" }
+  ],
+  "economy": {
+    "currency": "eddies",
+    "symbol": "€$",
+    "startingBalance": 500,
+    "moduleReward": 1000,
+    "rightReward": 150,
+    "wrongPenalty": 250
+  },
+  "contentAudit": {
+    "projectCommit": "091b0691bf990e92d34fbfa844fab804f1398ce4",
+    "auditedAt": "2026-08-02",
+    "repos": [
+      { "repo": "nczoning/nc-zoning-board", "commit": "091b0691bf990e92d34fbfa844fab804f1398ce4" }
+    ],
+    "auditNote": "Course v1.0.0, authored 2026-08-02 against nczoning/nc-zoning-board at 091b069, read from origin/main rather than the local dev branch. Every project claim cites file+line at that commit: the nine migrations in worker/migrations, and worker/src/{validate,submissions,github-app,materialize,registry,audit,alerts}.js. The schema claims were read from the migration files, which are the authoritative statement of the schema, rather than from a dump of a live database, and the migrations carry their own reasoning in comments that this course quotes rather than paraphrases where the wording is load-bearing. Live shapes were ground-truthed with curl against api.nczoning.net on 2026-08-02: /v1/tags returns the 14 registry rows in sort_order, and /v1/locations returned 295 records of which 9 carry nexus- ids. Those two are the only D1 content this course can show a learner directly, because everything else it teaches is behind the collaborator gate. THE WRITE-PATH LABS ARE THEREFORE RECONSTRUCTED, NOT CAPTURED, and each says so in its own debrief; the shell runs every lab against canned responses with no live network, so nothing here can post a real submission. General concepts cite official docs (developers.cloudflare.com for D1 and Turnstile, sqlite.org for SQL semantics, MDN for status codes), verified 2026-08-02. The 'why' behind the design decisions comes from the NC-Zoning-Board project wiki, which is not a citable public source, so every such claim is carried back to the code or the migration comment that implements it. Two Board decision records are SUPERSEDED and were deliberately not taught from: cloudflare-worker-d1-submission-system (says git stays the source of truth; the git submission road was retired in 963f130) and api-version-semver-policy (describes the 1.3.0 backfill that was rolled back). Run `npm run freshness` to check the pinned commit."
+  },
+  "glossary": [
+    { "term": "D1", "tier": "general", "def": "Cloudflare's serverless SQL database. Here it is the location registry of record: every location is a row in D1 first, and the KV copy the API serves is rebuilt from it.", "sources": [ { "kind": "official", "label": "Cloudflare - D1", "url": "https://developers.cloudflare.com/d1/" } ] },
+    { "term": "SQL", "tier": "general", "def": "Structured Query Language: the language for asking a relational database to store, change or return rows. D1 speaks the SQLite dialect of it.", "sources": [ { "kind": "official", "label": "Cloudflare - D1 SQL statements", "url": "https://developers.cloudflare.com/d1/sql-api/sql-statements/" } ] },
+    { "term": "table", "tier": "general", "def": "A named collection of rows that all share the same columns, like one sheet in a spreadsheet. This registry has nine.", "sources": [ { "kind": "project", "label": "worker/migrations/0001_initial_schema.sql", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/migrations/0001_initial_schema.sql" } ] },
+    { "term": "primary key", "tier": "general", "def": "The column whose value identifies a row uniquely within its table. No two rows may share one, and the database refuses a duplicate rather than storing it.", "sources": [ { "kind": "official", "label": "SQLite - PRIMARY KEY", "url": "https://www.sqlite.org/lang_createtable.html#the_primary_key" } ] },
+    { "term": "registry of record", "tier": "project", "def": "The store where a location exists first and authoritatively, which here is D1. Everything else holding location data, including the KV copy the API serves, is derived and rebuildable.", "sources": [ { "kind": "project", "label": "worker/wrangler.jsonc L83-97", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/wrangler.jsonc#L83-L97" } ] },
+    { "term": "migration", "tier": "general", "def": "A numbered SQL file that changes the schema, applied in order and never edited once it has run. The list of them is the schema's history.", "sources": [ { "kind": "official", "label": "Cloudflare - D1 migrations", "url": "https://developers.cloudflare.com/d1/reference/migrations/" } ] },
+    { "term": "CHECK constraint", "tier": "general", "def": "A rule attached to a column that the database enforces on every write, refusing a row that breaks it. Here it is what keeps category and status to their known values.", "sources": [ { "kind": "project", "label": "worker/migrations/0001_initial_schema.sql L19-33", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/migrations/0001_initial_schema.sql#L19-L33" } ] },
+    { "term": "index", "tier": "general", "def": "A lookup structure the database keeps so it can find matching rows without reading every one. Costs a little on write, saves a lot on a query that runs often.", "sources": [ { "kind": "project", "label": "worker/migrations/0001_initial_schema.sql L41-44", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/migrations/0001_initial_schema.sql#L41-L44" } ] },
+    { "term": "dismissed candidate", "tier": "project", "def": "A Nexus mod someone looked at and decided not to put on the map. It is not a location and never was one; the row exists only to keep the mod off the candidates list.", "sources": [ { "kind": "project", "label": "worker/migrations/0001_initial_schema.sql L65-72", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/migrations/0001_initial_schema.sql#L65-L72" } ] },
+    { "term": "audit log", "tier": "project", "def": "An append-only table recording who changed what and when. It is what replaces git log once records are edited through the API instead of through pull requests.", "sources": [ { "kind": "project", "label": "worker/src/audit.js L1-12", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/src/audit.js#L1-L12" } ] },
+    { "term": "join table", "tier": "general", "def": "A table whose rows pair up two other tables, one row per link. location_tags holds one row per location-and-tag pair.", "sources": [ { "kind": "project", "label": "worker/migrations/0002_tags.sql L33-44", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/migrations/0002_tags.sql#L33-L44" } ] },
+    { "term": "foreign key", "tier": "general", "def": "A column declared to point at another table's key, so the database can refuse a link to something that does not exist. It is how a typo'd tag becomes impossible rather than merely unlikely.", "sources": [ { "kind": "project", "label": "worker/migrations/0002_tags.sql L40-44", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/migrations/0002_tags.sql#L40-L44" } ] },
+    { "term": "referential integrity", "tier": "general", "def": "The guarantee that every link points at something real. The database enforces it on write rather than a checker finding the break later.", "sources": [ { "kind": "project", "label": "worker/migrations/0002_tags.sql L33-39", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/migrations/0002_tags.sql#L33-L39" } ] },
+    { "term": "slug", "tier": "general", "def": "A short, stable, lowercase identifier used in place of a numeric id. Tags use their slug as the primary key, so a location's tags array carries the identifier directly.", "sources": [ { "kind": "project", "label": "worker/migrations/0002_tags.sql L16-31", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/migrations/0002_tags.sql#L16-L31" } ] },
+    { "term": "additive-then-drop", "tier": "project", "def": "The migration discipline used here: add the new representation, prove it produces identical output, and only then remove the old one in a later migration.", "sources": [ { "kind": "project", "label": "worker/migrations/0002_tags.sql L7-11", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/migrations/0002_tags.sql#L7-L11" } ] },
+    { "term": "parity gate", "tier": "project", "def": "A test that rebuilds the served dataset from the new source and compares it byte for byte against the old output. It is what makes a storage change provable rather than plausible.", "sources": [ { "kind": "project", "label": "worker/migrations/0007_drop_locations_tags.sql L3-8", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/migrations/0007_drop_locations_tags.sql#L3-L8" } ] },
+    { "term": "write path", "tier": "project", "def": "Every route that changes the registry: the public submission queue, the admin editor, and the review queue that approves a submission into a record.", "sources": [ { "kind": "project", "label": "worker/src/submissions.js L1-19", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/src/submissions.js#L1-L19" } ] },
+    { "term": "submission", "tier": "project", "def": "A pending row proposing a create, edit or removal. It carries no authority: nothing it says reaches the map until a collaborator approves it.", "sources": [ { "kind": "project", "label": "worker/migrations/0001_initial_schema.sql L46-55", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/migrations/0001_initial_schema.sql#L46-L55" } ] },
+    { "term": "Turnstile", "tier": "general", "def": "Cloudflare's challenge that tells a human from a script without a puzzle. The browser gets a token and the server verifies it; only the server's verdict counts.", "sources": [ { "kind": "official", "label": "Cloudflare - Turnstile", "url": "https://developers.cloudflare.com/turnstile/" } ] },
+    { "term": "422 Unprocessable Content", "tier": "general", "def": "The status returned when a request was understood but its contents are wrong. Here it carries the list of fields that failed validation.", "sources": [ { "kind": "official", "label": "MDN - 422 Unprocessable Content", "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/422" } ] },
+    { "term": "salted hash", "tier": "general", "def": "A hash computed with a secret mixed in, so the result cannot be reversed by trying every possible input. Submitter addresses are stored only this way, and an unset salt fails the request.", "sources": [ { "kind": "project", "label": "worker/src/submissions.js L20-28", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/src/submissions.js#L20-L28" } ] },
+    { "term": "collaborator gate", "tier": "project", "def": "Admin access is repository collaborator status, checked server-side on every request. Adding an admin is a repo setting, not a deploy.", "sources": [ { "kind": "project", "label": "worker/src/github-app.js L134-156", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/src/github-app.js#L134-L156" } ] },
+    { "term": "GitHub App", "tier": "general", "def": "An identity a program can hold in its own right, which mints a short-lived token that renews itself. Unlike a personal token it belongs to the organisation and does not expire on a date.", "sources": [ { "kind": "official", "label": "GitHub Docs - About GitHub Apps", "url": "https://docs.github.com/en/apps/overview" } ] },
+    { "term": "fail closed", "tier": "general", "def": "When a check cannot answer, deny rather than allow. The collaborator check returns yes, no, or error, and error must never be read as either of the other two.", "sources": [ { "kind": "project", "label": "worker/src/github-app.js L120-133", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/src/github-app.js#L120-L133" } ] },
+    { "term": "materializer", "tier": "project", "def": "The code that turns D1 rows into the served record map the API answers from. It is the only builder of the served dataset.", "sources": [ { "kind": "project", "label": "worker/src/materialize.js L1-17", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/src/materialize.js#L1-L17" } ] },
+    { "term": "withheld", "tier": "project", "def": "A published record whose pin the build skips because its Nexus mod is confirmed deleted. The row is untouched, so the pin returns on its own if the mod comes back.", "sources": [ { "kind": "project", "label": "worker/src/materialize.js L96-105", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/src/materialize.js#L96-L105" } ] },
+    { "term": "candidate", "tier": "project", "def": "A Nexus mod tagged NCZoning that is not on the map and has not been dismissed. It is a suggestion for a reviewer, published on /v1/meta as skipped.", "sources": [ { "kind": "project", "label": "worker/src/materialize.js L120-128", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/src/materialize.js#L120-L128" } ] }
+  ],
+  "resources": [
+    { "id": "cf-d1", "label": "Cloudflare: D1", "url": "https://developers.cloudflare.com/d1/", "modules": ["d01", "d02"] },
+    { "id": "sqlite-createtable", "label": "SQLite: CREATE TABLE", "url": "https://www.sqlite.org/lang_createtable.html", "modules": ["d02"] },
+    { "id": "cf-d1-migrations", "label": "Cloudflare: D1 migrations", "url": "https://developers.cloudflare.com/d1/reference/migrations/", "modules": ["d02", "d03"] },
+    { "id": "sqlite-foreignkeys", "label": "SQLite: foreign key support", "url": "https://www.sqlite.org/foreignkeys.html", "modules": ["d03"] },
+    { "id": "cf-turnstile", "label": "Cloudflare: Turnstile", "url": "https://developers.cloudflare.com/turnstile/", "modules": ["d04"] },
+    { "id": "mdn-422", "label": "MDN: 422 Unprocessable Content", "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/422", "modules": ["d04"] },
+    { "id": "mdn-429", "label": "MDN: 429 Too Many Requests", "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/429", "modules": ["d04"] },
+    { "id": "gh-apps", "label": "GitHub Docs: About GitHub Apps", "url": "https://docs.github.com/en/apps/overview", "modules": ["d05"] },
+    { "id": "gh-collaborators", "label": "GitHub REST: check if a user is a collaborator", "url": "https://docs.github.com/en/rest/collaborators/collaborators#check-if-a-user-is-a-repository-collaborator", "modules": ["d05"] },
+    { "id": "mdn-403", "label": "MDN: 403 Forbidden", "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/403", "modules": ["d05"] }
+  ],
+  "modules": [
+    {
+      "id": "d01",
+      "order": 1,
+      "title": "THE REGISTRY MOVED",
+      "subtitle": "Why the locations left git, and what a database gives you instead",
+      "clearance": 1,
+      "estMinutes": 12,
+      "hook": {
+        "type": "terminal-log",
+        "lines": [
+          "> NC-ACAD-02 // RECORDS DIVISION // clearance check: LEVEL 1 granted",
+          "> prior posting: TRANSMISSION PROTOCOLS. you read the API.",
+          "> this posting: the registry the API reads FROM.",
+          "> [notice] data/locations/*.json: DELETED",
+          "> [notice] registry of record: cloudflare d1, table `locations`",
+          "> begin."
+        ]
+      },
+      "objectives": [
+        "Say where a location actually lives now, and what the API's KV copy is",
+        "Name three things a database enforces that a folder of files cannot",
+        "Explain why nothing on the map auto-publishes any more"
+      ],
+      "chunks": [
+        {
+          "id": "d01-c0",
+          "type": "text",
+          "heading": "Field manual: what a database is, in one page",
+          "body": "You already know the read side: a request, an envelope, a record. This course is about where those records come from, and it starts one level below anything the API showed you. A **database** is a program whose whole job is storing structured data and answering questions about it. This one is **D1**, Cloudflare's own, and it is **relational**: data lives in **tables**, a table is a set of **rows**, and every row in a table has the same named **columns**. A spreadsheet is a fair first picture: one sheet per table, one line per row, headed columns. You talk to it in **SQL** (Structured Query Language), a language of statements like `SELECT`, `INSERT` and `UPDATE`. The one idea that carries the rest of this course: a database does not just hold values, it **refuses** ones that break the rules you declared. That refusal, at the moment of writing, is the whole difference from a folder of files.",
+          "sources": [
+            { "kind": "official", "label": "Cloudflare - D1 (serverless SQL database)", "url": "https://developers.cloudflare.com/d1/" },
+            { "kind": "official", "label": "Cloudflare - D1 SQL statements", "url": "https://developers.cloudflare.com/d1/sql-api/sql-statements/" }
+          ]
+        },
+        {
+          "id": "d01-c1",
+          "type": "text",
+          "heading": "What it used to be",
+          "body": "Until recently a location was a **file**. One JSON file per mod under `data/locations/`, edited by opening a pull request against the repository, checked by a script running in CI, and merged by a maintainer. A build step turned the folder into a single `mods.json`, the cron read that, and the map appeared. It worked, and it had one property worth naming: every change was a **commit**, so `git log` was a complete record of who changed what. Phase 6 of the migration deleted that folder, the build script and the merge path with it. The location registry is now `locations`, a table in D1, and the git history stops recording data changes from that day forward.",
+          "sources": [
+            { "kind": "project", "label": "worker/migrations/0001_initial_schema.sql L13-14 (replaces data/locations/*.json)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/migrations/0001_initial_schema.sql#L13-L14" },
+            { "kind": "project", "label": "worker/src/refresh.js L317-331 (there is one source; the mods.json path was deleted at Phase 6)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/src/refresh.js#L317-L331" }
+          ]
+        },
+        {
+          "id": "d01-c2",
+          "type": "table",
+          "heading": "What changed, and what it bought",
+          "columns": ["Concern", "As files in git", "As rows in D1"],
+          "rows": [
+            ["A bad value", "A script in CI fails the pull request, after the edit", "The write is refused as it arrives, with the fields named"],
+            ["A tag that does not exist", "Caught by a validator run on a data pull request", "Refused: the tag must be a row in the tag registry"],
+            ["Who changed what", "git log, complete and free", "An append-only audit_log table, because there is no commit any more"],
+            ["Editing", "Fork, edit JSON, open a pull request, wait", "A form, or the admin dashboard, applied immediately"],
+            ["Losing it", "Every clone is a backup", "One database, so a nightly export and D1's own 30-day Time Travel are the backstop"]
+          ],
+          "body": "Read the last two rows together: the same move that made editing immediate also removed the safety net that made editing safe. Both of the replacements in the right-hand column exist because of the left-hand column, not in spite of it. That is the honest shape of this migration: it did not simply upgrade the storage, it moved a set of guarantees from one place to another and had to rebuild each one on arrival.",
+          "sources": [
+            { "kind": "project", "label": "worker/src/validate.js L1-14 (the write path IS the gate; nothing in CI sees a location first)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/src/validate.js#L1-L14" },
+            { "kind": "project", "label": "worker/src/audit.js L1-12 (what replaces git log for data changes)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/src/audit.js#L1-L12" },
+            { "kind": "project", "label": "worker/wrangler.jsonc L83-97 (D1 is NOT derived: losing it loses data)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/wrangler.jsonc#L83-L97" }
+          ]
+        },
+        {
+          "id": "d01-c3",
+          "type": "callout",
+          "variant": "policy",
+          "heading": "Two stores, and only one of them is the truth",
+          "body": "You met both of these in TRANSMISSION PROTOCOLS module 03, and the distinction is the spine of this course. **D1 is the registry of record.** A location exists there first, and if D1 is lost the data is lost with it. **KV is a derived serving copy.** The rebuild reads D1 and writes the result to KV; the read routes serve KV and never touch D1 at all. Delete the entire KV namespace and the next rebuild puts it back, which is why the config calls it recreatable at any time and calls D1 the opposite. The practical consequence for anything you write later: **fixing the map means fixing the row, not the copy.** Editing KV would work until the next rebuild overwrote it, roughly five minutes later, and the change would vanish with nothing to explain where it went.",
+          "sources": [
+            { "kind": "project", "label": "worker/wrangler.jsonc L73-82 (KV content is fully derived, recreate at any time)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/wrangler.jsonc#L73-L82" },
+            { "kind": "project", "label": "worker/wrangler.jsonc L83-97 (the location registry, and the only source)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/wrangler.jsonc#L83-L97" }
+          ]
+        },
+        {
+          "id": "d01-c4",
+          "type": "callout",
+          "variant": "warning",
+          "heading": "Nothing auto-publishes any more",
+          "body": "The old system had a second way in. A Nexus mod tagged `NCZoning`, carrying a formatted block in its description, was parsed and **became a pin** with nobody involved. That is over. A tagged mod is now a **candidate**: it appears in a list for a reviewer, it prefills a form, and it reaches the map only when a person approves it. The `NCZoning` tag is prefill, not publication. This is why the `source` field you saw removed from `/v1` in the other course could go: it recorded whether a record arrived manually or automatically, and once nothing arrives automatically the distinction stopped describing anything the system still produces.",
+          "sources": [
+            { "kind": "project", "label": "worker/src/materialize.js L1-17 (nothing auto-publishes; a tagged mod is a candidate, not a location)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/src/materialize.js#L1-L17" },
+            { "kind": "project", "label": "worker/migrations/0005_drop_source.sql L10-22 (source stopped describing anything)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/migrations/0005_drop_source.sql#L10-L22" }
+          ]
+        }
+      ],
+      "lab": {
+        "id": "d01-lab",
+        "title": "READ A TABLE THROUGH THE API",
+        "briefing": "You cannot query D1 directly: it sits behind the collaborator gate. But one endpoint you already know serves a whole table almost unchanged. /v1/tags is the tags table, one entry per row, in the sort_order the rows carry.",
+        "steps": [
+          "TRANSMIT and read the array under data",
+          "Note that each entry has slug, name, description and sort_order: those are columns",
+          "Note the order: it is sort_order ascending, a column, not the order the tags were created"
+        ],
+        "request": { "method": "GET", "path": "/v1/tags", "query": {}, "headers": {}, "editable": [] },
+        "expected": { "status": [200], "headersOfInterest": ["ETag"], "shapeHints": ["data is an array of tag records", "slug is the primary key", "name is null-able and falls back to the slug"] },
+        "canned": [
+          {
+            "when": "default",
+            "status": 200,
+            "headers": { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "public, max-age=300, stale-while-revalidate=3600", "ETag": "\"6880457c51396f9a3ccefe9b88a87f8e3c2b2f2f0ebe18831bd4d8337eaca54d\"" },
+            "body": {
+              "schema": 1,
+              "generated_at": "2026-08-02T07:04:42.505Z",
+              "dataset_version": "6880457c51396f9a3ccefe9b88a87f8e3c2b2f2f0ebe18831bd4d8337eaca54d",
+              "recently_updated_days": 7,
+              "data": [
+                { "slug": "entropism", "name": "entropism", "description": "The look of poverty that derives from humans grappling with and struggling against technology and its unforgiving advance. It denotes a lack of design blending with a general poverty of means and ideas.", "sort_order": 1 },
+                { "slug": "apartment", "name": "apartment", "description": "A player housing unit, usually a smaller dwelling within a megabuilding or high-rise.", "sort_order": 8 },
+                { "slug": "photos", "name": "photos", "description": "Scenic or atmospheric locations well-suited for virtual photography.", "sort_order": 14 }
+              ]
+            }
+          }
+        ],
+        "debrief": "Real capture from api.nczoning.net on 2026-08-02, trimmed to three of the fourteen rows. Almost everything here is a column in the tags table: slug is the primary key, description is NOT NULL, and sort_order is what the list is ordered by. One field is not a stored value: name is nullable in the table, and every current row stores NULL, so what you are reading is the fallback to the slug. Module 03 is about why that split exists at all.",
+        "sources": [
+          { "kind": "project", "label": "worker/migrations/0002_tags.sql L16-31 (the tags table)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/migrations/0002_tags.sql#L16-L31" },
+          { "kind": "project", "label": "worker/migrations/0002_tags.sql L49-68 (the seeded rows, all with NULL name)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/migrations/0002_tags.sql#L49-L68" }
+        ]
+      },
+      "quiz": [
+        {
+          "id": "d01-q1",
+          "type": "mcq",
+          "prompt": "A pin on the map is wrong. You have access to both stores. Where do you fix it?",
+          "options": [
+            { "text": "The row in D1. The KV copy is rebuilt from it every five minutes.", "correct": true, "feedback": "Correct. D1 is the registry of record; the rebuild will carry the fix into KV on the next tick." },
+            { "text": "The KV entry, because that is what the API actually serves.", "correct": false, "feedback": "It is what the API serves, and that is exactly the trap. The next rebuild overwrites KV from D1, so the fix disappears within about five minutes and nothing reports why." },
+            { "text": "Both, so the fix takes effect immediately and survives.", "correct": false, "feedback": "Writing the derived copy buys you a few minutes and leaves a second place that can disagree with the truth. Fix the source and let the rebuild do its job." },
+            { "text": "Neither: open a pull request against data/locations/.", "correct": false, "feedback": "That folder was deleted at Phase 6, along with the build step that read it. There is no file to edit." }
+          ],
+          "sources": [
+            { "kind": "project", "label": "worker/wrangler.jsonc L73-97 (KV derived, D1 not)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/wrangler.jsonc#L73-L97" }
+          ]
+        },
+        {
+          "id": "d01-q2",
+          "type": "multi",
+          "prompt": "Which of these became the registry's responsibility BECAUSE the locations left git? Select all that apply.",
+          "options": [
+            { "text": "Recording who changed what, in an append-only audit_log table.", "correct": true, "feedback": "Yes. Once an edit is an API call rather than a commit, git log stops recording data changes and nothing else does unless you build it." },
+            { "text": "Refusing a bad value at the moment of the write.", "correct": true, "feedback": "Yes. There is no pull request to fail, so validation moved onto the write path." },
+            { "text": "Keeping a backup, via a nightly export and D1's Time Travel.", "correct": true, "feedback": "Yes. Every git clone used to be a backup for free. One database is not, so the backup had to be built deliberately." },
+            { "text": "Serving the records to the map quickly.", "correct": false, "feedback": "No, that was already KV's job before the migration and still is. The read path did not change hands." },
+            { "text": "Deciding which mods are tagged NCZoning on Nexus.", "correct": false, "feedback": "No. That is Nexus's data, read by the cron. The registry decides what is on the map, not what is tagged." }
+          ],
+          "sources": [
+            { "kind": "project", "label": "worker/src/audit.js L1-12", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/src/audit.js#L1-L12" },
+            { "kind": "project", "label": "worker/src/validate.js L1-14", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/src/validate.js#L1-L14" }
+          ]
+        }
+      ],
+      "scenario": {
+        "id": "d01-s1",
+        "title": "FIELD REPORT // THE EDIT THAT UNDID ITSELF",
+        "situation": [
+          "> [ TRAINING SCENARIO - constructed, grounded in the real rebuild cadence ]",
+          "> an operator fixes a misspelled location name directly in the KV entry",
+          "> the map shows the correction within seconds. ticket closed.",
+          "> 06 minutes later: the misspelling is back",
+          "> nothing failed. no alert fired. no log line mentions the name."
+        ],
+        "question": {
+          "type": "mcq",
+          "prompt": "The correction reverted itself and nothing reported an error. What happened?",
+          "options": [
+            { "text": "The 5-minute rebuild read D1, where the name was never changed, and overwrote the whole KV copy with the correct-by-definition version.", "correct": true, "feedback": "Correct. The rebuild does not merge, it replaces. Editing a derived store is always temporary, and it fails silently because from the rebuild's point of view nothing went wrong at all." },
+            { "text": "The KV write was rejected because KV is read-only.", "correct": false, "feedback": "It was not rejected: the map showed the correction, so the write landed. The problem is what happened to it afterwards." },
+            { "text": "Another operator reverted the change.", "correct": false, "feedback": "No person was involved, which is the point. This failure needs nobody to make a mistake beyond the first one." }
+          ]
+        },
+        "debrief": "The transferable rule: a derived store cannot be edited, only overwritten, and an edit to one fails in the quietest way a system can fail. There was no error because nothing erred. Ask of any store you are about to write to: is this the source, or a copy of the source? If it is a copy, find the source. Here that means the row in D1, and the rebuild carries it the rest of the way. (Constructed scenario. The cadence, the replace-not-merge rebuild and the two stores' roles are all real and cited below.)",
+        "sources": [
+          { "kind": "project", "label": "worker/wrangler.jsonc L98-109 (the 5-minute rebuild)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/wrangler.jsonc#L98-L109" },
+          { "kind": "project", "label": "worker/src/materialize.js L1-17 (the only builder of the served dataset)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/src/materialize.js#L1-L17" }
+        ]
+      },
+      "recap": [
+        "A location used to be a JSON file in git; it is now a row in the D1 locations table, and the folder is deleted.",
+        "D1 is the registry of record and KV is a derived copy: fix the row, never the copy, because the rebuild replaces it.",
+        "Nothing auto-publishes now. A tagged Nexus mod is a candidate that prefills a form, and a person approves it."
+      ],
+      "fieldNotes": {
+        "glossaryTerms": ["D1", "SQL", "table", "registry of record", "audit log", "candidate"],
+        "resources": ["cf-d1"],
+        "renderCitations": true
+      }
+    },
+    {
+      "id": "d02",
+      "order": 2,
+      "title": "THE SHAPE OF THE RECORD",
+      "subtitle": "Nine tables, and the rules the database itself enforces",
+      "clearance": 2,
+      "estMinutes": 14,
+      "hook": {
+        "type": "terminal-log",
+        "lines": [
+          "> NC-ACAD-02 // clearance check: LEVEL 2 granted",
+          "> requisition: schema listing, nczoning-data",
+          "> $ wrangler d1 migrations list nczoning-data",
+          "> 0001_initial_schema .. 0009_nexus_mod_status  [9 applied]",
+          "> note: the migrations ARE the schema. read them in order.",
+          "> begin."
+        ]
+      },
+      "objectives": [
+        "Name the tables and say which one answers which question",
+        "Read a CREATE TABLE and pick out the primary key, the NOT NULLs and the CHECK constraints",
+        "Explain why a location's status is not the same thing as being on the map"
+      ],
+      "chunks": [
+        {
+          "id": "d02-c1",
+          "type": "text",
+          "heading": "The migrations are the schema",
+          "body": "There is no separate document describing the database. There is a numbered list of **migrations**: SQL files applied in order, each one changing the schema, none of them edited once it has run. `0001_initial_schema.sql` creates everything; the eight after it change things. Read in order they are both the current shape and its history, which is why this course cites them rather than a dump of the live database: a dump tells you what is true, and the migration tells you why. One operational detail with teeth, stated in the first migration itself: named Wrangler environments inherit no bindings, so staging has its **own** database and every migration must be applied **twice**, once per database. Forget the second and staging drifts from production silently until something queries a column that is not there.",
+          "sources": [
+            { "kind": "project", "label": "worker/migrations/0001_initial_schema.sql L1-11 (applied to BOTH databases; every migration runs twice)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/migrations/0001_initial_schema.sql#L1-L11" },
+            { "kind": "project", "label": "worker/wrangler.jsonc L88-97 (staging has its own database; named environments inherit nothing)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/wrangler.jsonc#L88-L97" },
+            { "kind": "official", "label": "Cloudflare - D1 migrations", "url": "https://developers.cloudflare.com/d1/reference/migrations/" }
+          ]
+        },
+        {
+          "id": "d02-c2",
+          "type": "table",
+          "heading": "Nine tables, one question each",
+          "columns": ["Table", "Answers", "Note"],
+          "rows": [
+            ["locations", "What is on the map, and everything about it", "The registry itself; one row per location"],
+            ["tags", "What tags exist and what they mean", "The tag registry, served almost directly as /v1/tags"],
+            ["location_tags", "Which locations carry which tags", "A join table: one row per link (module 03)"],
+            ["submissions", "What has been proposed and not yet decided", "Carries no authority until approved (module 04)"],
+            ["audit_log", "Who changed what, and when", "Append-only; a correction is another row, never an edit"],
+            ["users", "Who has signed in, and were they a collaborator", "Cached answer plus when it was checked (module 05)"],
+            ["alerts", "What the system said, and did anyone acknowledge it", "History that outlives a chat message scrolling away"],
+            ["dismissed_candidates", "Which Nexus mods we looked at and said no to", "NOT locations: no coordinates, no category, never were"],
+            ["nexus_mod_status", "What Nexus currently says about a pinned mod", "Added at migration 0009; drives module 06"]
+          ],
+          "body": "Two of these are worth pausing on because their names invite a wrong guess. `dismissed_candidates` is **not** a location with a flag set: it holds a Nexus id and a reason, has no coordinates and no category, and its only job is keeping that mod out of the candidates list. And `alerts` exists because a notification posted to a chat channel is not a record: it scrolls away, and the question 'has this been happening for a week?' has no answer unless something wrote it down.",
+          "sources": [
+            { "kind": "project", "label": "worker/migrations/0001_initial_schema.sql L15-95 (all eight initial tables)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/migrations/0001_initial_schema.sql#L15-L95" },
+            { "kind": "project", "label": "worker/migrations/0001_initial_schema.sql L65-72 (dismissed_candidates is NOT a location)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/migrations/0001_initial_schema.sql#L65-L72" },
+            { "kind": "project", "label": "worker/migrations/0002_tags.sql L20-44 (tags and location_tags)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/migrations/0002_tags.sql#L20-L44" }
+          ]
+        },
+        {
+          "id": "d02-c3",
+          "type": "code",
+          "lang": "sql",
+          "heading": "Reading the locations table",
+          "body": "CREATE TABLE locations (\n  id          TEXT PRIMARY KEY,   -- existing UUIDs preserved; nexus-<id> for imports\n  name        TEXT NOT NULL,\n  nexus_id    TEXT,\n  category    TEXT NOT NULL,\n  x REAL NOT NULL, y REAL NOT NULL, z REAL, yaw REAL,\n  description TEXT, credits TEXT,\n  authors     TEXT,               -- JSON array\n  status      TEXT NOT NULL DEFAULT 'published'\n              CHECK (status IN ('published', 'hidden', 'draft')),\n  admin_notes TEXT,               -- admin-only, never served on /v1\n  owner_id    INTEGER,            -- NULL for now; the author-self-service hook\n  created_at TEXT NOT NULL, updated_at TEXT NOT NULL\n);\n\nCREATE INDEX idx_locations_status ON locations (status);\nCREATE INDEX idx_locations_nexus_id ON locations (nexus_id);\n\n-- shown as it stands after migrations 0005 and 0007 dropped `source` and `tags`",
+          "sources": [
+            { "kind": "project", "label": "worker/migrations/0001_initial_schema.sql L15-44 (the table as first created)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/migrations/0001_initial_schema.sql#L15-L44" },
+            { "kind": "project", "label": "worker/migrations/0005_drop_source.sql L33 (ALTER TABLE locations DROP COLUMN source)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/migrations/0005_drop_source.sql#L33" },
+            { "kind": "project", "label": "worker/migrations/0007_drop_locations_tags.sql L32 (ALTER TABLE locations DROP COLUMN tags)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/migrations/0007_drop_locations_tags.sql#L32" }
+          ]
+        },
+        {
+          "id": "d02-c4",
+          "type": "text",
+          "heading": "Four kinds of rule in that listing",
+          "body": "Everything after a column's type is a **rule the database enforces on every write**, not a comment or a convention. `PRIMARY KEY` on `id` means no two rows may share one, so a duplicate insert is refused rather than stored. `NOT NULL` on `name`, `category`, `x` and `y` means a row without them cannot exist, which is why no code anywhere needs to handle a nameless location. `DEFAULT 'published'` fills a value in when the write does not supply one. And `CHECK (status IN ('published', 'hidden', 'draft'))` refuses any other string outright: `status: 'publishd'` is not a bug that ships, it is a write that fails. Below the table, `CREATE INDEX` declares no rule at all: an **index** is a lookup structure so the database can find matching rows without reading every one. These two exist because the rebuild filters on `status` and matches on `nexus_id` on every single cron tick, which is the only reason an index ever earns its cost.",
+          "sources": [
+            { "kind": "project", "label": "worker/migrations/0001_initial_schema.sql L15-44", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/migrations/0001_initial_schema.sql#L15-L44" },
+            { "kind": "project", "label": "worker/migrations/0001_initial_schema.sql L41-42 (why these two indexes: both run every cron tick)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/migrations/0001_initial_schema.sql#L41-L42" },
+            { "kind": "official", "label": "SQLite - CREATE TABLE (PRIMARY KEY, NOT NULL, CHECK)", "url": "https://www.sqlite.org/lang_createtable.html" }
+          ]
+        },
+        {
+          "id": "d02-c5",
+          "type": "callout",
+          "variant": "warning",
+          "heading": "status is not the same question as 'is it on the map'",
+          "body": "`status` has three values and they are not a pipeline. `published` means the record is meant to be on the map. `hidden` means the pin is pulled but the record is kept, which is what you want when a mod is taken down and might come back. `draft` has never been published at all. The trap is reading `published` as 'therefore served'. It is not: the build can withhold a published record for a reason that has nothing to do with the row, and module 06 is about exactly that case. Keep the two questions apart from here on. **`status` is what an admin decided.** Whether a pin is served is what the build concluded, and the API reports any difference on `/v1/meta` rather than letting the two disagree quietly.",
+          "sources": [
+            { "kind": "project", "label": "worker/migrations/0001_initial_schema.sql L32-35 (the three statuses; hidden keeps the record)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/migrations/0001_initial_schema.sql#L32-L35" },
+            { "kind": "project", "label": "worker/src/materialize.js L92-105 (only published rows reach the map, minus the withheld)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/src/materialize.js#L92-L105" }
+          ]
+        }
+      ],
+      "lab": {
+        "id": "d02-lab",
+        "title": "ONE ROW, SERVED",
+        "briefing": "Fetch a single location and read it as a row. Most of what comes back is a column; a few fields are computed by the build and stored nowhere.",
+        "steps": [
+          "TRANSMIT and read the record under data",
+          "Pick out the stored columns: id, name, nexus_id, category, the coordinates, description, credits",
+          "Now find the three fields that are NOT columns, and say where each comes from"
+        ],
+        "request": { "method": "GET", "path": "/v1/locations/nexus-27618", "query": {}, "headers": {}, "editable": [] },
+        "expected": { "status": [200], "headersOfInterest": ["ETag"], "shapeHints": ["the id carries the nexus- prefix, which is where this record came from", "district, subdistrict and recently_updated are computed, not stored"] },
+        "canned": [
+          {
+            "when": "default",
+            "status": 200,
+            "headers": { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "public, max-age=300, stale-while-revalidate=3600", "ETag": "\"6880457c51396f9a3ccefe9b88a87f8e3c2b2f2f0ebe18831bd4d8337eaca54d\"" },
+            "body": {
+              "schema": 1,
+              "generated_at": "2026-08-02T07:04:42.505Z",
+              "dataset_version": "6880457c51396f9a3ccefe9b88a87f8e3c2b2f2f0ebe18831bd4d8337eaca54d",
+              "recently_updated_days": 7,
+              "data": {
+                "id": "nexus-27618",
+                "name": "Atari Canyon - Blade Runner",
+                "nexus_id": "27618",
+                "coordinates": [-2229.57, 3618.96, 12.22],
+                "category": "new-location",
+                "tags": ["photos", "nomad"],
+                "authors": ["Spuddeh"],
+                "district": "Badlands",
+                "subdistrict": null,
+                "recently_updated": false,
+                "description": "A canyon overlook styled after the opening of Blade Runner.",
+                "thumbnail_url": null,
+                "picture_url": null,
+                "updated_at": null,
+                "archives": []
+              }
+            }
+          }
+        ],
+        "debrief": "RECONSTRUCTED, not captured: the id, the nexus- prefix and the record's shape are real, but the descriptive text here is illustrative. The three computed fields: district and subdistrict come from testing the coordinates against the district polygons at build time, which is why district is never null (outside every polygon is Badlands), and recently_updated is worked out from the Nexus timestamp against the recency window. None of the three is a column in locations. That id is worth a second look too. Nine records carry a nexus- prefix, and since the source column was dropped that prefix is the only thing recording that they arrived by auto-discovery back when auto-discovery still published.",
+        "sources": [
+          { "kind": "project", "label": "worker/src/materialize.js L135-165 (district, subdistrict and recently_updated computed into the record)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/src/materialize.js#L135-L165" },
+          { "kind": "project", "label": "worker/migrations/0005_drop_source.sql L16-22 (the nexus- keys record the provenance on their own)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/migrations/0005_drop_source.sql#L16-L22" }
+        ]
+      },
+      "quiz": [
+        {
+          "id": "d02-q1",
+          "type": "mcq",
+          "prompt": "A write tries to store a location with status 'archived'. What happens?",
+          "options": [
+            { "text": "The database refuses the write: the CHECK constraint permits only published, hidden and draft.", "correct": true, "feedback": "Correct, and note where the refusal comes from. Even if every line of application code had a bug that let it through, the column would still reject it." },
+            { "text": "It is stored, and the build ignores any status it does not recognise.", "correct": false, "feedback": "It is never stored. A CHECK constraint is enforced by the database on write, not interpreted by the reader afterwards." },
+            { "text": "It is stored as NULL, because the value is invalid.", "correct": false, "feedback": "No. An invalid value fails the write outright; it is not quietly converted into a different one, which would be a far worse outcome." }
+          ],
+          "sources": [
+            { "kind": "project", "label": "worker/migrations/0001_initial_schema.sql L32-33", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/migrations/0001_initial_schema.sql#L32-L33" }
+          ]
+        },
+        {
+          "id": "d02-q2",
+          "type": "spot-wrong",
+          "prompt": "Which statement about the schema is WRONG?",
+          "options": [
+            { "text": "\"A record with status 'published' is therefore being served on the map.\"", "correct": true, "feedback": "This is the wrong one, and it is the module's trap. published is what an admin decided about the row; whether the pin is served is what the build concluded. Module 06 covers the case where they legitimately disagree." },
+            { "text": "\"dismissed_candidates rows are not locations and have no coordinates.\"", "correct": false, "feedback": "True. A dismissed candidate is a Nexus mod someone declined to add; it never was a location." },
+            { "text": "\"audit_log rows are never updated, only added.\"", "correct": false, "feedback": "True: it is append-only, and a correction is another row. That is what makes it a history rather than a current state." },
+            { "text": "\"Every migration has to be applied to the staging database as well.\"", "correct": false, "feedback": "True, and easy to forget. Named Wrangler environments inherit no bindings, so staging has its own database and its own copy of every migration." }
+          ],
+          "sources": [
+            { "kind": "project", "label": "worker/src/materialize.js L92-105", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/src/materialize.js#L92-L105" },
+            { "kind": "project", "label": "worker/migrations/0001_initial_schema.sql L1-11", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/migrations/0001_initial_schema.sql#L1-L11" }
+          ]
+        }
+      ],
+      "scenario": {
+        "id": "d02-s1",
+        "title": "INCIDENT LOG // THE COLUMN THAT WAS NOT THERE",
+        "situation": [
+          "> [ TRAINING SCENARIO - constructed from the schema's own warning ]",
+          "> a migration adds a column and is applied: npx wrangler d1 migrations apply nczoning-data --remote",
+          "> production: green. dashboard fine. map fine.",
+          "> two weeks later, someone opens the staging dashboard to try a risky edit",
+          "> [staging] D1_ERROR: no such column: modified_at"
+        ],
+        "question": {
+          "type": "mcq",
+          "prompt": "Production has the column and staging does not, from the same repository. Why?",
+          "options": [
+            { "text": "The migration was applied to one database. Named Wrangler environments inherit no bindings, so staging has a separate database that needs the same migration applied to it explicitly.", "correct": true, "feedback": "Correct, and the first migration says so in its own header comment. Every migration runs twice, once per database name, or the two schemas drift." },
+            { "text": "Staging is on an older deploy of the Worker.", "correct": false, "feedback": "A deploy ships code, not schema. Even a perfectly current Worker will fail against a database that never got the column." },
+            { "text": "D1 replicates schema changes between environments on a delay.", "correct": false, "feedback": "There is no replication between them. They are two independent databases that happen to share a binding name." }
+          ]
+        },
+        "debrief": "The rule this teaches, and it generalises well past D1: **a shared name is not a shared thing.** Both environments bind their database as DB, both run the same code, and that similarity is exactly what makes the difference invisible until something queries the missing column. The failure also waited two weeks, because nothing reads staging, which is the other half of the lesson: a difference nobody exercises is not a difference nobody has. (Constructed scenario. The two databases, the inherit-nothing rule and the apply-twice instruction are all real and cited.)",
+        "sources": [
+          { "kind": "project", "label": "worker/migrations/0001_initial_schema.sql L4-7 (apply to both databases)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/migrations/0001_initial_schema.sql#L4-L7" },
+          { "kind": "project", "label": "worker/wrangler.jsonc L193-203 (staging declares its own database in full; omitting it leaves env.DB undefined)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/wrangler.jsonc#L193-L203" }
+        ]
+      },
+      "recap": [
+        "The numbered migrations are the schema and its history; there is no separate document, and each one applies to both databases.",
+        "PRIMARY KEY, NOT NULL, DEFAULT and CHECK are rules the database enforces on write; an index is not a rule, it is a lookup structure.",
+        "status is what an admin decided about a row. Whether the pin is served is a separate question the build answers."
+      ],
+      "fieldNotes": {
+        "glossaryTerms": ["migration", "primary key", "CHECK constraint", "index", "dismissed candidate"],
+        "resources": ["sqlite-createtable", "cf-d1-migrations"],
+        "renderCitations": true
+      }
+    },
+    {
+      "id": "d03",
+      "order": 3,
+      "title": "ONE REPRESENTATION",
+      "subtitle": "How tags moved from a JSON column to a join, and how that was proven safe",
+      "clearance": 3,
+      "estMinutes": 14,
+      "hook": {
+        "type": "terminal-log",
+        "lines": [
+          "> NC-ACAD-02 // clearance check: LEVEL 3 granted",
+          "> subject: the same fact stored in two places",
+          "> [0002] location_tags: CREATED. locations.tags: STILL HERE.",
+          "> [....] parity gate: byte-identical output. twice.",
+          "> [0007] locations.tags: DROPPED.",
+          "> five migrations apart, deliberately. begin."
+        ]
+      },
+      "objectives": [
+        "Explain what a join table is and what it makes impossible",
+        "Say why the old column was kept for five migrations after the join existed",
+        "Recognise a fallback that hides the failure it was written to survive"
+      ],
+      "chunks": [
+        {
+          "id": "d03-c1",
+          "type": "text",
+          "heading": "A tag list as a string, and what it cannot do",
+          "body": "At the start, a location's tags were a **JSON array stored in a column**: one text value reading `[\"house\", \"photos\"]`. That is convenient and it has one fatal property. To the database it is just text. `\"photos\"` and `\"photoss\"` are equally valid strings, so a typo is stored happily and shows up as a tag that filters to nothing, months later, in a sidebar nobody is watching. The old system caught this with a script that ran in CI on data pull requests, which worked exactly as long as every edit was a pull request. Once edits became API calls, that check stopped standing between anyone and the registry.",
+          "sources": [
+            { "kind": "project", "label": "worker/migrations/0001_initial_schema.sql L22-24 (tags as a JSON array at Phase 1)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/migrations/0001_initial_schema.sql#L22-L24" },
+            { "kind": "project", "label": "worker/migrations/0002_tags.sql L33-36 (a typo'd tag was caught by CI on a data PR, long after the edit)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/migrations/0002_tags.sql#L33-L36" }
+          ]
+        },
+        {
+          "id": "d03-c2",
+          "type": "code",
+          "lang": "sql",
+          "heading": "The join, and the rule inside it",
+          "body": "CREATE TABLE tags (\n  slug TEXT PRIMARY KEY,\n  name TEXT,                    -- display label; NULL falls back to the slug\n  description TEXT NOT NULL,\n  sort_order INTEGER,\n  created_at TEXT NOT NULL, updated_at TEXT NOT NULL\n);\n\nCREATE TABLE location_tags (\n  location_id TEXT NOT NULL REFERENCES locations(id) ON DELETE CASCADE,\n  tag_slug    TEXT NOT NULL REFERENCES tags(slug)    ON UPDATE CASCADE,\n  PRIMARY KEY (location_id, tag_slug)\n);\n\nCREATE INDEX idx_location_tags_tag ON location_tags (tag_slug);",
+          "sources": [
+            { "kind": "project", "label": "worker/migrations/0002_tags.sql L20-47 (tags, location_tags and the join index)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/migrations/0002_tags.sql#L20-L47" },
+            { "kind": "official", "label": "SQLite - foreign key support (REFERENCES, ON DELETE, ON UPDATE)", "url": "https://www.sqlite.org/foreignkeys.html" }
+          ]
+        },
+        {
+          "id": "d03-c3",
+          "type": "text",
+          "heading": "What every line of that buys",
+          "body": "A **join table** stores one row per link: this location carries this tag. `REFERENCES tags(slug)` makes it a **foreign key**, so the database refuses a link to a tag that does not exist. That is the point of the move: a typo'd tag stops being a thing that gets caught and becomes a thing that cannot be written. The composite `PRIMARY KEY (location_id, tag_slug)` means the same tag cannot be attached twice. `ON DELETE CASCADE` removes a location's links when the location goes, so no link outlives the thing it points at. `ON UPDATE CASCADE` handles the rare case where a slug genuinely has to change: one update propagates everywhere. And `slug` is the primary key rather than a numeric id on purpose, because the slug is already the identifier every record carries; adding an integer key would create a **second** identifier for the same thing, which is the exact duplication this whole migration exists to remove. The `name` column is what makes renaming safe: `neomilitarism` can display as `Neo-Militarism` without the identifier moving at all.",
+          "sources": [
+            { "kind": "project", "label": "worker/migrations/0002_tags.sql L16-19 (slug as the key, because an integer would be a SECOND identifier)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/migrations/0002_tags.sql#L16-L19" },
+            { "kind": "project", "label": "worker/migrations/0002_tags.sql L22-26 (name splits the label from the identifier)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/migrations/0002_tags.sql#L22-L26" },
+            { "kind": "project", "label": "worker/migrations/0002_tags.sql L37-39 (ON UPDATE CASCADE covers a slug that must genuinely change)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/migrations/0002_tags.sql#L37-L39" }
+          ]
+        },
+        {
+          "id": "d03-c4",
+          "type": "callout",
+          "variant": "policy",
+          "heading": "Additive, then prove it, then drop",
+          "body": "Migration 0002 created the join and **deliberately left `locations.tags` in place**. The old column stayed for five more migrations, until 0007 dropped it. That gap is the method, not hesitation. Dropping the column in 0002 would have made the join the new source of truth and simultaneously destroyed the only thing it could be checked against; the migration's own comment says it would be 'simultaneously the new source of truth and unverifiable'. Instead: add the new representation, switch the reader to it, run a **parity gate** that rebuilds the served dataset from the join and compares it byte for byte against the output the column produced, and only once that is green in both directions does the old one go. The rule generalises to any storage change: **you may have two representations, or you may have an unverified one, but the moment you have neither a comparison nor a rollback you have made the change unfalsifiable.**",
+          "sources": [
+            { "kind": "project", "label": "worker/migrations/0002_tags.sql L7-11 (ADDITIVE ONLY, and why dropping here would be unverifiable)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/migrations/0002_tags.sql#L7-L11" },
+            { "kind": "project", "label": "worker/migrations/0007_drop_locations_tags.sql L1-8 (dropped only once parity ran green, twice over)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/migrations/0007_drop_locations_tags.sql#L1-L8" }
+          ]
+        },
+        {
+          "id": "d03-c5",
+          "type": "callout",
+          "variant": "warning",
+          "heading": "The fallback that had to die first",
+          "body": "Migration 0007 could not simply drop the column, and the reasons are the most useful thing in this module. Two pieces of code were quietly depending on the old representation. The **importer**, which rebuilds a database from an export, listed `tags` in its insert and never wrote the join at all: dropping the column would have broken the restore path outright, and leaving it would have kept producing databases that serve every location untagged. And `resolveTags` **fell back** to the column when no join was supplied. That fallback sounds defensive and is the opposite: with the column gone it would have quietly served 297 records with no tags while looking like it worked. Both were fixed before the drop, the importer verified by building a database from nothing and counting 572 links against production's 572. The lesson is about the shape of the bug, not the tags: **a fallback converts a loud failure into a plausible wrong answer.** Where correctness matters more than uptime, throw instead.",
+          "sources": [
+            { "kind": "project", "label": "worker/migrations/0007_drop_locations_tags.sql L10-23 (what had to go first: the importer and the resolveTags fallback)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/migrations/0007_drop_locations_tags.sql#L10-L23" },
+            { "kind": "project", "label": "worker/src/registry.js L11-15 (the tag join is part of a write, not a follow-up to it)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/src/registry.js#L11-L15" }
+          ]
+        }
+      ],
+      "lab": {
+        "id": "d03-lab",
+        "title": "CROSS-CHECK THE JOIN",
+        "briefing": "You cannot see location_tags directly, but you can see both ends of it. A location's tags array is built from the join; /v1/tags is the registry those links must point into. Every tag on a record must appear in the registry, by construction.",
+        "steps": [
+          "TRANSMIT and read the tags array on the record",
+          "Compare each slug against the /v1/tags registry you fetched in module 01",
+          "Then switch to the 'legacy' case and find the tag that is in neither"
+        ],
+        "request": { "method": "GET", "path": "/v1/locations/nexus-27618", "query": {}, "headers": {}, "editable": [] },
+        "expected": { "status": [200], "headersOfInterest": ["ETag"], "shapeHints": ["every tag slug resolves to a row in /v1/tags", "the legacy case shows a tag that never was a registry row"] },
+        "canned": [
+          {
+            "when": "default",
+            "status": 200,
+            "headers": { "Content-Type": "application/json; charset=utf-8", "ETag": "\"6880457c51396f9a3ccefe9b88a87f8e3c2b2f2f0ebe18831bd4d8337eaca54d\"" },
+            "body": {
+              "schema": 1,
+              "generated_at": "2026-08-02T07:04:42.505Z",
+              "dataset_version": "6880457c51396f9a3ccefe9b88a87f8e3c2b2f2f0ebe18831bd4d8337eaca54d",
+              "recently_updated_days": 7,
+              "data": { "id": "nexus-27618", "name": "Atari Canyon - Blade Runner", "tags": ["photos", "nomad"], "category": "new-location" }
+            }
+          },
+          {
+            "when": "legacy",
+            "status": 200,
+            "headers": { "Content-Type": "application/json; charset=utf-8", "ETag": "\"a1b2c3d4e5f60718293a4b5c6d7e8f901a2b3c4d5e6f708192a3b4c5d6e7f801\"" },
+            "body": {
+              "schema": 1,
+              "generated_at": "2026-07-20T09:00:00.000Z",
+              "dataset_version": "a1b2c3d4e5f60718293a4b5c6d7e8f901a2b3c4d5e6f708192a3b4c5d6e7f801",
+              "recently_updated_days": 7,
+              "data": { "id": "nexus-27618", "name": "Atari Canyon - Blade Runner", "tags": ["nczoning", "photos", "nomad"], "category": "new-location" }
+            }
+          }
+        ],
+        "debrief": "The default case is a trimmed real capture; the legacy case is RECONSTRUCTED to show what the same record used to serve. That extra nczoning entry was never a registry row. It was synthesised at serve time for auto-discovered records, which made it a visible filter for a tag /v1/tags did not list, and it went in the same release that dropped source. Notice what the join makes true: because every entry in the current array is a foreign key into tags, a tag that filters to nothing cannot get in this way any more. It would have to be added to the registry first, deliberately.",
+        "sources": [
+          { "kind": "project", "label": "worker/migrations/0002_tags.sql L49-53 (nczoning is deliberately NOT a registry row)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/migrations/0002_tags.sql#L49-L53" },
+          { "kind": "project", "label": "worker/migrations/0005_drop_source.sql L24-27 (both write paths for the synthetic tag removed in one release)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/migrations/0005_drop_source.sql#L24-L27" }
+        ]
+      },
+      "quiz": [
+        {
+          "id": "d03-q1",
+          "type": "mcq",
+          "prompt": "An admin saves a location with the tag 'photoss'. Under the join, what happens?",
+          "options": [
+            { "text": "The write is refused: tag_slug is a foreign key into tags, and there is no such row.", "correct": true, "feedback": "Correct. Under the old JSON column it was just a string and would have been stored, then filtered to nothing in the sidebar until somebody noticed." },
+            { "text": "It is stored, and a CI check flags it on the next data pull request.", "correct": false, "feedback": "That was the old mechanism, and it depended on every edit being a pull request. Dashboard edits never touch one." },
+            { "text": "It is silently dropped from the tag list.", "correct": false, "feedback": "Silently dropping is what auto-discovery does with an unknown tag from a third-party description, deliberately. An admin typing a tag has made a mistake worth surfacing, so this path refuses instead." }
+          ],
+          "sources": [
+            { "kind": "project", "label": "worker/migrations/0002_tags.sql L40-44", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/migrations/0002_tags.sql#L40-L44" },
+            { "kind": "project", "label": "worker/src/validate.js L41-47 (unknown tags are an error for an admin, not silently dropped)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/src/validate.js#L41-L47" }
+          ]
+        },
+        {
+          "id": "d03-q2",
+          "type": "order",
+          "prompt": "Put the additive-then-drop migration in the order it actually happened.",
+          "steps": [
+            "Create the join table alongside the existing JSON column, changing nothing that reads",
+            "Backfill the join from the column that is still present",
+            "Switch the materializer to read the join",
+            "Run the parity gate: rebuild from the join and compare byte for byte against the old output",
+            "Fix the importer and remove the fallback that read the old column",
+            "Drop the column in a later migration"
+          ],
+          "sources": [
+            { "kind": "project", "label": "worker/migrations/0002_tags.sql L7-11, L70-76", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/migrations/0002_tags.sql#L70-L76" },
+            { "kind": "project", "label": "worker/migrations/0007_drop_locations_tags.sql L1-32", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/migrations/0007_drop_locations_tags.sql#L1-L32" }
+          ]
+        }
+      ],
+      "scenario": {
+        "id": "d03-s1",
+        "title": "INCIDENT LOG // THE RESTORE THAT SERVED NOTHING",
+        "situation": [
+          "> rebuilding a database from the export, to test the restore path",
+          "> [import] 297 locations inserted. 0 errors.",
+          "> [import] done.",
+          "> [build] 297 records materialized. parity: FAIL",
+          "> every record served with tags: []"
+        ],
+        "question": {
+          "type": "mcq",
+          "prompt": "The import reported no errors and inserted every record. Why did every location come out untagged?",
+          "options": [
+            { "text": "The importer wrote the old tags column and never wrote location_tags, and the materializer reads the join. Every insert succeeded; every link was missing.", "correct": true, "feedback": "Correct, and this is the real reason migration 0007 had to wait. The fix was verified by building a database from nothing and counting 572 links, exactly what production holds." },
+            { "text": "The tags table was empty, so the foreign keys refused every link.", "correct": false, "feedback": "That would have produced errors, not zero links inserted silently. The importer never attempted the links at all." },
+            { "text": "The parity gate is comparing against the wrong reference output.", "correct": false, "feedback": "The gate is doing its job: it found a real, total loss of tag data that the import step reported as a clean success." }
+          ]
+        },
+        "debrief": "Two rules come out of this one. First: **an operation that reports success has only told you it did what it was written to do**, which is a different claim from doing what you needed. The import genuinely inserted 297 rows. Second, and this is why the parity gate exists: the failure was invisible at every step except the byte-for-byte comparison. No error, no exception, a plausible-looking database, and 297 records serving an empty tag list. A count you can check against a known number, 572 links, is worth more than any number of green log lines. That is also why resolveTags now throws instead of falling back to an empty list: a missing join is a failure, and it should look like one.",
+        "sources": [
+          { "kind": "project", "label": "worker/migrations/0007_drop_locations_tags.sql L12-22 (the importer wrote no links; the fallback served 297 untagged records)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/migrations/0007_drop_locations_tags.sql#L12-L22" },
+          { "kind": "project", "label": "worker/src/registry.js L11-15 (the join is part of a write, not a follow-up to it)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/src/registry.js#L11-L15" }
+        ]
+      },
+      "recap": [
+        "A join table with a foreign key turns a typo'd tag from something caught later into something that cannot be written.",
+        "The slug is the primary key because it is already the identifier; a numeric key would be a second name for the same thing.",
+        "Add, prove byte-for-byte, then drop. And a fallback that hides a missing source serves a plausible wrong answer, so throw instead."
+      ],
+      "fieldNotes": {
+        "glossaryTerms": ["join table", "foreign key", "referential integrity", "slug", "additive-then-drop", "parity gate"],
+        "resources": ["sqlite-foreignkeys", "cf-d1-migrations"],
+        "renderCitations": true
+      }
+    },
+    {
+      "id": "d04",
+      "order": 4,
+      "title": "THE INTAKE",
+      "subtitle": "The public write route, and why validation lives on it",
+      "clearance": 4,
+      "estMinutes": 15,
+      "hook": {
+        "type": "terminal-log",
+        "lines": [
+          "> NC-ACAD-02 // clearance check: LEVEL 4 granted",
+          "> subject: the first public WRITE route on this API",
+          "> POST /submissions",
+          "> [gate 1] rate limit  [gate 2] turnstile  [gate 3] validation",
+          "> [result] one row in `submissions`, status: pending",
+          "> nothing here reaches the map. begin."
+        ]
+      },
+      "objectives": [
+        "Trace a submission through its gates, in the order the Worker applies them",
+        "Explain why validation moved out of CI and onto the write path",
+        "Say what a 422 means here, and why a submission cannot set its own status"
+      ],
+      "chunks": [
+        {
+          "id": "d04-c1",
+          "type": "text",
+          "heading": "Validation moved because the pull request did",
+          "body": "Under the old system every write was a commit, so validation could be a **CI step**: a schema check run on the pull request, producing a red cross if a value was wrong. That arrangement quietly depended on one thing, and the migration removed it. A dashboard edit, an approved submission and an admin API call all reach the registry **without passing through a pull request**, so a check that only runs on pull requests now stands between almost nobody and the data. The gate therefore moved to where the writes actually are: the Worker validates every write **on the way in**, and a bad value is refused at submission with a **422** naming the fields, rather than accepted and caught later. Everything else in this module follows from that one relocation.",
+          "sources": [
+            { "kind": "project", "label": "worker/src/validate.js L1-14 (this IS the gate; nothing in CI sees a location before it is stored)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/src/validate.js#L1-L14" },
+            { "kind": "official", "label": "MDN - 422 Unprocessable Content", "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/422" }
+          ]
+        },
+        {
+          "id": "d04-c2",
+          "type": "table",
+          "heading": "The gates, in the order they run",
+          "columns": ["#", "Gate", "Refuses with", "Why here"],
+          "rows": [
+            ["1", "The IP hash salt must be set", "503 submissions_unavailable", "Without it nothing about the submitter may be stored; that is a server fault, not a bad request"],
+            ["2", "Rate limit: 5 per address per hour", "429 rate_limited", "Before validation so a refusal cannot be used to probe the validator, and before Turnstile so a flood costs no verification calls"],
+            ["3", "Turnstile token verified server-side", "403, or 503 if verification is unavailable", "The browser's token proves nothing until the server checks it"],
+            ["4", "Field validation, shared with the admin editor", "422 with the failing fields named", "So a submission cannot express something the editor would refuse"],
+            ["5", "Admin-only fields refused outright", "422", "status, admin_notes and source are writable by an admin, so a payload carrying them must be rejected, not ignored"]
+          ],
+          "body": "The ordering is the interesting part, and each position is argued in the code rather than incidental. The rate limit sits ahead of everything expensive **and** ahead of everything informative: a flood is cheap to refuse, and an attacker cannot use refusals to learn what the validator accepts. Read the whole column of refusal codes together and it says something useful about the API's manners: `503` means we are broken, `429` means you are too fast, `403` means we do not believe you are a person, and `422` means we understood you perfectly and the contents are wrong.",
+          "sources": [
+            { "kind": "project", "label": "worker/src/submissions.js L192-214 (salt, then rate limit, then Turnstile, with the ordering argued)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/src/submissions.js#L192-L214" },
+            { "kind": "project", "label": "worker/src/submissions.js L42-51 (admin-only fields; 5 submissions per hour)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/src/submissions.js#L42-L51" },
+            { "kind": "official", "label": "Cloudflare - Turnstile", "url": "https://developers.cloudflare.com/turnstile/" }
+          ]
+        },
+        {
+          "id": "d04-c3",
+          "type": "callout",
+          "variant": "policy",
+          "heading": "Refused, not ignored",
+          "body": "Two rules in the validator are worth memorising because they are the same rule wearing different clothes. **Unknown fields are rejected, not discarded**: a payload with a misspelled field name is an error, because a typo that is silently thrown away looks exactly like a successful save. And **`id` cannot be set by a payload at all**. It is generated by the server on create and immutable afterwards, since letting a request choose it is how a deep link gets quietly repointed at a different mod. Both come from one principle: **when input is wrong, the system must say so rather than do its best.** Doing its best is how a submitter comes away believing they set something they did not.",
+          "sources": [
+            { "kind": "project", "label": "worker/src/validate.js L16-22 (id is not accepted from input; admin-only fields never existed in the file format)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/src/validate.js#L16-L22" },
+            { "kind": "project", "label": "worker/src/validate.js L58-66 (unknown keys are rejected rather than ignored)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/src/validate.js#L58-L66" }
+          ]
+        },
+        {
+          "id": "d04-c4",
+          "type": "text",
+          "heading": "What a submission is, and what it is not",
+          "body": "A successful `POST /submissions` produces exactly one thing: a row in the `submissions` table with status `pending`. It carries a `kind` of `create`, `edit` or `remove`, the proposed `payload`, an optional note and contact for the reviewer, and a **salted hash of the submitter's address**, never the address itself. That hash exists only for the rate limit and abuse triage, is purged after 90 days by the cron, and an unset salt fails the request closed, because an unsalted hash of an IPv4 address can be reversed by trying all four billion of them. What the row is **not** is a change. Nothing it says reaches the map until a collaborator approves it, and approval **re-validates the payload against the tag registry as it stands then**, not as it stood when the submission arrived: a tag can be renamed or removed while a submission sits in the queue.",
+          "sources": [
+            { "kind": "project", "label": "worker/src/submissions.js L1-32 (nothing published by this route reaches the map; what is stored about the submitter, and why)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/src/submissions.js#L1-L32" },
+            { "kind": "project", "label": "worker/migrations/0001_initial_schema.sql L46-55 (the submissions table)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/migrations/0001_initial_schema.sql#L46-L55" },
+            { "kind": "project", "label": "worker/src/submissions.js L225-244 (create validates in full; edit validates the present keys only)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/src/submissions.js#L225-L244" }
+          ]
+        }
+      ],
+      "lab": {
+        "id": "d04-lab",
+        "title": "SUBMIT, AND BE REFUSED",
+        "briefing": "A write, for the first time in either course. Send a submission and read what comes back. Then switch cases and watch each gate refuse for its own reason, with its own status code.",
+        "steps": [
+          "TRANSMIT the default payload and read the accepted response: a pending id, and nothing else",
+          "Switch to 'invalid' and read the 422: every failing field is named at once, not one at a time",
+          "Switch to 'admin-field' and 'rate-limited' and compare which gate answered"
+        ],
+        "request": {
+          "method": "POST",
+          "path": "/submissions",
+          "query": {},
+          "headers": { "Content-Type": "application/json" },
+          "editable": []
+        },
+        "expected": {
+          "status": [201, 422, 429],
+          "headersOfInterest": ["Content-Type"],
+          "shapeHints": ["an accepted submission is pending and carries no authority", "a 422 names every failing field in one response"]
+        },
+        "canned": [
+          {
+            "when": "default",
+            "status": 201,
+            "headers": { "Content-Type": "application/json; charset=utf-8" },
+            "body": { "id": 41, "status": "pending" }
+          },
+          {
+            "when": "invalid",
+            "status": 422,
+            "headers": { "Content-Type": "application/json; charset=utf-8" },
+            "body": {
+              "error": "invalid",
+              "errors": [
+                "name is required",
+                "category must be one of: location-overhaul, new-location, other",
+                "unknown tag: photoss",
+                "coordinates are outside the terrain bounds"
+              ]
+            }
+          },
+          {
+            "when": "admin-field",
+            "status": 422,
+            "headers": { "Content-Type": "application/json; charset=utf-8" },
+            "body": { "error": "invalid", "errors": ["status may not be set by a submission", "admin_notes may not be set by a submission"] }
+          },
+          {
+            "when": "rate-limited",
+            "status": 429,
+            "headers": { "Content-Type": "application/json; charset=utf-8" },
+            "body": { "error": "rate_limited", "detail": "at most 5 submissions per hour" }
+          }
+        ],
+        "debrief": "ALL FOUR RESPONSES ARE RECONSTRUCTED from the code, not captured. This is the one lab in either course that would change something if it ran for real, so it was built from validate.js and submissions.js rather than by posting to production. (The console runs every lab against canned data with no network, so pressing TRANSMIT here cannot reach the API in any case.) Three things to take from the shapes. The 422 lists every failing field in one response rather than stopping at the first, so a submitter fixes one form rather than playing twenty questions. The admin-field case is refused rather than stripped, so nobody comes away thinking they set a status. And the accepted response says pending and gives you an id: it is a receipt, not a change.",
+        "sources": [
+          { "kind": "project", "label": "worker/src/submissions.js L192-250 (the gates and their status codes)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/src/submissions.js#L192-L250" },
+          { "kind": "project", "label": "worker/src/validate.js L28-37 (the category list and the writable set)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/src/validate.js#L28-L37" }
+        ]
+      },
+      "quiz": [
+        {
+          "id": "d04-q1",
+          "type": "mcq",
+          "prompt": "A submission arrives carrying \"status\": \"published\". What should the API do, and why?",
+          "options": [
+            { "text": "Refuse it with a 422. status is an admin-only field, and silently dropping it would leave the approve path applying a field the submitter chose.", "correct": true, "feedback": "Correct. It is refused rather than ignored precisely because the same validator serves the admin editor, where status IS writable." },
+            { "text": "Drop the field and accept the rest: the submitter cannot publish anything anyway.", "correct": false, "feedback": "They cannot publish, but that is not the whole risk. A silently dropped field looks identical to an accepted one, and the submitter is left believing something about their submission that is not true." },
+            { "text": "Accept it and store the status, since a pending submission is not on the map.", "correct": false, "feedback": "That stores a value the submitter chose in a field an approval will later read. The gap between storing and applying is exactly where this goes wrong." }
+          ],
+          "sources": [
+            { "kind": "project", "label": "worker/src/submissions.js L12-16, L42-43", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/src/submissions.js#L12-L16" }
+          ]
+        },
+        {
+          "id": "d04-q2",
+          "type": "mcq",
+          "prompt": "Why is the rate limit checked BEFORE Turnstile and before validation?",
+          "options": [
+            { "text": "Because a flood should cost nothing to refuse, and because a validation refusal would otherwise let someone probe the validator for free.", "correct": true, "feedback": "Correct, and both halves are stated in the code. Cheap first, and never let a refusal become a source of information." },
+            { "text": "Because Turnstile tokens expire, so they must be checked last.", "correct": false, "feedback": "Expiry is handled by the verification result itself (there is a distinct turnstile_expired code). The ordering is about cost and information leakage." },
+            { "text": "Because the rate limit is enforced by the edge before the Worker runs.", "correct": false, "feedback": "That is the /v1 read rate limit from the other course, a WAF rule at the edge. This one is a different limit, counted per submitter hash inside the Worker." }
+          ],
+          "sources": [
+            { "kind": "project", "label": "worker/src/submissions.js L201-208", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/src/submissions.js#L201-L208" }
+          ]
+        },
+        {
+          "id": "d04-q3",
+          "type": "multi",
+          "prompt": "A submission sat in the queue for three weeks. Before it is approved, which of these must be re-checked? Select all that apply.",
+          "options": [
+            { "text": "Whether every tag in the payload is still in the tag registry.", "correct": true, "feedback": "Yes. A tag can be renamed or deleted while a submission waits, so approval validates against the registry as it stands then." },
+            { "text": "Whether the location it edits still exists.", "correct": true, "feedback": "Yes. An edit names a location_id, and the record it was written against can move or be deleted while the submission sits." },
+            { "text": "Whether the Turnstile token is still valid.", "correct": false, "feedback": "No. Turnstile proved a human sent the request at submission time; it is a one-time check at the door, not a standing credential to re-verify at approval." },
+            { "text": "Whether the submitter is still under the rate limit.", "correct": false, "feedback": "No. The limit governs how fast submissions arrive, not whether an accepted one may be approved later." }
+          ],
+          "sources": [
+            { "kind": "project", "label": "worker/src/submissions.js L225-244 (tag registry read at submission; re-read at approval)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/src/submissions.js#L225-L244" },
+            { "kind": "project", "label": "worker/src/submissions.js L230-236 (an edit records the version of the record it was written against)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/src/submissions.js#L230-L236" }
+          ]
+        }
+      ],
+      "scenario": {
+        "id": "d04-s1",
+        "title": "FIELD REPORT // THE GATE THAT NO LONGER GUARDED ANYTHING",
+        "situation": [
+          "> contributor doc, still published: 'run the local build and validate script before opening your PR'",
+          "> [ci] validate-mods.yml: PASS",
+          "> observed: a location with a tag that matches no registry entry is live on the map",
+          "> the CI check is green. it has been green all week."
+        ],
+        "question": {
+          "type": "mcq",
+          "prompt": "A green CI check, and a bad tag on the map anyway. What is going on?",
+          "options": [
+            { "text": "The record never went through a pull request. It was written through the API, so the CI check never saw it: that check now validates a file nothing reads.", "correct": true, "feedback": "Correct. The check is not broken, it is unemployed. It kept passing because the thing it validates stopped being the thing that reaches the map." },
+            { "text": "The CI check has a bug and is passing bad tags.", "correct": false, "feedback": "It would report correctly on anything it was given. The failure is that it is no longer given the writes that matter." },
+            { "text": "The tag was valid when submitted and was deleted afterwards.", "correct": false, "feedback": "A plausible story and a different bug, which is why approval re-validates against the current registry. Here the check simply never ran on this write." }
+          ]
+        },
+        "debrief": "The transferable rule: **a check is only worth what it stands between.** This one kept reporting PASS in a world where almost nothing passed through it any more, which is worse than a red check, because green is read as 'verified' rather than 'not examined'. Two habits follow. When you move where writes happen, audit every gate that was watching the old path and ask what it still sees. And treat a check that cannot fail as broken: the CI job here survived deliberately, to keep the migration revertible, and it now only asserts that some deleted files have not come back. That is a much smaller and much more honest claim. Note also which document was still lying: the contributor guide told submitters to run a validation loop that no longer decides anything.",
+        "sources": [
+          { "kind": "project", "label": "worker/src/validate.js L1-14 (writes arrive through the API, so nothing in CI sees a location before it is stored)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/src/validate.js#L1-L14" },
+          { "kind": "project", "label": "worker/src/validate.js L8-14 (the link back to the real schema is a TEST, not an import)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/src/validate.js#L8-L14" }
+        ]
+      },
+      "recap": [
+        "Validation moved from CI onto the write path because most writes stopped being pull requests; a bad value is refused with a 422 naming the fields.",
+        "The gates run cheapest and least informative first: salt, rate limit, Turnstile, then validation.",
+        "A submission is a receipt, not a change. It cannot set admin-only fields or its own id, and approval re-validates against the registry as it stands then."
+      ],
+      "fieldNotes": {
+        "glossaryTerms": ["write path", "submission", "Turnstile", "422 Unprocessable Content", "salted hash"],
+        "resources": ["cf-turnstile", "mdn-422", "mdn-429"],
+        "renderCitations": true
+      }
+    },
+    {
+      "id": "d05",
+      "order": 5,
+      "title": "WHO IS ALLOWED",
+      "subtitle": "The collaborator gate, and a check with three answers",
+      "clearance": 5,
+      "estMinutes": 13,
+      "hook": {
+        "type": "terminal-log",
+        "lines": [
+          "> NC-ACAD-02 // clearance check: LEVEL 5 granted",
+          "> subject: authorisation. who may change the registry?",
+          "> [auth] github sign-in -> login: <operator>",
+          "> [auth] collaborator check -> 204 yes / 404 no / 401 CANNOT SAY",
+          "> the third answer is the whole module. begin."
+        ]
+      },
+      "objectives": [
+        "Say what the admin list actually is, and why it is not a list in the code",
+        "Explain why the Worker holds its own credential instead of using the user's",
+        "Name the three outcomes of the collaborator check and what folding them costs"
+      ],
+      "chunks": [
+        {
+          "id": "d05-c1",
+          "type": "text",
+          "heading": "The admin list is the collaborator list",
+          "body": "The registry needs an answer to 'is this signed-in person allowed to change the map?'. The answer chosen here is **repository collaborator status**: if GitHub says you are a collaborator on the project's repository, you are an admin. That is deliberate, and the alternative it beat is instructive. A hardcoded list of three logins needs no credential at all and is simpler in every way, except that it puts 'who is an admin' in a **deploy** rather than in a repo setting, and it starts silently disagreeing with the real collaborator list the moment either one changes. Making the collaborator list itself the source means adding an admin is a repo-collaborator change, with **no separate allowlist to drift**.",
+          "sources": [
+            { "kind": "project", "label": "worker/wrangler.jsonc L61-63 (the repo whose collaborator list IS the admin list)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/wrangler.jsonc#L61-L63" },
+            { "kind": "official", "label": "GitHub REST - check if a user is a repository collaborator", "url": "https://docs.github.com/en/rest/collaborators/collaborators#check-if-a-user-is-a-repository-collaborator" }
+          ]
+        },
+        {
+          "id": "d05-c2",
+          "type": "text",
+          "heading": "Why the Worker needs a credential of its own",
+          "body": "The check runs **server-side, with the Worker's own credential**, and not with the token GitHub hands the user at sign-in. The reason is a permissions trap worth recognising in general: asking GitHub 'is this person a collaborator' with the *user's* token requires broad repository scope, which would mean an admin granting wide access to their repositories **merely to discover that they are an admin**. So the Worker holds its own identity. The choice there was between a **personal access token** and a **GitHub App**, and the App won on one property above all: a fine-grained token expires after at most a year, on a date nobody remembers, and when it dies the failure looks exactly like everyone having stopped being a collaborator at once. An App's installation token renews itself hourly and belongs to the organisation rather than to one person's account.",
+          "sources": [
+            { "kind": "project", "label": "worker/src/github-app.js L86-116 (installation lookup, then a token that is cached and re-minted before expiry)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/src/github-app.js#L86-L116" },
+            { "kind": "project", "label": "worker/wrangler.jsonc L56-60 (an App id and an OAuth client id are public; the private key and client secret are Worker secrets)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/wrangler.jsonc#L56-L60" },
+            { "kind": "official", "label": "GitHub Docs - About GitHub Apps", "url": "https://docs.github.com/en/apps/overview" }
+          ]
+        },
+        {
+          "id": "d05-c3",
+          "type": "code",
+          "lang": "js",
+          "heading": "Three outcomes, not two",
+          "body": "// GitHub answers 204 for yes and 404 for no.\n// A broken or unauthorised credential answers 401 or 403.\nif (res.status === 204) return 'yes';\nif (res.status === 404) return 'no';\n\n// 401/403/5xx: the question was not answered. Say so.\nconsole.error(`collaborator check for ${login}: unexpected HTTP ${res.status}`);\nif (res.status === 401) _resetTokenCache();\nreturn 'error';",
+          "sources": [
+            { "kind": "project", "label": "worker/src/github-app.js L134-156 (checkCollaborator returns yes, no or error)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/src/github-app.js#L134-L156" }
+          ]
+        },
+        {
+          "id": "d05-c4",
+          "type": "callout",
+          "variant": "policy",
+          "heading": "Never fold the third answer into the other two",
+          "body": "'Yes' and 'no' are the answers people design for. **'I could not find out' is a third answer**, and collapsing it into either of the others produces a specific disaster. Fold it into yes, by writing something like `not 404 means allow`, and a dead credential grants **everyone** administrative access, precisely at the moment the system is least able to notice. Fold it into no and a GitHub outage reads as every collaborator being quietly demoted, which is safe but silently wrong and sends people chasing a permissions bug that does not exist. So it is returned as **its own value**, and callers must do two things with it: **fail closed, and surface it.** Failing closed alone is not enough, because a security control that degrades into 'no' without saying so is indistinguishable from working.",
+          "sources": [
+            { "kind": "project", "label": "worker/src/github-app.js L120-133 (folding it into yes means a dead credential grants everyone admin)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/src/github-app.js#L120-L133" },
+            { "kind": "official", "label": "MDN - 403 Forbidden", "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/403" }
+          ]
+        },
+        {
+          "id": "d05-c5",
+          "type": "text",
+          "heading": "And then write down what they did",
+          "body": "Authorisation answers who may act. The **audit log** answers who did. It is an append-only table, one row per change, recording the actor (a GitHub login, or `system` for the cron), the action, the target, and the record **before** and **after**. Never updated, never deleted: a correction is another row. Two details are worth carrying away. It exists specifically because the commit history stopped recording data changes when the registry left git, so this is not extra bookkeeping, it is a replacement for something that used to be free. And `before`/`after` are stored **verbatim, including admin-only notes**, which is right for the live table and wrong for any public export: the redaction belongs at the export, because storing a redacted copy would lose the actual history for the sake of a possible future publication.",
+          "sources": [
+            { "kind": "project", "label": "worker/src/audit.js L1-12 (append-only; a correction is another row; verbatim including admin_notes)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/src/audit.js#L1-L12" },
+            { "kind": "project", "label": "worker/src/audit.js L14-25 (actor, action, target, before, after)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/src/audit.js#L14-L25" },
+            { "kind": "project", "label": "worker/migrations/0001_initial_schema.sql L57-63 (the audit_log table)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/migrations/0001_initial_schema.sql#L57-L63" }
+          ]
+        }
+      ],
+      "lab": {
+        "id": "d05-lab",
+        "title": "KNOCK ON THE ADMIN DOOR",
+        "briefing": "Every /admin/ route is gated. You are not signed in, so you get to see the gate itself: what an ungated caller receives, and what the three collaborator outcomes look like from outside.",
+        "steps": [
+          "TRANSMIT and read the refusal for a caller with no session",
+          "Switch to 'signed-in-not-collaborator': same door, different reason",
+          "Switch to 'check-unavailable' and note that it refuses too, and says why"
+        ],
+        "request": { "method": "GET", "path": "/admin/locations", "query": {}, "headers": {}, "editable": [] },
+        "expected": { "status": [401, 403, 503], "headersOfInterest": ["Content-Type"], "shapeHints": ["no session is a different refusal from a valid session that is not a collaborator", "an unanswerable check refuses rather than allowing"] },
+        "canned": [
+          {
+            "when": "default",
+            "status": 401,
+            "headers": { "Content-Type": "application/json; charset=utf-8" },
+            "body": { "error": "unauthenticated" }
+          },
+          {
+            "when": "signed-in-not-collaborator",
+            "status": 403,
+            "headers": { "Content-Type": "application/json; charset=utf-8" },
+            "body": { "error": "forbidden" }
+          },
+          {
+            "when": "check-unavailable",
+            "status": 503,
+            "headers": { "Content-Type": "application/json; charset=utf-8" },
+            "body": { "error": "collaborator_check_unavailable" }
+          }
+        ],
+        "debrief": "RECONSTRUCTED from the gate's logic, not captured: signing in to produce a real 403 would mean holding a GitHub session, and the third case only happens when GitHub is failing. The distinction the three make is the module in miniature. A 401 says we do not know who you are. A 403 says we know exactly who you are and the answer is no. The third says we asked and could not get an answer, so we are refusing and telling you that is what happened, which is the only honest thing a gate can do when its own check is down. Notice that it does NOT return 403 there: that would claim the answer was no, and the answer was not no. It was nothing.",
+        "sources": [
+          { "kind": "project", "label": "worker/src/github-app.js L120-156 (the three outcomes and what callers must do with them)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/src/github-app.js#L120-L156" },
+          { "kind": "project", "label": "worker/src/index.js L233-239 (handleAdmin gates every admin route on collaborator status itself)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/src/index.js#L233-L239" }
+        ]
+      },
+      "quiz": [
+        {
+          "id": "d05-q1",
+          "type": "spot-wrong",
+          "prompt": "Which implementation of the collaborator check is WRONG?",
+          "options": [
+            { "text": "\"return res.status !== 404\" - anything that is not an explicit no counts as yes.", "correct": true, "feedback": "This is the wrong one, and it is the exact mistake the code warns about. A dead or unauthorised credential answers 401, which is not 404, so every caller would be granted admin at the moment the check stopped working." },
+            { "text": "Return 'yes' on 204, 'no' on 404, and 'error' on anything else.", "correct": false, "feedback": "Correct implementation: three outcomes, and the third is not disguised as either of the others." },
+            { "text": "On a 401, discard the cached installation token so the next attempt mints a fresh one.", "correct": false, "feedback": "Correct, and a useful detail: a 401 usually means the cached token has gone bad, so dropping it lets the system recover on the next request." },
+            { "text": "Run the check with the Worker's own App credential rather than the signed-in user's token.", "correct": false, "feedback": "Correct. Using the user's token would require broad repository scope just to answer whether they are an admin." }
+          ],
+          "sources": [
+            { "kind": "project", "label": "worker/src/github-app.js L120-156", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/src/github-app.js#L120-L156" }
+          ]
+        },
+        {
+          "id": "d05-q2",
+          "type": "mcq",
+          "prompt": "Why is the audit log append-only, with corrections written as new rows?",
+          "options": [
+            { "text": "Because it is a history, and a history you can edit is only a claim about the past. It replaces the commit log the registry lost when it left git.", "correct": true, "feedback": "Correct. An editable record of who changed what is worth very little precisely when it matters most." },
+            { "text": "Because updating rows in D1 is expensive.", "correct": false, "feedback": "Cost is not the reason. The constraint is about what the table is for, not what it charges." },
+            { "text": "Because the table has no primary key to update by.", "correct": false, "feedback": "It has an integer primary key. Nothing prevents an update technically; it is a rule about what this table means." }
+          ],
+          "sources": [
+            { "kind": "project", "label": "worker/src/audit.js L1-12", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/src/audit.js#L1-L12" }
+          ]
+        }
+      ],
+      "scenario": {
+        "id": "d05-s1",
+        "title": "INCIDENT LOG // THE CREDENTIAL THAT DIED QUIETLY",
+        "situation": [
+          "> [ TRAINING SCENARIO - constructed from the failure mode the code names ]",
+          "> a project gates admin access on a fine-grained personal access token",
+          "> the token reaches its expiry date. nobody had it in a calendar.",
+          "> [gate] github: HTTP 401 on every collaborator check",
+          "> the gate is written as: allow if the response is not 404"
+        ],
+        "question": {
+          "type": "mcq",
+          "prompt": "The token expired at midnight. What does the site look like at 00:01?",
+          "options": [
+            { "text": "Every caller is an admin. 401 is not 404, so the check reads as yes for everyone, and nothing in the system notices that the question stopped being answered.", "correct": true, "feedback": "Correct, and it is the worst of the possible outcomes: the gate fails OPEN, silently, at the exact moment its credential died. This is why the real implementation returns a third value that callers must handle." },
+            { "text": "Nobody can sign in, so the dashboard is unreachable until the token is replaced.", "correct": false, "feedback": "That is what failing closed would look like, and it is the outcome you would want. This gate does the opposite because of how it reads the response." },
+            { "text": "The dashboard works normally: GitHub caches collaborator status.", "correct": false, "feedback": "There is no such cache standing in for the check. The 401 is the answer the gate acted on." }
+          ]
+        },
+        "debrief": "Two rules, and the second is the one people miss. **A check that cannot answer must not be read as an answer**: 'not an explicit no' is not the same as yes, and writing it that way turns a credential expiry into a full authorisation bypass. Second, **a credential with a fixed expiry is a scheduled outage you have not scheduled**, and its failure mode wears a disguise: everyone losing access at once looks like a permissions bug, not like a date passing. That is the specific reason a GitHub App was chosen over a personal token here. The App's installation token is short-lived by design and renews itself, so there is no date to remember and nothing to forget. (Constructed scenario. The 401 behaviour, the three-outcome return and the reasoning against a fixed-expiry token are all real and cited.)",
+        "sources": [
+          { "kind": "project", "label": "worker/src/github-app.js L120-133 (the 'not 404 -> allow' failure mode, named in the code)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/src/github-app.js#L120-L133" },
+          { "kind": "project", "label": "worker/src/github-app.js L100-116 (the installation token is cached and re-minted a minute before expiry)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/src/github-app.js#L100-L116" }
+        ]
+      },
+      "recap": [
+        "The admin list is the repository's collaborator list, so adding an admin is a repo setting rather than a deploy.",
+        "The Worker holds a GitHub App credential of its own: the user's token would need broad scope, and a personal token expires on a date nobody remembers.",
+        "The check has three outcomes. 'Could not find out' must fail closed AND be surfaced, never folded into yes or no."
+      ],
+      "fieldNotes": {
+        "glossaryTerms": ["collaborator gate", "GitHub App", "fail closed", "audit log"],
+        "resources": ["gh-apps", "gh-collaborators", "mdn-403"],
+        "renderCitations": true
+      }
+    },
+    {
+      "id": "d06",
+      "order": 6,
+      "title": "THE MATERIALIZER",
+      "subtitle": "Turning rows into the served map, and withholding a pin without touching the row",
+      "clearance": 6,
+      "estMinutes": 14,
+      "hook": {
+        "type": "terminal-log",
+        "lines": [
+          "> NC-ACAD-02 // clearance check: LEVEL 6 granted",
+          "> subject: the last step. rows in, served records out.",
+          "> [build] 295 published. 1 withheld. 3 candidates.",
+          "> [build] withheld: nexus 28964 (wastebinned, 3 sweeps)",
+          "> [build] locations.status: UNCHANGED. that is the point. begin."
+        ]
+      },
+      "objectives": [
+        "Describe what the materializer does between D1 and the served dataset",
+        "Explain why a deleted mod's pin is withheld at build time rather than by writing status",
+        "Say why 'hidden' on Nexus cannot be automated and 'wastebinned' can"
+      ],
+      "chunks": [
+        {
+          "id": "d06-c1",
+          "type": "text",
+          "heading": "The only builder",
+          "body": "The **materializer** is the code that turns D1 rows into the record map the API serves, and it is the **only** thing that builds that dataset. It reads the published rows, joins each one's tags, works out its district from its coordinates, computes the recency flag against the clock, attaches the archive filenames, and hands the result to the refresh job to hash and store. One detail in it is stranger than it looks and worth knowing: the **order of the keys in each record is load-bearing**. JSON output follows insertion order, and the served payload is a public contract that was fixed byte for byte by the parity gate at the cutover, so a field written in a different position is a difference the gate will catch. That is why `archives` is appended after the record literal rather than sitting inside it.",
+          "sources": [
+            { "kind": "project", "label": "worker/src/materialize.js L1-17 (the only builder of the served dataset; the key order is load-bearing)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/src/materialize.js#L1-L17" },
+            { "kind": "project", "label": "worker/src/materialize.js L131-166 (sort, district, recency, then the record literal)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/src/materialize.js#L131-L166" }
+          ]
+        },
+        {
+          "id": "d06-c2",
+          "type": "text",
+          "heading": "When a mod is deleted from Nexus",
+          "body": "A pinned mod can disappear underneath the map. The cron asks Nexus about every pinned mod, and Nexus states a status. Three non-published outcomes are observable and they are **not** treated alike. `wastebinned` means deleted, which is unambiguous, so after **three consecutive sweeps** confirm it the pin is withheld from the built dataset. `hidden` gets a review-list entry and one alert, and nothing else. A mod simply **absent** from the response needs six sweeps and 24 hours before it is even mentioned, because absence is the only one of the three a Nexus failure can manufacture: a failed request returns no node, but it never returns a node saying `wastebinned`. Three sweeps is roughly fifteen minutes on a five-minute cron, and it is confirmation that the signal is real, not a grace period for anybody.",
+          "sources": [
+            { "kind": "project", "label": "worker/src/materialize.js L96-105 (records whose mod is confirmed deleted on consecutive sweeps)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/src/materialize.js#L96-L105" },
+            { "kind": "project", "label": "worker/migrations/0009_nexus_mod_status.sql (the table that tracks consecutive sweeps)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/migrations/0009_nexus_mod_status.sql" }
+          ]
+        },
+        {
+          "id": "d06-c3",
+          "type": "callout",
+          "variant": "policy",
+          "heading": "Withhold at build time, never by writing status",
+          "body": "There were two ways to pull that pin. Write `locations.status = 'hidden'` from the cron, using the column that already exists. Or pass the withheld ids into the build and skip those records, **leaving the row completely untouched**. The second was chosen, and the reasons are worth more than the mechanism. **The invariant survives literally**: 'the only writers of `locations.status` are a human editing or approving' stays true, instead of becoming 'and also the cron, sometimes', which is the kind of exception that has to be remembered at every future reading of that column. **It self-heals**: if Nexus republishes the mod, the row is already correct, the withhold lifts and the next build serves the pin with nobody involved. Under the other design an admin has to notice and manually un-hide, and nothing tells them to. And **nothing needs undoing if the signal was wrong**, because the record is exactly as the admin left it.",
+          "sources": [
+            { "kind": "project", "label": "worker/src/materialize.js L96-101 (withheld HERE rather than by writing locations.status, so a reversal restores the pin with nobody involved)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/src/materialize.js#L96-L101" },
+            { "kind": "project", "label": "worker/src/materialize.js L102-105 (published minus withheld, computed at build time)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/src/materialize.js#L102-L105" }
+          ]
+        },
+        {
+          "id": "d06-c4",
+          "type": "callout",
+          "variant": "warning",
+          "heading": "The cost: two true numbers that disagree",
+          "body": "That design has a price and it was paid deliberately. **'Published in the registry' and 'served to the map' can now legitimately differ**, and the admin dashboard compares exactly those two numbers to warn about drift. Left alone, a withheld pin would make that alarm fire forever, and rebuilding would not clear it. So the drift row subtracts the withheld pins, and a rebuild the dashboard itself triggered reads as 'rebuilding after your change' in neutral rather than as drift in red. The reasoning behind that, from the code's own comment, is the transferable part: **a spurious alarm is worse than no alarm, because it trains the reader to dismiss it, and the one time it is real it looks identical.** This is also why the build **names** the withheld records on `/v1/meta` rather than counting them: 'three records withheld' is a number nobody can check.",
+          "sources": [
+            { "kind": "project", "label": "worker/src/materialize.js L168-176 (withheld reported by name, not counted)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/src/materialize.js#L168-L176" },
+            { "kind": "project", "label": "worker/src/materialize.js L96-101 (a published record not served is otherwise a silent disagreement)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/src/materialize.js#L96-L101" }
+          ]
+        },
+        {
+          "id": "d06-c5",
+          "type": "text",
+          "heading": "And what a candidate is",
+          "body": "The same pass produces the other list you have already met. Every mod tagged `NCZoning` that is **not** on the map and has **not** been dismissed is a **candidate**, published on `/v1/meta` as `skipped`. That definition changed: it used to mean only the mods whose metadata block failed to parse, back when a parseable block published a pin automatically. Nothing publishes from a block any more, so a mod carrying one is a candidate like any other, and filtering the list down to the broken ones would only hide work from the reviewer. If you took TRANSMISSION PROTOCOLS before this course, that is the change behind the `skipped` field you read there.",
+          "sources": [
+            { "kind": "project", "label": "worker/src/materialize.js L120-128 (every such mod is listed; the block parser used to filter this list down)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/src/materialize.js#L120-L128" },
+            { "kind": "project", "label": "worker/migrations/0001_initial_schema.sql L65-72 (dismissed_candidates keeps a mod off this list)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/migrations/0001_initial_schema.sql#L65-L72" }
+          ]
+        }
+      ],
+      "lab": {
+        "id": "d06-lab",
+        "title": "READ THE BUILD'S OWN REPORT",
+        "briefing": "The build tells you what it decided. /v1/meta carries the candidates it found, and the healthy case is the one you should be able to read confidently as 'nothing to do'.",
+        "steps": [
+          "TRANSMIT and read discovery_stale and the skipped list",
+          "Read each skipped entry as a candidate waiting for a reviewer, not as an error",
+          "Switch to 'withheld' and work out what changed about the map without any row changing"
+        ],
+        "request": { "method": "GET", "path": "/v1/meta", "query": {}, "headers": {}, "editable": [] },
+        "expected": { "status": [200], "headersOfInterest": ["ETag"], "shapeHints": ["skipped lists open candidates", "a withheld pin is a published record that is not being served"] },
+        "canned": [
+          {
+            "when": "default",
+            "status": 200,
+            "headers": { "Content-Type": "application/json; charset=utf-8", "ETag": "\"6880457c51396f9a3ccefe9b88a87f8e3c2b2f2f0ebe18831bd4d8337eaca54d\"" },
+            "body": { "schema": 1, "generated_at": "2026-08-02T07:04:42.505Z", "dataset_version": "6880457c51396f9a3ccefe9b88a87f8e3c2b2f2f0ebe18831bd4d8337eaca54d", "recently_updated_days": 7, "data": { "discovery_stale": false, "skipped": [] } }
+          },
+          {
+            "when": "withheld",
+            "status": 200,
+            "headers": { "Content-Type": "application/json; charset=utf-8", "ETag": "\"c4d5e6f708192a3b4c5d6e7f80912a3b4c5d6e7f8091a2b3c4d5e6f708192a3b\"" },
+            "body": { "schema": 1, "generated_at": "2026-08-02T07:20:47.726Z", "dataset_version": "c4d5e6f708192a3b4c5d6e7f80912a3b4c5d6e7f8091a2b3c4d5e6f708192a3b", "recently_updated_days": 7, "data": { "discovery_stale": false, "skipped": [{ "nexus_id": "31383", "name": "watson warehouse apartment and garage" }] } }
+          }
+        ],
+        "debrief": "The default case is a real capture from 2026-08-02, when the candidates list happened to be empty: everything tagged had been triaged. The second case is RECONSTRUCTED to show a candidate present. Note what /v1/meta does and does not tell a public reader: it publishes the candidates, and the withheld list is reported to the dashboard rather than to /v1, because a withheld pin is an operational fact about the build rather than part of the public record contract. The thing to carry forward is the reading habit. An empty skipped list is not the absence of information, it is a positive statement that nothing is waiting.",
+        "sources": [
+          { "kind": "project", "label": "worker/src/materialize.js L120-128 (skipped is every open candidate)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/src/materialize.js#L120-L128" },
+          { "kind": "project", "label": "worker/src/index.js L165-171 (GET /v1/meta serves discovery_stale and skipped)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/src/index.js#L165-L171" }
+        ]
+      },
+      "quiz": [
+        {
+          "id": "d06-q1",
+          "type": "mcq",
+          "prompt": "A mod is confirmed wastebinned on Nexus and its pin comes off the map. What happened to the row in locations?",
+          "options": [
+            { "text": "Nothing. The build skipped it; status is still whatever the admin last set.", "correct": true, "feedback": "Correct, and that is what lets it self-heal. If Nexus republishes the mod, the withhold lifts and the pin returns with nobody involved." },
+            { "text": "status was set to 'hidden' by the cron.", "correct": false, "feedback": "That was the rejected design. It would make the cron a writer of a column whose only writers are meant to be human, and it would need an admin to notice and manually reverse it." },
+            { "text": "The row was deleted, and re-imported if the mod returns.", "correct": false, "feedback": "Deleting a record over a third party's action would destroy the coordinates, description and credits somebody wrote. Nothing here deletes on a signal." }
+          ],
+          "sources": [
+            { "kind": "project", "label": "worker/src/materialize.js L96-105", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/src/materialize.js#L96-L105" }
+          ]
+        },
+        {
+          "id": "d06-q2",
+          "type": "mcq",
+          "prompt": "Nexus reports a pinned mod as 'hidden' for three consecutive sweeps. What does the system do?",
+          "options": [
+            { "text": "Adds it to a review list and raises one alert. The pin stays up, because a person has to read the author's reason.", "correct": true, "feedback": "Correct. 'hidden' covers an author mid-update and a serious moderation hold with the same string, and the API refuses to distinguish them, so no rule can infer the right response." },
+            { "text": "Withholds the pin, the same as wastebinned, because both mean the mod is unavailable.", "correct": false, "feedback": "Unavailable now is not the same as gone. Authors hide mods mid-update routinely, and the right answer is sometimes to repoint the pin at a successor mod rather than pull it." },
+            { "text": "Waits for a longer confirmation window and then withholds automatically.", "correct": false, "feedback": "Time does not resolve the ambiguity. A mod hidden for twenty minutes and one hidden for a month both need a person to read the reason; waiting only delays the cases that matter." }
+          ],
+          "sources": [
+            { "kind": "project", "label": "worker/src/materialize.js L96-101 (only confirmed-deleted records are withheld)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/src/materialize.js#L96-L101" },
+            { "kind": "project", "label": "worker/src/nexus.js L160-170 (an absent status field must read as published)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/src/nexus.js#L160-L170" }
+          ]
+        }
+      ],
+      "scenario": {
+        "id": "d06-s1",
+        "title": "INCIDENT LOG // THE MOD THAT WAS NOT GONE",
+        "situation": [
+          "> [sweep] nexus 28736 'Jig Jig Revolution': status hidden (sweep 3 of 3)",
+          "> [alert] pinned mod hidden. review required.",
+          "> author's stated reason, from the mod page:",
+          "> 'This mod is obsolete and should no longer be used. Please use this",
+          ">  mod instead: Jig Jig Unleashed - REVOLUTION.'"
+        ],
+        "question": {
+          "type": "mcq",
+          "prompt": "The mod is hidden and the author says it is obsolete. What is the correct action, and what does it say about automating this?",
+          "options": [
+            { "text": "Repoint the pin at the successor mod. No rule could have inferred that from the status alone, which is exactly why 'hidden' waits for a person.", "correct": true, "feedback": "Correct. The map's real subject is the location, and the location still exists; only which mod delivers it has changed. Only someone reading the reason gets there." },
+            { "text": "Withhold the pin, since the mod should no longer be used.", "correct": false, "feedback": "That deletes a location from the map that is still perfectly available, just from a different mod. The player loses the place; nobody is protected." },
+            { "text": "Leave everything alone: the pin still points at a real mod page.", "correct": false, "feedback": "It points at a page telling players not to use it, which is a slow way to be wrong. The record needs updating, which is precisely the human action the alert asked for." }
+          ]
+        },
+        "debrief": "A real case, and the reason the deleted/hidden split exists at all. The generalisable rule: **automate on a signal that means one thing; escalate one that means several.** `wastebinned` means deleted and nothing else, so the system acts on it after confirming the signal is real. `hidden` is one string covering an author fixing an upload, a mod being superseded, and a moderation hold, and the API offers no field that distinguishes them. Building a rule on top of that ambiguity does not remove it, it just hides the judgement inside code where nobody can see it being made badly. Note also what the design bought here: because withholding never writes the row, none of this required an admin to remember to undo anything.",
+        "sources": [
+          { "kind": "project", "label": "worker/src/materialize.js L96-105 (only wastebinned withholds; everything else is a review entry)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/src/materialize.js#L96-L105" },
+          { "kind": "project", "label": "worker/migrations/0009_nexus_mod_status.sql (per-mod status tracking across sweeps)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/migrations/0009_nexus_mod_status.sql" }
+        ]
+      },
+      "recap": [
+        "The materializer is the only builder of the served dataset, and even its key order is fixed by the parity gate.",
+        "A confirmed-deleted mod's pin is withheld at build time and the row is never touched, so the pin returns on its own if the mod does.",
+        "Automate on an unambiguous signal, escalate an ambiguous one, and never let a system raise an alarm that is permanently true."
+      ],
+      "fieldNotes": {
+        "glossaryTerms": ["materializer", "withheld"],
+        "resources": ["cf-d1"],
+        "renderCitations": true
+      }
+    },
+    {
+      "id": "d07",
+      "order": 7,
+      "title": "REGISTRY CERTIFICATION",
+      "subtitle": "Capstone: a change arrives, and you decide what happens to it",
+      "clearance": 7,
+      "estMinutes": 13,
+      "capstone": true,
+      "reward": 2500,
+      "hook": {
+        "type": "terminal-log",
+        "lines": [
+          "> NC-ACAD-02 // clearance check: LEVEL 7 // CERTIFICATION EXAM",
+          "> no new material. the registry is yours to reason about.",
+          "> you will be shown changes, refusals and disagreements.",
+          "> decide what is wrong, what is working, and what to touch.",
+          "> begin."
+        ]
+      },
+      "objectives": [
+        "Trace a change from a submission to a served pin, naming every gate on the way",
+        "Tell a real problem apart from the registry behaving exactly as designed",
+        "Choose the store, and the moment, at which a fix belongs"
+      ],
+      "chunks": [
+        {
+          "id": "d07-c1",
+          "type": "text",
+          "heading": "The whole path, once",
+          "body": "Everything this course covered lines up in one sequence. A person submits, and the Worker refuses them for cost, for humanity, and for correctness in that order. A pending row waits, carrying no authority. A collaborator is identified by GitHub, checked against the repository's collaborator list by the Worker's own credential, and either approved, refused, or told the check could not answer. On approval the payload is validated **again**, against the registry as it stands now, and becomes rows: a location, its tag links, and an audit entry naming who did it. Within five minutes the materializer reads those rows, decides which are served, and writes the result to KV, where the API you learned in the other course answers from. Nothing in that chain trusts the step before it, and every refusal on it says which step refused.",
+          "sources": [
+            { "kind": "project", "label": "worker/src/submissions.js L1-19 (the public write route and what it does not grant)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/src/submissions.js#L1-L19" },
+            { "kind": "project", "label": "worker/src/registry.js L1-15 (one definition, two callers: an approval must produce a record identical to a typed one)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/src/registry.js#L1-L15" }
+          ]
+        }
+      ],
+      "lab": {
+        "id": "d07-lab",
+        "title": "FINAL SWEEP",
+        "briefing": "One last read of the registry through the only window the public has. Cross-check what you can see against what you now know is behind it.",
+        "steps": [
+          "TRANSMIT and read the tag registry",
+          "For each entry, name the column you are looking at",
+          "Then say what you CANNOT see from here, and why that is deliberate"
+        ],
+        "request": { "method": "GET", "path": "/v1/tags", "query": {}, "headers": {}, "editable": [] },
+        "expected": { "status": [200], "headersOfInterest": ["ETag"], "shapeHints": ["every field here is a column, except the name fallback"] },
+        "canned": [
+          {
+            "when": "default",
+            "status": 200,
+            "headers": { "Content-Type": "application/json; charset=utf-8", "ETag": "\"6880457c51396f9a3ccefe9b88a87f8e3c2b2f2f0ebe18831bd4d8337eaca54d\"" },
+            "body": {
+              "schema": 1,
+              "generated_at": "2026-08-02T07:04:42.505Z",
+              "dataset_version": "6880457c51396f9a3ccefe9b88a87f8e3c2b2f2f0ebe18831bd4d8337eaca54d",
+              "recently_updated_days": 7,
+              "data": [
+                { "slug": "entropism", "name": "entropism", "description": "The look of poverty that derives from humans grappling with and struggling against technology and its unforgiving advance. It denotes a lack of design blending with a general poverty of means and ideas.", "sort_order": 1 },
+                { "slug": "corpo", "name": "corpo", "description": "High-end corporate architecture, slick aesthetics, and security-focused areas.", "sort_order": 12 }
+              ]
+            }
+          }
+        ],
+        "debrief": "Real capture, trimmed to two of fourteen rows. What you can see: slug (the primary key, and the value every location_tags row points at), description (NOT NULL), sort_order (what the list is ordered by), and name resolving to the slug because every row stores NULL there. What you cannot see, and should be able to say why: created_at and updated_at are columns that no consumer needs; admin_notes on a location is admin-only by design and never served; the audit log and the submissions queue are behind the collaborator gate because they contain other people's contact details and reviewers' internal notes. A public read surface that showed everything would not be a more honest API, it would be a different and worse one.",
+        "sources": [
+          { "kind": "project", "label": "worker/migrations/0002_tags.sql L20-31 (every column in the tags table)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/migrations/0002_tags.sql#L20-L31" },
+          { "kind": "project", "label": "worker/migrations/0001_initial_schema.sql L36-36 (admin_notes: admin-only, never served on /v1)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/migrations/0001_initial_schema.sql#L36-L36" }
+        ]
+      },
+      "quiz": [
+        {
+          "id": "d07-q1",
+          "type": "order",
+          "prompt": "A visitor submits a new location and it appears on the map. Put the steps in order.",
+          "steps": [
+            "POST /submissions passes the rate limit, Turnstile and validation",
+            "A row lands in submissions with status pending and no authority",
+            "A collaborator signs in; the Worker checks collaborator status with its own App credential",
+            "On approval the payload is validated again against the tag registry as it stands now",
+            "The location row, its location_tags links and an audit_log entry are written",
+            "Within five minutes the materializer rebuilds the dataset from D1 into KV",
+            "The API serves the new record from KV"
+          ],
+          "sources": [
+            { "kind": "project", "label": "worker/src/submissions.js L192-250", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/src/submissions.js#L192-L250" },
+            { "kind": "project", "label": "worker/src/registry.js L1-15", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/src/registry.js#L1-L15" }
+          ]
+        },
+        {
+          "id": "d07-q2",
+          "type": "mcq",
+          "prompt": "The admin dashboard says 296 records are published; the map serves 295. Nothing else is red. What is the most likely explanation?",
+          "options": [
+            { "text": "One published record's mod is confirmed deleted on Nexus, so the build withholds its pin without touching the row. The two numbers are both correct.", "correct": true, "feedback": "Correct. 'Published in the registry' and 'served to the map' are different questions, and this is the case where they legitimately differ. The dashboard subtracts the withheld pins so the drift alarm does not fire permanently." },
+            { "text": "The rebuild failed and KV is a build behind.", "correct": false, "feedback": "That would show as discovery_stale, or as a heartbeat that stopped advancing. A clean build that serves one fewer record is a decision, not a failure." },
+            { "text": "A record was deleted from D1 and the dashboard is caching an old count.", "correct": false, "feedback": "Possible in principle, but it does not fit 'nothing else is red', and it is not the case the system is built to produce. Reach for the designed explanation before the exotic one." }
+          ],
+          "sources": [
+            { "kind": "project", "label": "worker/src/materialize.js L96-105", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/src/materialize.js#L96-L105" }
+          ]
+        },
+        {
+          "id": "d07-q3",
+          "type": "spot-wrong",
+          "prompt": "Which of these statements about the registry is WRONG?",
+          "options": [
+            { "text": "\"A submission with a valid payload is applied to the map once the rate limit window clears.\"", "correct": true, "feedback": "This is the wrong one. Nothing a submission says reaches the map without a collaborator approving it. The rate limit governs how fast submissions arrive, never whether one takes effect." },
+            { "text": "\"An unknown tag from an admin is refused; an unknown tag in a third-party Nexus description is dropped.\"", "correct": false, "feedback": "True, and deliberate. An admin typing a bad tag has made a mistake worth surfacing; a stranger's mod description has not." },
+            { "text": "\"A correction to the audit log is written as another row.\"", "correct": false, "feedback": "True. It is append-only: never updated, never deleted." },
+            { "text": "\"The KV dataset can be deleted entirely and rebuilt from D1.\"", "correct": false, "feedback": "True, and it is the definition of a derived store. The reverse is not true, which is why D1 has a nightly export and Time Travel behind it." }
+          ],
+          "sources": [
+            { "kind": "project", "label": "worker/src/submissions.js L17-19 (nothing published by this route reaches the map)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/src/submissions.js#L17-L19" },
+            { "kind": "project", "label": "worker/src/validate.js L41-47", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/src/validate.js#L41-L47" }
+          ]
+        }
+      ],
+      "scenario": {
+        "id": "d07-s1",
+        "title": "REGISTRY CERTIFICATION // MIXED SIGNAL",
+        "situation": [
+          "> a contributor reports: 'I fixed a typo in a location name an hour ago. It is back.'",
+          "> audit_log: no entry for that location in the last 24 hours",
+          "> /v1/meta: discovery_stale false, skipped empty",
+          "> /v1/health: version 0.5.1, refresh_age_seconds 94",
+          "> the contributor is not a repository collaborator"
+        ],
+        "question": {
+          "type": "mcq",
+          "prompt": "Certification question: what happened, and what is the right action?",
+          "options": [
+            { "text": "They never wrote to the registry. An empty audit log plus a healthy build means no change was applied, and as a non-collaborator they could only have submitted. Find their pending submission and review it.", "correct": true, "feedback": "Correct. Every signal here is green, and the audit log is the one that settles it: writes are recorded, so no entry means no write. Their edit is a pending submission waiting for someone with the gate's permission." },
+            { "text": "The rebuild overwrote their change: fix the row in D1 directly.", "correct": false, "feedback": "The rebuild does overwrite KV, but a change that reached D1 would have left an audit entry, and it would survive the rebuild. There is nothing in the registry to have been overwritten." },
+            { "text": "The build is serving a stale dataset: force a rebuild.", "correct": false, "feedback": "refresh_age_seconds is 94 on a five-minute cron and discovery_stale is false, so the build is healthy and current. Rebuilding would change nothing and would cost you the chance to read the signals properly." },
+            { "text": "Their submission was rejected by validation and the error was lost.", "correct": false, "feedback": "A refusal never creates a pending row and never reaches the registry, so this fits the audit log too. But it does not fit the report: they described making the change, not being refused, and a 422 is answered to their face while they are still on the form." }
+          ]
+        },
+        "debrief": "The reasoning to take away is the order you read the signals in. Start with the one that cannot be ambiguous: the audit log records every write, so an empty one for that record rules out every explanation involving a change that happened and then went away. Then the build's health rules out staleness. Then the person's role tells you which door they came through: a non-collaborator can submit, and submitting is not changing. This is the shape of most registry incidents. Not a failure, but a step somebody believed was further along than it was, and the system's own records saying so plainly to anyone who reads them in the right order.",
+        "sources": [
+          { "kind": "project", "label": "worker/src/audit.js L1-12 (every data change is recorded here, because git no longer records it)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/src/audit.js#L1-L12" },
+          { "kind": "project", "label": "worker/src/submissions.js L17-19 (a submission is not a change)", "url": "https://github.com/nczoning/nc-zoning-board/blob/091b0691bf990e92d34fbfa844fab804f1398ce4/worker/src/submissions.js#L17-L19" }
+        ]
+      },
+      "recap": [
+        "Submit, gate, wait, authorise, re-validate, write the row and the audit entry, rebuild, serve. Nothing trusts the step before it.",
+        "Read the audit log first in any registry incident: writes are recorded, so no entry means no write.",
+        "The registry disagreeing with the map is sometimes the design working. Know which disagreements are designed before you fix one."
+      ],
+      "fieldNotes": {
+        "glossaryTerms": ["registry of record", "write path", "fail closed", "materializer", "parity gate", "candidate"],
+        "resources": ["cf-d1", "gh-apps"],
+        "renderCitations": true
+      }
+    }
+  ]
+}
