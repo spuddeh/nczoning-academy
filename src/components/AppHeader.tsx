@@ -1,8 +1,9 @@
 // Shared app header chrome: brand, nav tabs, clearance + balance cluster.
 // Measured spec: docs/monolith-parity-spec.md, "App shell". The balance
-// button opens the transaction-history modal; the header GLOSSARY button is
-// the ≤640px opener (the FAB hides there). DASHBOARD is the active tab for
-// both the dashboard and player views (the monolith's navTabStyle rule).
+// button opens the transaction-history modal; the header GLOSSARY button is the
+// ≤640px opener (the FAB hides there, and the label drops to its icon).
+// DASHBOARD is the active tab for both the dashboard and player views (the
+// monolith's navTabStyle rule).
 import { useMemo } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { IDENTITY, clearanceAndRank } from '../lib/academy';
@@ -76,8 +77,9 @@ export function AppHeader({
           onClick={onOpenGlossary}
         >
           <BookIcon size={14} />
-          {/* dropped below 400px, where the meta row runs out of room; the
-              book icon carries it, same as JACK OUT's power glyph */}
+          {/* dropped on a phone, where .hdr-meta's width is what the nav and
+              the brand have to work around; the book icon carries it, same as
+              JACK OUT's power glyph */}
           <span className="gloss-hdr-txt">GLOSSARY</span>
         </button>
         <div className="hdr-clearance">

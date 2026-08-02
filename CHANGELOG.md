@@ -32,9 +32,12 @@ file records what a visitor receives.
   overflowing. The controls never shrink, the two destinations scroll (and fade
   at the edge, so a clipped nav looks clipped rather than broken), and the brand
   truncates last. On a phone the destinations get a row to themselves as
-  full-width tabs, rather than sharing 54px with everything else, and the ZONING
-  ACADEMY wordmark stands down so that row costs nothing: the monogram carries
-  the identity and the header is no taller than it was.
+  full-width tabs, rather than sharing 54px with everything else. The ZONING
+  ACADEMY wordmark and the GLOSSARY label stand down so that row costs nothing:
+  the monogram and the book icon say the same thing in a fifth of the width, and
+  the header is two rows and shorter than it was before any of this. On a screen
+  as narrow as an iPhone SE the monogram goes too, rather than spend a third row
+  on it.
 - NC Radio's corner pill becomes a single icon on a phone, so it no longer parks
   a 205px readout over the bottom-right of whatever you are reading, and it
   steps out of the way entirely while the module map drawer is open. The radio

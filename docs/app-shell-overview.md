@@ -117,8 +117,9 @@ tracks.
   to the shard.
 
 ### Responsive shell
-Phone (≤640px), tablet (≤1024px) and desktop, plus a small-phone block (≤400px)
-for the two places where a 320px screen still runs out of room. Breakpoints are
+Phone (≤640px), tablet (≤1024px) and desktop, plus two narrow blocks for the
+places a 320px screen still runs out of room: ≤400px scales the shard reader
+(`record.css`), ≤350px drops the brand monogram (`style.css`). Breakpoints are
 bare pixel literals, not tokens: a custom property cannot be used in a media
 condition. The sharp Night Corp look is preserved throughout (no softened
 corners, borders, or type), touch targets are finger-sized, code blocks / tables
@@ -142,9 +143,12 @@ Four rules the shell holds to, each of which was learned by breaking it (#5):
 - **Every fixed scrim owns its scroll.** `body { overflow: hidden }` means an
   overlay taller than the viewport is unreachable rather than merely awkward.
 
-The phone header is two rows — monogram plus controls, then the two
-destinations as full-width tabs — and the ZONING ACADEMY wordmark is dropped to
-pay for the second row. `src/lib/headerChrome.ts` adds the two behaviours CSS
+The phone header is two rows at every width — monogram plus controls, then the
+two destinations as full-width tabs. `.hdr-meta` is the one thing in it that
+never gives way (four 44px finger targets and the balance figure, 258px, none of
+it decorative), so the second row is paid for out of everything else: the ZONING
+ACADEMY wordmark goes, the GLOSSARY label drops to its icon, the gap to the now
+empty brand column goes, and below 350px the monogram goes too. `src/lib/headerChrome.ts` adds the two behaviours CSS
 cannot express:
 
 - **`useNavTuck`** slides the destinations away on scroll down and back on

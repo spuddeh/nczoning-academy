@@ -730,7 +730,11 @@ input::placeholder {
      No --fs-heading rebinding here: nothing left in the header uses that role. */
   .hdr-brand-title { display: none; }
   .hdr-logo { height: 30px; }
-  .hdr-meta { order: 2; margin-left: auto; gap: var(--space-md) !important; }
+  /* Both text lines are hidden here, so the gap to them is 16px spent on an
+     empty column — and 16px of a 320px header row is a third of what stops the
+     brand and the controls sharing one. */
+  .hdr-brand { gap: 0; }
+  .hdr-meta { order: 2; margin-left: auto; gap: var(--space-sm) !important; }
   .hdr-nav {
     order: 3;
     width: 100%;
@@ -762,9 +766,21 @@ input::placeholder {
      AppHeader.tsx. With a row to themselves the two tabs split it evenly. */
   .hdr-nav button { flex: 1; min-height: 44px; white-space: nowrap; }
   .hdr-nav-word { display: none; }
-  /* glossary moves into the header row; the fixed floater hides */
+  /* Glossary moves into the header row and the fixed floater hides. Icon-only
+     here, like JACK OUT: .hdr-meta is the one thing in this header that never
+     gives way (see .hdr-brand), so every word it carries is width the nav and
+     the brand have to find somewhere else. The book glyph is the same
+     affordance for 46px less, and it keeps the cluster at 264px — the margin
+     that stops a fourth control forcing the header back to three rows. */
   .gloss-fab { display: none !important; }
-  .gloss-hdr { display: inline-flex !important; padding: var(--space-xs) var(--space-md) !important; min-height: 44px; }
+  .gloss-hdr {
+    display: inline-flex !important;
+    padding: var(--space-xs) var(--space-md) !important;
+    min-height: 44px;
+    min-width: 44px;
+    justify-content: center;
+  }
+  .gloss-hdr-txt { display: none; }
   /* JACK OUT is already icon-only from the tablet block up. What the phone
      adds is the finger target: padding around a 13px glyph gave it a 29px-wide
      hit area, under the 44px floor this block sets for every other button. */
@@ -803,12 +819,14 @@ input::placeholder {
   input:not([type="file"]) { min-height: 44px; }
 }
 
-/* Small phone (≤400px): a third breakpoint, and it earns its keep.
-   .hdr-meta does not shrink — it is `margin-left: auto` next to a nav that
-   does — so once GLOSSARY, BALANCE, the bell and a 44px JACK OUT are lined up
-   it needs 345px, and at 320px (iPhone SE) that hangs JACK OUT 39px off the
-   edge. Dropping the one remaining word in the cluster gets it to fit. */
-@media (max-width: 400px) {
-  .gloss-hdr-txt { display: none; }
-  .gloss-hdr { min-width: 44px; justify-content: center; }
+/* Very small phone (≤350px): the monogram stands down too.
+   The controls cost 258px and none of that is decoration — four 44px finger
+   targets and the balance figure. Add the monogram's 46px and the row gap and
+   the first header row wants 318px, which a 320px screen (iPhone SE 1) does not
+   have, so the brand wrapped and the header went back to three rows. Between
+   the mark and a whole extra row of chrome on the smallest screen we support,
+   the row is worth more: the nav below still says where you are. Everything
+   from 360px up keeps the monogram. */
+@media (max-width: 350px) {
+  .hdr-brand { display: none; }
 }
