@@ -69,6 +69,7 @@
 }
 
 .modal-close {
+  flex: none; /* the title gives way, never the way out of the modal */
   background: transparent;
   border: 1px solid rgb(from var(--bg) r g b / 0.5);
   color: var(--bg);
@@ -403,8 +404,29 @@
 /* ---- narrow (≤640px) ---- */
 
 @media (max-width: 640px) {
-  .modal-scrim.txn { padding: var(--space-4xl) var(--space-sm); }
-  .modal-box.gold { max-height: calc(100vh - 40px); }
+  /* Both modals, not just the ledger (#5). The 56px top inset and the
+     `100vh - 112px` cap were written for the ledger and left the glossary
+     paying a desktop scrim on a phone. Same shell, same treatment. */
+  .modal-scrim { padding: var(--space-4xl) var(--space-sm); }
+  .modal-box { max-height: calc(100vh - 40px); }
+
+  /* a long term must not push its badge off the edge */
+  .gloss-body { padding: var(--space-5xl) var(--space-xl) var(--space-5xl); }
+  .gloss-card { padding: var(--space-2xl) var(--space-xl); }
+  .gloss-term-row { flex-wrap: wrap; }
+  .gloss-term { min-width: 0; overflow-wrap: anywhere; }
+  /* Its own row. The desktop `min-width: 240px` forced a wrap that fitted at
+     390px and overflowed at 320px; relaxing it to 0 fixed the overflow and
+     collapsed the field to 24px beside the tier chips, which is worse. Say
+     what is actually wanted: full width, chips underneath. */
+  .gloss-search { min-width: 0; flex: 1 0 100%; }
+
+  /* The titlebar is a space-between row and the title does not shrink, so on a
+     320px screen it pushed [ CLOSE ] off the card entirely. */
+  .modal-titlebar { padding: var(--space-lg) var(--space-xl); gap: var(--space-md); }
+  .modal-title { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .modal-title-sub { display: none; }
+
   .txn-body { padding: var(--space-2xl) var(--space-xl) var(--space-5xl); }
   .txn-cell { flex: 1 1 calc(50% - 6px); min-width: calc(50% - 6px); padding: var(--space-md) var(--space-lg); }
   .txn-cell-val { font-size: var(--fs-secondary); }

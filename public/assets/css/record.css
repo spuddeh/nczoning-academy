@@ -37,6 +37,10 @@
   align-items: center;
   gap: var(--space-2xl);
   margin: 0 0 var(--space-xs);
+  /* SERVICE RECORD SHARD at 38px next to a 68px shard icon needs 312px, which
+     is 2px more than a 390px screen has left after the page gutter. Let it drop
+     to a second line rather than hang off the edge. */
+  flex-wrap: wrap;
 
   img { display: block; flex-shrink: 0; }
 }
@@ -371,11 +375,16 @@
   justify-content: center;
   background: rgb(from var(--field-bg) r g b / 0.78);
   backdrop-filter: blur(3px);
+  padding: var(--scrim-pad) var(--space-lg);
+  overflow: auto; /* see .confirm-scrim: a clipped dialog is an unreachable one */
 }
 
 .shard-box {
   width: 460px;
-  max-width: 92%;
+  /* 100%, not 92%: the scrim now supplies the breathing room as padding, so the
+     box can use all of what is left. At 390px that is 366px, and .shard-stage
+     is a fixed 270px plus 64px of wrap padding. */
+  max-width: 100%;
   background: rgb(from var(--field-bg) r g b / 0.97);
   border: 1px solid var(--shard-accent);
   box-shadow: 0 0 44px var(--shard-glow);
@@ -414,10 +423,21 @@
   padding: 36px var(--scrim-pad) var(--space-5xl);
   display: flex;
   justify-content: center;
+  /* The chip is absolutely positioned and ends its travel 20px past the stage's
+     own right edge. It has room inside this box at every width the phone rules
+     below allow, but clip anyway: an escaped chip would paint over the card
+     border rather than simply look wrong. */
+  overflow: hidden;
 }
 
 .shard-stage {
   position: relative;
+  /* flex: none, because the reader (152px) and the chip's 120px travel are
+     absolute and composed against exactly 270px. As a shrinkable flex item its
+     min-content is 0 — the stage would collapse on a narrow screen and leave
+     the animation painting outside it. It keeps its width; the wrap gives up
+     padding instead (see the ≤640px block). */
+  flex: none;
   width: 270px;
   height: 92px;
 }
@@ -526,6 +546,27 @@
   &.err { color: var(--danger); }
 }
 
+/* ---- phone (≤640px) ---- */
+/* Rebind the gutter token rather than !important the padding at the call site
+   (house pattern). 40px each side is a fifth of a 390px screen. */
+
+@media (max-width: 640px) {
+  .record-main { --frame-gutter: var(--space-xl); }
+  /* The shard stage cannot shrink, so the padding around it must: 270px of
+     stage needs the wrap down to 10px a side to survive a 390px screen. */
+  .shard-stage-wrap { padding: var(--space-6xl) var(--space-md) var(--space-xl); }
+}
+
+/* Below 400px the padding has nothing left to give and the chip's 120px travel
+   lands 8px outside the card. `zoom`, not `transform: scale()`: the stage is a
+   fixed 270px composition with everything inside it positioned in absolute
+   pixels against that number, so it has to shrink in LAYOUT, not just in paint.
+   A transform would leave the 270px box — and the overflow — exactly where it
+   was, and only make the picture smaller. */
+@media (max-width: 400px) {
+  .shard-stage { zoom: 0.82; }
+}
+
 /* ---- red confirm dialogs (slot overwrite / purge), z 9999 ---- */
 
 /* Its own root: also used by the player's purge/overwrite confirms. */
@@ -543,6 +584,10 @@
   align-items: center;
   justify-content: center;
   padding: var(--scrim-pad);
+  /* body { overflow: hidden } means an overlay that outgrows the viewport is
+     not awkward, it is unreachable — no CANCEL, no CONFIRM, no way to scroll to
+     them. A landscape phone is 390px tall. Every fixed scrim owns its scroll. */
+  overflow: auto;
 }
 
 .confirm-box {
@@ -586,6 +631,7 @@
 .confirm-actions {
   display: flex;
   gap: var(--space-lg);
+  flex-wrap: wrap; /* the two buttons do not fit one line at 320px */
 }
 
 .confirm-primary {

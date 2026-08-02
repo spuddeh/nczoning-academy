@@ -59,7 +59,11 @@ export function AppHeader({
           type="button"
           onClick={() => navigate('/record')}
         >
-          SERVICE RECORD
+          {/* Same trick as .hdr-logout-txt: the nav row is the flex child that
+              gets squeezed on a phone, and the label was clipping mid-word with
+              no scroll affordance (#5). Dropping the first word at ≤640px is
+              what makes the two-row header fit. */}
+          <span className="hdr-nav-word">SERVICE </span>RECORD
         </button>
       </nav>
       <div className="hdr-meta">
@@ -70,7 +74,9 @@ export function AppHeader({
           onClick={onOpenGlossary}
         >
           <BookIcon size={14} />
-          GLOSSARY
+          {/* dropped below 400px, where the meta row runs out of room; the
+              book icon carries it, same as JACK OUT's power glyph */}
+          <span className="gloss-hdr-txt">GLOSSARY</span>
         </button>
         <div className="hdr-clearance">
           <div className="hdr-clearance-label">OPERATOR CLEARANCE</div>

@@ -87,6 +87,13 @@
   z-index: var(--z-overlay);
   width: 300px;
   max-width: calc(100vw - 44px);
+  /* Not in the ≤640px block, because this is a HEIGHT problem and a phone in
+     landscape is 844px wide and 390px tall (#5). The panel is a tall stack —
+     now playing, transport, station chips, two volume rows — and had no bound
+     at all, so its titlebar (with the only way to close it) rose off the top
+     of the screen with body { overflow: hidden } underneath. */
+  max-height: calc(100vh - 44px);
+  overflow-y: auto;
   background: rgba(8, 18, 34, 0.97);
   border: 1px solid var(--primary);
   box-shadow: 0 0 40px rgb(from var(--primary) r g b / 0.22);
@@ -335,9 +342,34 @@
 }
 .radio-volrange {
   width: 100%;
+  margin: 0; /* the UA default 2px each side puts a 100%-wide range 4px over */
   accent-color: var(--primary);
   cursor: pointer;
   height: 4px;
 
   &:disabled { cursor: default; opacity: 0.35; }
+}
+
+/* ---- phone (≤640px): the pill becomes a FAB ---- */
+/* A ~205px pill parked in the bottom-right corner covers content on a 390px
+   screen, and the readout it carries (frequency + scrolling track title) is
+   chrome, not information anyone came for (#5). Collapse it to the EQ bars —
+   or the standby triangle, which is the one state you do need to notice — and
+   let the panel carry the detail. The panel already clamps to the viewport. */
+
+@media (max-width: 640px) {
+  .radio-pill {
+    padding: var(--space-md);
+    gap: 0;
+    min-width: 44px;
+    min-height: 44px;
+    justify-content: center;
+
+    .radio-freq, .radio-track-window { display: none; }
+  }
+
+  /* The off-canvas module-map drawer is z 60 and this is z 9995, so the FAB
+     floated over an open drawer and above its backdrop. Same :has() scoping
+     admin.css uses to opt one view out of the shell's scroll rules. */
+  body:has(.player-rail.open) .radio-pill { display: none; }
 }

@@ -117,11 +117,33 @@ tracks.
   to the shard.
 
 ### Responsive shell
-Phone (<~640px), tablet (~640–1024px), and desktop breakpoints preserving the
-sharp Night Corp look (no softened corners, borders, or type). Finger-sized
-touch targets, horizontally-scrolling wrappers for code blocks / tables / lab
-JSON so the page never scrolls sideways, and gesture-proofed hover states with
-tap/active equivalents.
+Phone (≤640px), tablet (≤1024px) and desktop, plus a small-phone block (≤400px)
+for the two places where a 320px screen still runs out of room. Breakpoints are
+bare pixel literals, not tokens: a custom property cannot be used in a media
+condition. The sharp Night Corp look is preserved throughout (no softened
+corners, borders, or type), touch targets are finger-sized, code blocks / tables
+/ lab JSON scroll inside their own wrappers, and hover states have tap/active
+equivalents.
+
+Four rules the shell holds to, each of which was learned by breaking it (#5):
+
+- **A view's type sizes are rebound in the view's own stylesheet.** Both
+  `style.css` and `dashboard.css` bind the `--fs-*` roles on `.dash-scroll`,
+  `dashboard.css` is linked later, and a media query adds no specificity — so
+  the phone sizes that lived in `style.css` lost the cascade and did nothing.
+  Rebinding the role is still the pattern; the file it happens in is part of it.
+- **Decide who gives way.** In the header the controls never shrink, the nav
+  scrolls, the brand truncates last. Three `flex: none` children under
+  `space-between` have a hard minimum width and simply overflow below it, and
+  hiding one more element per breakpoint only moves where that happens.
+- **A height problem is capped by height.** The radio panel and the broadcast
+  popover cap against `100vh`, not inside the ≤640px block: a phone in landscape
+  is 844px wide and 390px tall.
+- **Every fixed scrim owns its scroll.** `body { overflow: hidden }` means an
+  overlay taller than the viewport is unreachable rather than merely awkward.
+
+`npm run harness:overflow <label>` measures all of this — see
+`scripts/parity/README.md`.
 
 ## Files
 

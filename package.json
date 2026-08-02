@@ -15,6 +15,7 @@
     "harness:selftest": "node scripts/parity/selftest.mjs",
     "harness:snapshot": "node scripts/parity/snapshot-styles.mjs",
     "harness:compare": "node scripts/parity/compare-styles.mjs",
+    "harness:overflow": "node scripts/parity/overflow-audit.mjs",
     "harness:clean": "node -e \"require('fs').rmSync('scripts/parity/out',{recursive:true,force:true});console.log('removed scripts/parity/out')\"",
     "freshness": "node scripts/check-freshness.mjs",
     "validate:messages": "node scripts/validate-messages.mjs",

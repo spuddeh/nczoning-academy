@@ -17,6 +17,15 @@
   position: fixed;
   inset: 0;
   display: grid;
+  /* The `0` minimum is load-bearing (#5). An implicit `auto` track sizes to its
+     content's max-content contribution, so at a 390px viewport this track
+     computed to 560px — the width of .lock-stack — and .lock-stack's
+     `max-width: 100%` then resolved against the TRACK rather than the screen,
+     satisfied itself, and overflowed anyway. .boot-card carries the identical
+     `width: 640px; max-width: 100%` and behaves, purely because .boot-screen is
+     flex. `max-width: 100%` is a promise about the containing block, and a grid
+     track will grow to make that promise true. */
+  grid-template-columns: minmax(0, 1fr);
   place-items: center;
   background: var(--bg);
   z-index: var(--z-view);
