@@ -144,9 +144,20 @@ export function migrateRecord(rec: unknown, course: Course): ProgressRecord {
     ? { [active]: slice(r) }
     : Object.fromEntries(Object.entries(obj(r.courses)).map(([id, v]) => [id, slice(v)]));
 
-  // A record naming a course it holds no slice for is not an error: it is a
-  // fresh operator, or one whose active course was removed from the index.
-  if (!courses[active]) courses[active] = slice({});
+  // A record naming a course it holds no slice for. Usually a fresh operator.
+  // But if it holds EXACTLY ONE slice under a different id, the record is
+  // mis-keyed rather than empty, and adopting the empty default would discard
+  // real progress silently. One slice is unambiguous, so recover it; anything
+  // else stays a fresh start rather than a guess.
+  if (!courses[active]) {
+    const ids = Object.keys(courses);
+    if (ids.length === 1) {
+      courses[active] = courses[ids[0]];
+      delete courses[ids[0]];
+    } else {
+      courses[active] = slice({});
+    }
+  }
 
   return {
     schema: RECORD_SCHEMA,

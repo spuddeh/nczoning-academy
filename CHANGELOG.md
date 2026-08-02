@@ -11,6 +11,21 @@ file records what a visitor receives.
 
 ## [Unreleased]
 
+## 0.17.1 - 2026-08-02
+
+### Fixed
+
+- A saved record loaded, then read as empty: the operator signed in, the
+  balance was right for a moment, and a refresh or a move into a module reset
+  them to a clean slate. 0.17.0 made the course id load-bearing for looking up
+  progress, and the session snapshot was being written before the course had
+  finished loading, so it filed the progress under a placeholder id while
+  naming the real course. The next load asked for the named course, found
+  nothing under it, and served a fresh operator. Snapshots now wait for the
+  course. A record that already names one course and stores its progress under
+  exactly one other is repaired on load rather than discarded, since one slice
+  is unambiguous.
+
 ## 0.17.0 - 2026-08-02
 
 ### Added

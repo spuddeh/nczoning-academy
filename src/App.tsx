@@ -310,18 +310,26 @@ export function App() {
   // prefs change. The session snapshot (refresh continuity, issue #9) writes
   // in BOTH persist modes; the durable profile stays persist-gated.
   useEffect(() => {
-    if (!signedIn) return;
+    // `course` is part of the gate, not just `signedIn`. The session-restore
+    // path sets signedIn from a flag at MOUNT, before the course resolves, and
+    // a snapshot taken in that window files its progress under the placeholder
+    // id. The record then names one course and stores its progress under
+    // another, so the next load finds nothing and the operator reads as fresh.
+    // v1 survived this because its progress sat at the top level whatever the
+    // `course` string said; v2 made the id load-bearing, which turned a
+    // harmless placeholder into silent data loss (issue #73).
+    if (!signedIn || !course) return;
     const t = window.setTimeout(() => {
       writeSession(snapshot());
       if (cfg().persist && progress) { try { progress.save(); } catch { /* storage unavailable */ } }
     }, 400);
     return () => window.clearTimeout(t);
-  }, [op, radioSt, sfxMuted, sfxVol, signedIn, progress, snapshot]);
+  }, [op, radioSt, sfxMuted, sfxVol, signedIn, course, progress, snapshot]);
 
   // A refresh can land inside that 400ms window; flush the snapshot on
   // pagehide so the last action survives the reload.
   useEffect(() => {
-    const flush = () => { if (live.current.signedIn) writeSession(snapshot()); };
+    const flush = () => { if (live.current.signedIn && live.current.course) writeSession(snapshot()); };
     window.addEventListener('pagehide', flush);
     return () => window.removeEventListener('pagehide', flush);
   }, [snapshot]);
