@@ -215,13 +215,21 @@ export interface RecordAudio {
   off?: boolean;
 }
 
-// The REAL ncza-record/v1 shape, as shipped by the 0.1.0 monolith
-// (docs/monolith-parity-spec.md, "Record schema"). localStorage under
-// ncza:v1:* may already hold these for live operators.
-export interface ProgressRecord {
-  schema: 'ncza-record/v1';
-  course: string;
-  exportedAt?: string;
+/** One row of public/courses/index.json (academy-index/v1): the catalogue the
+ *  dashboard renders. `requires` mirrors the course file's own field, so the
+ *  picker can gate without fetching every course up front. */
+export interface CourseIndexEntry {
+  id: string;
+  title: string;
+  subtitle?: string;
+  file: string;
+  status?: 'draft' | 'published';
+  requires?: string[];
+}
+
+/** One course's worth of progress. The v1 record WAS this, flattened, plus the
+ *  operator-level fields that now sit alongside it. */
+export interface CourseProgress {
   moduleDone: Record<string, unknown>;
   quiz: Record<string, unknown>;
   eddies: number;
@@ -233,6 +241,22 @@ export interface ProgressRecord {
    *  revealedBy so a returning operator does not lose earned terms. */
   modulesSeen: Record<string, number>;
   txns: unknown[];
+}
+
+// ncza-record/v2. One record per OPERATOR, holding every course they have
+// touched, because `operatorName` and `audio` are operator-level: split into a
+// record per course they would be stored twice and could disagree about the
+// same person's name or volume. v1 was the 0.1.0 monolith's shape
+// (docs/monolith-parity-spec.md, "Record schema"), flat and single-course, and
+// localStorage under ncza:v1:* may still hold one; migrateRecord folds it into
+// `courses` under the id it already carried.
+export interface ProgressRecord {
+  schema: 'ncza-record/v2';
+  /** The course the operator was last in. Restores the dashboard selection and
+   *  decides which slice the player mounts against. */
+  course: string;
+  exportedAt?: string;
+  courses: Record<string, CourseProgress>;
   operatorName: string;
   audio: RecordAudio | null;
 }

@@ -5,7 +5,7 @@
 
 import type {
   AcademyConfig, Course, CourseModule, ProgressAdapter, ProgressHost,
-  ProgressRecord, RadioEngine, RadioStation, RecordAudio,
+  CourseIndexEntry, CourseProgress, ProgressRecord, RadioEngine, RadioStation, RecordAudio,
 } from './types';
 
 declare global {
@@ -38,7 +38,10 @@ export const IDENTITY = {
   defaultOperator: 'S. DORSETT',
 } as const;
 
-export const RECORD_SCHEMA = 'ncza-record/v1';
+export const RECORD_SCHEMA = 'ncza-record/v2';
+/** Accepted on import and migrated. A shard written before multi-course
+ *  support is flat and single-course; see migrateRecord. */
+export const RECORD_SCHEMA_V1 = 'ncza-record/v1';
 
 export function cfg(): AcademyConfig {
   return window.ACADEMY_CONFIG ?? { liveMode: false, persist: false, apiBase: '', course: 'sample' };
@@ -107,39 +110,88 @@ export function backfillSeen(
 export function migrateRecord(rec: unknown, course: Course): ProgressRecord {
   if (!rec || typeof rec !== 'object') throw new Error('invalid file');
   const r = rec as Record<string, unknown>;
-  switch (String(r.schema ?? '')) {
-    case RECORD_SCHEMA: break;
-    // future: case 'ncza-record/v2': migrate...
-    default: throw new Error('unrecognized record schema');
+  const schema = String(r.schema ?? '');
+  if (schema !== RECORD_SCHEMA && schema !== RECORD_SCHEMA_V1) {
+    throw new Error('unrecognized record schema');
   }
   const obj = <T>(v: unknown): Record<string, T> =>
     (v && typeof v === 'object' && !Array.isArray(v)) ? v as Record<string, T> : {};
-  const moduleDone = obj(r.moduleDone);
-  const revealedBy = obj<number>(r.revealedBy);
+
+  const startBal = course.economy?.startingBalance ?? 500;
+  const slice = (v: unknown): CourseProgress => {
+    const s = obj(v);
+    const moduleDone = obj(s.moduleDone);
+    const revealedBy = obj<number>(s.revealedBy);
+    return {
+      moduleDone,
+      quiz: obj(s.quiz),
+      eddies: typeof s.eddies === 'number' ? s.eddies : startBal,
+      revealedBy,
+      modulesSeen: backfillSeen(obj<number>(s.modulesSeen), moduleDone, revealedBy),
+      txns: Array.isArray(s.txns) ? s.txns : [],
+    };
+  };
+
+  // The course this record was last in. v1 carried it at the top level and it
+  // is the id its flat progress belongs to, so it doubles as the migration key.
+  const active = typeof r.course === 'string' && r.course ? r.course : (course.id || 'sample');
+
+  // v1 -> v2: the flat fields ARE one course's progress. Fold them under the id
+  // the record already named rather than under whichever course happens to be
+  // loaded now, or slotting an old shard while in a different course would file
+  // its modules against the wrong one.
+  const courses: Record<string, CourseProgress> = schema === RECORD_SCHEMA_V1
+    ? { [active]: slice(r) }
+    : Object.fromEntries(Object.entries(obj(r.courses)).map(([id, v]) => [id, slice(v)]));
+
+  // A record naming a course it holds no slice for is not an error: it is a
+  // fresh operator, or one whose active course was removed from the index.
+  if (!courses[active]) courses[active] = slice({});
+
   return {
     schema: RECORD_SCHEMA,
-    course: typeof r.course === 'string' && r.course ? r.course : (course.id || 'sample'),
-    moduleDone,
-    quiz: obj(r.quiz),
-    eddies: typeof r.eddies === 'number' ? r.eddies : (course.economy?.startingBalance ?? 500),
-    revealedBy,
-    modulesSeen: backfillSeen(obj<number>(r.modulesSeen), moduleDone, revealedBy),
-    txns: Array.isArray(r.txns) ? r.txns : [],
+    course: active,
+    courses,
     operatorName: typeof r.operatorName === 'string' ? r.operatorName : '',
     audio: (r.audio && typeof r.audio === 'object') ? r.audio as RecordAudio : null,
   };
+}
+
+/** The slice for one course, with course-correct defaults when it is untouched. */
+export function courseProgress(rec: ProgressRecord | null, courseId: string, course: Course): CourseProgress {
+  const got = rec?.courses?.[courseId];
+  if (got) return got;
+  return {
+    moduleDone: {}, quiz: {}, eddies: course.economy?.startingBalance ?? 500,
+    revealedBy: {}, modulesSeen: {}, txns: [],
+  };
+}
+
+/** Certified and in-progress module counts ACROSS every course in a record.
+ *  A v2 shard carries more than one course, so a count taken from a single
+ *  slice would under-report what the operator is about to overwrite. */
+export function recordTotals(rec: ProgressRecord): { done: number; started: number } {
+  let done = 0;
+  let started = 0;
+  for (const c of Object.values(rec.courses ?? {})) {
+    const md = c.moduleDone ?? {};
+    const rb = c.revealedBy ?? {};
+    done += Object.keys(md).length;
+    started += Object.keys(rb).filter((k) => !md[k] && (rb[k] ?? 0) > 1).length;
+  }
+  return { done, started };
 }
 
 // Live half of the course data contract: fetch the real course when liveMode,
 // else (or on failure) fall back to the inline SAMPLE_COURSE.
 // The URL must stay rooted (/courses/...): a relative path would resolve
 // against nested router URLs like /module/3 and silently hit the fallback.
-export async function loadCourse(): Promise<Course> {
+export async function loadCourse(id?: string): Promise<Course> {
   const c = cfg();
   const fallback = window.SAMPLE_COURSE ?? {};
   if (!c.liveMode || typeof fetch !== 'function') return fallback;
   try {
-    const r = await fetch(`/courses/${c.course || 'sample'}.json`, { credentials: 'omit' });
+    const r = await fetch(`/courses/${id || c.course || 'sample'}.json`, { credentials: 'omit' });
     if (!r.ok) throw new Error(`HTTP ${r.status}`);
     const data = (await r.json()) as Course;
     if (!data || typeof data !== 'object' || !Array.isArray(data.modules)) throw new Error('bad course shape');
@@ -147,6 +199,40 @@ export async function loadCourse(): Promise<Course> {
   } catch {
     return fallback;
   }
+}
+
+// The course catalogue. Its absence is not fatal: fall back to the single id in
+// config.js, which is what the shell did before a catalogue existed, so a bad
+// deploy loses the picker rather than the app.
+export async function loadCourseIndex(): Promise<CourseIndexEntry[]> {
+  const c = cfg();
+  const solo: CourseIndexEntry[] = [{ id: c.course || 'sample', title: '', file: '', status: 'draft' }];
+  if (!c.liveMode || typeof fetch !== 'function') return solo;
+  try {
+    const r = await fetch('/courses/index.json', { credentials: 'omit' });
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    const data = await r.json() as { courses?: CourseIndexEntry[] };
+    const list = Array.isArray(data?.courses) ? data.courses.filter((e) => e && typeof e.id === 'string') : [];
+    return list.length ? list : solo;
+  } catch {
+    return solo;
+  }
+}
+
+/** Every module certified? The bar `requires` gates on. */
+export function isCourseComplete(course: Course, done: Record<string, unknown>): boolean {
+  const mods = sortedModules(course);
+  return mods.length > 0 && mods.every((m) => !!done[m.id]);
+}
+
+/** Prerequisite ids this course still lacks, given what each course has certified.
+ *  Names the missing courses rather than answering yes/no, because a locked card
+ *  that cannot say WHY is indistinguishable from a broken one. */
+export function unmetRequires(
+  entry: CourseIndexEntry,
+  completedIds: Set<string>,
+): string[] {
+  return (entry.requires ?? []).filter((id) => !completedIds.has(id));
 }
 
 export function sortedModules(course: Course): CourseModule[] {

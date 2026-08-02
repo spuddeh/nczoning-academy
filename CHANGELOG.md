@@ -11,6 +11,36 @@ file records what a visitor receives.
 
 ## [Unreleased]
 
+## 0.17.0 - 2026-08-02
+
+### Added
+
+- **A course picker.** The dashboard reads `public/courses/index.json` and
+  renders a card per course, so PERMANENT RECORD is reachable for the first
+  time. The index had been sitting in the repo unread since the day it was
+  written. Selecting a course loads it and swaps the operator's progress to
+  that course's slice.
+- **Prerequisites are enforced.** A course whose `requires` is unmet renders
+  locked, dimmed and greyed, with the reason spelled out
+  (`CLEARANCE WITHHELD // REQUIRES TRANSMISSION PROTOCOLS`) rather than colour
+  alone. The card stays readable on purpose: the operator should learn the
+  course exists and what opens it.
+- `npm run validate` now cross-checks `requires` between the index and the
+  course file, and fails if a course requires something the index does not list,
+  or requires itself. The field is stored twice so the dashboard can gate
+  without fetching every course, and two copies of one fact drift.
+
+### Changed
+
+- **The Service Record Shard is now `ncza-record/v2`**: one record per operator
+  holding every course, rather than one course flattened into the top level.
+  `operatorName` and the audio preferences are operator-level, so a record per
+  course would store them twice and let them disagree about the same person.
+  A v1 shard migrates on import, folding its flat progress under the course id
+  it already carried, so nothing an operator earned is lost.
+- Completing a course now unlocks what depends on it, and the shard carries both
+  courses' progress in one file.
+
 ## 0.16.0 - 2026-08-02
 
 ### Added

@@ -27,7 +27,7 @@ import type { GlossaryTier } from './components/modals/GlossaryModal';
 import { TxnHistoryModal } from './components/modals/TxnHistoryModal';
 import {
   RECORD_SCHEMA, cfg, cleanNameInput, clearanceAndRank, createProgress,
-  loadCourse, migrateRecord, sanitizeName, sortedModules, stations,
+  courseProgress, loadCourse, loadCourseIndex, migrateRecord, recordTotals, sanitizeName, sortedModules, stations,
 } from './lib/academy';
 import { newTermsFor, unlockedTerms } from './lib/glossary';
 import { Sfx, attachPointerTick } from './lib/sfx';
@@ -40,6 +40,7 @@ import type { QuizApi } from './components/player/QuizView';
 import type {
   Course, CourseModule, ProgressRecord, Question, QuizAnswerState,
   RadioEngine, RadioEngineState, RecordAudio, SysMessage, Txn,
+  CourseIndexEntry, CourseProgress,
 } from './lib/types';
 
 interface ImportMsg { ok: boolean; text: string; }
@@ -173,8 +174,13 @@ export function App() {
   useHeaderHeightVar(headerEl);
 
   // Live-state ref so adapter/economy callbacks never capture a stale render.
-  const live = useRef({ op, course, radioSt, sfxMuted, sfxVol, preAuth, signedIn, radioClosed });
-  live.current = { op, course, radioSt, sfxMuted, sfxVol, preAuth, signedIn, radioClosed };
+  // Progress for every course the operator is NOT currently in. Held so a save
+  // rewrites only the live course's slice; see snapshot().
+  const [otherCourses, setOtherCourses] = useState<Record<string, CourseProgress>>({});
+  const [catalogue, setCatalogue] = useState<CourseIndexEntry[]>([]);
+
+  const live = useRef({ op, course, radioSt, sfxMuted, sfxVol, preAuth, signedIn, radioClosed, otherCourses });
+  live.current = { op, course, radioSt, sfxMuted, sfxVol, preAuth, signedIn, radioClosed, otherCourses };
 
   // Modal flags mirrored into a ref so the mount-time key handler sees them.
   const modals = useRef({ glossaryOpen, txnOpen });
@@ -192,12 +198,21 @@ export function App() {
 
   const snapshot = useCallback((): ProgressRecord => {
     const { op: o, course: c, radioSt: r, sfxMuted: m, sfxVol: sv, radioClosed: rc } = live.current;
+    const id = c?.id || 'sample';
+    // The live course's slice replaces its own entry and leaves every OTHER
+    // course untouched. Rebuilding `courses` from the live state alone would
+    // drop the operator's progress in whichever course they are not in.
     return {
       schema: RECORD_SCHEMA,
-      course: c?.id || 'sample',
+      course: id,
       exportedAt: new Date().toISOString(),
-      moduleDone: o.moduleDone, quiz: o.quiz, eddies: o.eddies,
-      revealedBy: o.revealedBy, modulesSeen: o.modulesSeen, txns: o.txns,
+      courses: {
+        ...live.current.otherCourses,
+        [id]: {
+          moduleDone: o.moduleDone, quiz: o.quiz, eddies: o.eddies,
+          revealedBy: o.revealedBy, modulesSeen: o.modulesSeen, txns: o.txns,
+        },
+      },
       operatorName: sanitizeName(o.operatorName),
       audio: {
         muted: m, musicOn: !r.musicMuted, musicVol: r.musicVol, sfxVol: sv,
@@ -241,6 +256,7 @@ export function App() {
   useEffect(() => {
     let alive = true;
     setCourseLoading(true);
+    void loadCourseIndex().then((list) => { if (alive) setCatalogue(list); });
     void loadCourse().then((c) => {
       if (!alive) return;
       setCourse(c);
@@ -499,11 +515,18 @@ export function App() {
   }, [restoreRadio]);
 
   const adoptRecord = useCallback((rec: ProgressRecord, name: string) => {
+    const id = live.current.course?.id || rec.course || 'sample';
+    const slice = courseProgress(rec, id, live.current.course ?? {});
+    // Everything the record holds for the courses we are NOT in, carried so the
+    // next save writes it back instead of quietly dropping it.
+    const rest = { ...rec.courses };
+    delete rest[id];
+    setOtherCourses(rest);
     setOp({
-      operatorName: name, moduleDone: rec.moduleDone, quiz: rec.quiz as Record<string, QuizAnswerState>,
-      eddies: rec.eddies, revealedBy: rec.revealedBy, modulesSeen: rec.modulesSeen, txns: rec.txns,
+      operatorName: name, moduleDone: slice.moduleDone, quiz: slice.quiz as Record<string, QuizAnswerState>,
+      eddies: slice.eddies, revealedBy: slice.revealedBy, modulesSeen: slice.modulesSeen, txns: slice.txns,
     });
-    setEddiesShown(rec.eddies);
+    setEddiesShown(slice.eddies);
     applyAudio(rec.audio);
   }, [applyAudio]);
 
@@ -591,9 +614,7 @@ export function App() {
     const name = sanitizeName(rec.operatorName);
     adoptRecord(rec, name);
     if (name) { try { progress?.setUser(name); } catch { /* in-memory */ } }
-    const doneN = Object.keys(rec.moduleDone ?? {}).length;
-    const rb = rec.revealedBy ?? {};
-    const startedN = Object.keys(rb).filter((k) => !rec.moduleDone?.[k] && (rb[k] ?? 0) > 1).length;
+    const { done: doneN, started: startedN } = recordTotals(rec);
     const msg = doneN
       ? `SHARD SLOTTED // ${doneN} MODULE(S) CERTIFIED${startedN ? ` // ${startedN} IN PROGRESS` : ''}`
       : startedN
@@ -820,6 +841,37 @@ export function App() {
   }, [navigate]);
 
   // Dashboard entry: first not-yet-complete module (fall back to the last).
+  // Move the operator to another course. The live slice is parked in
+  // otherCourses and the target's slice pulled out of it, so nothing is lost
+  // and no second storage key is involved: one record still holds both.
+  const switchCourse = useCallback((id: string) => {
+    const cur = live.current.course?.id;
+    if (!id || id === cur) return;
+    const parked = { ...live.current.otherCourses };
+    if (cur) {
+      const o = live.current.op;
+      parked[cur] = {
+        moduleDone: o.moduleDone, quiz: o.quiz, eddies: o.eddies,
+        revealedBy: o.revealedBy, modulesSeen: o.modulesSeen, txns: o.txns,
+      };
+    }
+    setCourseLoading(true);
+    void loadCourse(id).then((c) => {
+      const next = parked[id] ?? courseProgress(null, id, c);
+      delete parked[id];
+      setOtherCourses(parked);
+      setCourse(c);
+      setOp((o) => ({
+        ...o,
+        moduleDone: next.moduleDone, quiz: next.quiz as Record<string, QuizAnswerState>,
+        eddies: next.eddies, revealedBy: next.revealedBy,
+        modulesSeen: next.modulesSeen, txns: next.txns,
+      }));
+      setEddiesShown(next.eddies);
+      setCourseLoading(false);
+    });
+  }, []);
+
   const openCourse = useCallback(() => {
     const mods = sortedModules(live.current.course ?? {});
     if (!mods.length) return;
@@ -1005,7 +1057,7 @@ export function App() {
         <ConfirmDialog
           title="OVERWRITE WARNING"
           lead="SLOTTING WILL OVERWRITE CURRENT PROGRESS."
-          detail={`Incoming shard: ${Object.keys(pendingShard.moduleDone ?? {}).length} module(s), operator "${sanitizeName(pendingShard.operatorName) || 'UNNAMED'}". This replaces your current record and cannot be undone.`}
+          detail={`Incoming shard: ${recordTotals(pendingShard).done} module(s), operator "${sanitizeName(pendingShard.operatorName) || 'UNNAMED'}". This replaces your current record and cannot be undone.`}
           primaryLabel="OVERWRITE & SLOT"
           onPrimary={() => { const rec = pendingShard; setPendingShard(null); slotShard(rec); }}
           onCancel={() => { setPendingShard(null); setImportMsg({ ok: false, text: 'SLOT CANCELLED // CURRENT PROGRESS PRESERVED' }); }}
@@ -1074,7 +1126,11 @@ export function App() {
           LOGIN gesture means a silent boot, the exact state the lock prevents. */}
       <Route path="/boot" element={entered ? boot : <Navigate to="/" replace />} />
       <Route path="/dashboard" element={shell(
-        <Dashboard course={course} moduleDone={op.moduleDone} revealedBy={op.revealedBy} onOpenCourse={openCourse} />,
+        <Dashboard
+          course={course} moduleDone={op.moduleDone} revealedBy={op.revealedBy}
+          onOpenCourse={openCourse} catalogue={catalogue} otherCourses={otherCourses}
+          onSwitchCourse={switchCourse}
+        />,
       )} />
       <Route path="/record" element={shell(
         <ServiceRecord
