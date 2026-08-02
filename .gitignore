@@ -27,3 +27,9 @@ scripts/parity/out/
 
 # Local wrangler state (miniflare's KV store for `wrangler pages dev`)
 .wrangler/
+
+# Local Function env vars. The .env patterns above do NOT cover this filename.
+# (Note: `wrangler pages dev` 4.118 does not actually deliver these to a
+# Function's env — see functions/api/_access.ts — but the file must never be
+# committed regardless.)
+.dev.vars

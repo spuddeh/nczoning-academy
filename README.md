@@ -30,9 +30,11 @@ public/                    static passthrough, served as-is, never bundled
   radio-engine.js          procedural Web Audio synth (no audio files)
   progress.js              localStorage adapter (ncza:v1:*)
   _redirects               SPA fallback so deep links resolve
-  _routes.json             only /messages.json invokes a Function
+  _routes.json             which paths invoke a Function (/messages.json, /api/*)
 functions/
   messages.json.ts         GET /messages.json: merges the two KV keys (503 if KV fails)
+  api/messages.ts          admin API: GET/PUT/DELETE the KV keys, schema-validated
+  api/_access.ts           Cloudflare Access JWT verification (the endpoint's own gate)
   tsconfig.json            Workers runtime types (separate from the app's)
 schema/                    course, radio-station + messages JSON Schemas: the content contracts
 scripts/                   ajv validators, freshness check, headless-browser harness
@@ -139,7 +141,8 @@ fresh deployment:
 NCZA_MESSAGES_KV_ID=<id> npm run seed:messages     # validates, then writes messages:manual
 ```
 
-Posting by hand, until the `/admin` surface lands (issue #8):
+Posting by hand, which is now the fallback rather than the route (see the admin
+API below):
 
 ```bash
 npm run validate:messages -- payload.json          # check it BEFORE it goes live
@@ -157,6 +160,69 @@ one payload: ids must be unique, and the validator rejects it.
 runs in CI against the seed file. KV values written by hand are **not** validated
 by anything at runtime, so validate before you put. This panel is the first thing
 a visitor reads: post only claims you can point at in the code.
+
+### The admin API
+
+`functions/api/messages.ts` is the writable door. Every payload is validated
+against `schema/messages.schema.json` before it reaches KV, so validation stops
+being a discipline and becomes a wall.
+
+| Verb | Path | Does |
+| --- | --- | --- |
+| `GET` | `/api/messages` | Current state of **both** keys, unmerged |
+| `PUT` | `/api/messages` | Write one key: `{ "key": "ops"\|"manual", "messages": [...] }` |
+| `DELETE` | `/api/messages?key=ops` | Clear one key |
+
+`GET` reports each key as `absent`, `ok`, or `invalid`. `invalid` is a state, not
+an error: a direct `wrangler kv key put` can leave a value the endpoint would
+never have accepted, and the administrator is exactly the person who needs to see
+it and clear it.
+
+Two ways the schema is enforced, one source. `scripts/validate-messages.mjs`
+compiles it at runtime; the Function imports `functions/api/_messages-validator.mjs`,
+compiled ahead of time by `npm run build:validator`, because the Workers runtime
+forbids the `new Function` call Ajv needs. CI regenerates and diffs it. The rules
+JSON Schema cannot express (unique ids, alert/resolved collisions, panel-capacity
+warnings) live in `schema/messages-rules.mjs`, imported by both.
+
+#### Access
+
+The endpoint verifies the `Cf-Access-Jwt-Assertion` header **itself**, against
+the team's JWKS. That is the defence, not defence in depth: an Access application
+on `academy.nczoning.net` does not protect `nczoning-academy.pages.dev` or the
+per-deployment preview URLs, which serve these same Functions. A second gate
+rejects any request whose Host is not `ADMIN_HOST`.
+
+Set on the Pages project (Settings > Variables and secrets), then **redeploy**:
+
+| Variable | Value |
+| --- | --- |
+| `ACCESS_TEAM_DOMAIN` | `https://<team>.cloudflareaccess.com` |
+| `ACCESS_AUD` | The Access application's AUD tag |
+| `ADMIN_HOST` | `academy.nczoning.net` |
+
+Missing any of them is a `503`, never an allow.
+
+The automated health check does **not** come through here. It writes
+`messages:ops` directly with a scoped Cloudflare API token from GitHub Actions:
+different writer, different door, no service token and no shared HTTP surface.
+
+#### Working on it locally
+
+You cannot obtain an Access JWT on localhost, so there is one bypass, and it
+requires all three of: the deployment has **no** Access configuration, the Host is
+loopback, and an explicit opt-in key exists in KV. The first condition is what
+makes the others safe, since a Host header is caller-supplied.
+
+```bash
+npm run build
+npx wrangler kv key put admin:dev-bypass 1 --namespace-id MESSAGES --local
+npx wrangler pages dev dist --kv MESSAGES
+```
+
+It is a KV key rather than an environment variable because `wrangler pages dev`
+(4.118) lists `.dev.vars` secrets and `--binding` values in its startup table but
+does not deliver them to a Function's `env`. KV bindings do arrive.
 
 Two more things about KV. Writes are eventually consistent, so a change can take
 up to about a minute to appear at an edge that recently read the old value. And

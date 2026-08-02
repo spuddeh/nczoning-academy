@@ -1,5 +1,5 @@
 {
   "version": 1,
-  "include": ["/messages.json"],
+  "include": ["/messages.json", "/api/*"],
   "exclude": []
 }
