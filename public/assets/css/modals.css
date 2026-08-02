@@ -212,6 +212,27 @@
 
 .gloss-def { color: var(--text-body); font-size: var(--fs-body); line-height: var(--lh-body); }
 
+/* Classified entries (issue #65): still a row, so the index reads as filling
+   in rather than as a short list. Dimmed rather than hidden; the redaction
+   block is content, not a background, so it survives a forced-colors mode. */
+.gloss-classified { margin-left: var(--space-sm); color: var(--secondary); }
+
+.gloss-card.locked {
+  border-color: var(--line-faint);
+  background: rgb(from var(--surface) r g b / 0.25);
+
+  .gloss-term { color: var(--placeholder); letter-spacing: var(--tracking-tight); }
+  .gloss-badge { border-color: var(--line-muted); color: var(--muted); }
+}
+
+.gloss-locked-def {
+  font-family: var(--font-mono);
+  font-size: var(--fs-code);
+  line-height: var(--lh-tight);
+  letter-spacing: var(--tracking-label);
+  color: var(--placeholder);
+}
+
 /* open state of the glossary openers (FAB + header variant) */
 .gloss-fab.open,
 .gloss-hdr.open {
@@ -220,6 +241,42 @@
   color: var(--bg);
 
   &:hover { background: var(--primary); }
+}
+
+/* Declassification flash (issue #65): a freshly opened module unlocked terms.
+   Amber, not cyan, so it reads as a notification rather than the open state.
+   Both openers share it; the header keeps its label and gains a corner badge,
+   because a phone drops that label and the badge is what must survive. */
+.gloss-fab.declass,
+.gloss-hdr.declass {
+  border-color: var(--secondary);
+  color: var(--secondary);
+  animation: declass-pulse 1.6s ease-in-out infinite;
+}
+
+.gloss-hdr { position: relative; }
+
+.gloss-hdr-badge {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  font-family: var(--font-mono);
+  font-size: var(--fs-micro);
+  line-height: 1;
+  letter-spacing: 0;
+  padding: 2px var(--space-2xs);
+  background: var(--secondary);
+  color: var(--bg);
+}
+
+@keyframes declass-pulse {
+  0%, 100% { box-shadow: 0 0 0 rgb(from var(--secondary) r g b / 0); }
+  50%      { box-shadow: 0 0 14px rgb(from var(--secondary) r g b / 0.45); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gloss-fab.declass,
+  .gloss-hdr.declass { animation: none; }
 }
 
 /* ---- transaction history ---- */

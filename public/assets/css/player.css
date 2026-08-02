@@ -338,6 +338,67 @@
   }
 }
 
+/* ---- field notes (issue #65) ----
+   The module-footer block: terms this module declassified, further reading,
+   and the rolled-up project citations. Term chips are BUTTONS (they open the
+   glossary), so they get the affordance; the two link rows reuse the
+   .stage-source visual language so the card does not invent a third. */
+.fn-block + .fn-block { margin-top: var(--space-3xl); }
+
+.fn-label {
+  font-family: var(--font-mono);
+  font-size: var(--fs-label);
+  letter-spacing: var(--tracking-mid);
+  color: var(--muted);
+  margin-bottom: var(--space-lg);
+}
+.fn-count { color: var(--secondary); }
+
+.fn-terms { display: flex; flex-wrap: wrap; gap: var(--space-sm); }
+
+.fn-term {
+  font-family: var(--font-mono);
+  font-size: var(--fs-code);
+  letter-spacing: var(--tracking-tight);
+  color: var(--primary);
+  background: rgb(from var(--primary) r g b / 0.08);
+  border: 1px solid rgb(from var(--primary) r g b / 0.35);
+  padding: var(--space-2xs) var(--space-md);
+  cursor: pointer;
+
+  &:hover { background: var(--primary); color: var(--bg); border-color: var(--primary); }
+}
+
+.fn-hint {
+  margin-top: var(--space-lg);
+  font-size: var(--fs-secondary);
+  line-height: var(--lh-tight);
+  color: var(--placeholder);
+}
+
+/* Further reading stacks: few items, long labels. The citation roll-up wraps
+   instead, because a module cites ten-plus files and a stacked column of them
+   would outweigh the notes it is a footnote to. */
+.fn-links { display: flex; flex-direction: column; gap: var(--space-sm); align-items: flex-start; }
+.fn-links.wrap { flex-direction: row; flex-wrap: wrap; gap: var(--space-sm) var(--space-xl); }
+
+.fn-link {
+  font-family: var(--font-mono);
+  font-size: var(--fs-micro);
+  letter-spacing: var(--tracking-tight);
+  color: var(--primary);
+  border-bottom: 1px solid rgb(from var(--primary) r g b / 0.35);
+  padding: 1px 0;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+
+  &.project {
+    color: var(--secondary);
+    border-bottom-color: rgb(from var(--secondary) r g b / 0.35);
+    &:hover { background: var(--secondary); border-bottom-color: var(--secondary); color: var(--bg); }
+  }
+}
+
 /* ---- chunks ---- */
 .chunk-heading {
   font-family: var(--font-display);

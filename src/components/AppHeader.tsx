@@ -16,6 +16,8 @@ interface AppHeaderProps {
   balPulse?: string | null;
   glossaryOpen: boolean;
   onOpenGlossary: () => void;
+  /** transient count of terms a freshly opened module declassified (issue #65) */
+  declassified: number | null;
   onOpenTxns: () => void;
   onLogout: () => void;
   /** SYSTEM BROADCAST bell (issue #10) */
@@ -28,7 +30,7 @@ interface AppHeaderProps {
 }
 
 export function AppHeader({
-  course, moduleDone, eddies, balPulse, glossaryOpen, onOpenGlossary, onOpenTxns, onLogout,
+  course, moduleDone, eddies, balPulse, glossaryOpen, onOpenGlossary, declassified, onOpenTxns, onLogout,
   unread, alertLive, broadcastOpen, onToggleBroadcast, rootRef,
 }: AppHeaderProps) {
   const navigate = useNavigate();
@@ -71,9 +73,9 @@ export function AppHeader({
       </nav>
       <div className="hdr-meta">
         <button
-          className={`gloss-hdr${glossaryOpen ? ' open' : ''}`}
+          className={`gloss-hdr${glossaryOpen ? ' open' : ''}${!glossaryOpen && declassified ? ' declass' : ''}`}
           type="button"
-          title="Open glossary"
+          title={!glossaryOpen && declassified ? `${declassified} new term(s) declassified` : 'Open glossary'}
           onClick={onOpenGlossary}
         >
           <BookIcon size={14} />
@@ -81,6 +83,11 @@ export function AppHeader({
               the brand have to work around; the book icon carries it, same as
               JACK OUT's power glyph */}
           <span className="gloss-hdr-txt">GLOSSARY</span>
+          {/* pinned to the button, not the label: the label is what a phone
+              drops, and the badge is exactly what must survive that */}
+          {!glossaryOpen && !!declassified && (
+            <span className="gloss-hdr-badge" aria-label={`${declassified} new terms`}>+{declassified}</span>
+          )}
         </button>
         <div className="hdr-clearance">
           <div className="hdr-clearance-label">OPERATOR CLEARANCE</div>

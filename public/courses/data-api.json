@@ -403,7 +403,7 @@
         "Ids are frozen (UUID or nexus-<id>) and /v1 is versioned by path - key on ids, not positions."
       ],
       "fieldNotes": {
-        "glossaryTerms": ["API", "endpoint", "JSON", "envelope", "dataset_version", "location record", "recently_updated", "recency window", "stable id", "RedData DTO"],
+        "glossaryTerms": ["API", "HTTP", "endpoint", "JSON", "status code", "envelope", "dataset_version", "location record", "recently_updated", "recency window", "stable id", "RedData DTO"],
         "resources": ["mdn-api", "mdn-http-overview", "mdn-json", "mdn-etag"],
         "renderCitations": true
       }

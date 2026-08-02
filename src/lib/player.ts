@@ -11,7 +11,16 @@ export type Stage =
   | { kind: 'quiz'; data: Question }
   | { kind: 'scenario'; data: Scenario }
   | { kind: 'recap' }
+  | { kind: 'fieldnotes' }
   | { kind: 'complete' };
+
+// True when the module has field notes worth a stage of their own. Modules
+// that author neither terms nor resources skip it rather than render an
+// empty card.
+export function hasFieldNotes(m: CourseModule): boolean {
+  const fn = m.fieldNotes;
+  return !!(fn?.glossaryTerms?.length || fn?.resources?.length);
+}
 
 export function buildStages(m: CourseModule): Stage[] {
   const st: Stage[] = [{ kind: 'hook' }, { kind: 'objectives' }];
@@ -20,6 +29,10 @@ export function buildStages(m: CourseModule): Stage[] {
   for (const q of m.quiz ?? []) st.push({ kind: 'quiz', data: q });
   if (m.scenario) st.push({ kind: 'scenario', data: m.scenario });
   st.push({ kind: 'recap' });
+  // Field notes sit after the recap and before the completion stage: the
+  // module's terms and further reading, gathered where the reader has just
+  // finished the material and before they transmit for completion.
+  if (hasFieldNotes(m)) st.push({ kind: 'fieldnotes' });
   st.push({ kind: 'complete' });
   return st;
 }

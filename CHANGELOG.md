@@ -11,6 +11,42 @@ file records what a visitor receives.
 
 ## [Unreleased]
 
+## 0.13.0 - 2026-08-02
+
+### Changed
+
+- The Field Glossary no longer hands you all 45 entries before you have read a
+  word. A term declassifies when you open the module that introduces it, so you
+  meet 12 in module 01 and the rest arrive as you earn them. Terms you have not
+  reached still hold a place in the index as a redacted row naming the module
+  that will open them, because a glossary that quietly got shorter would read as
+  broken rather than as filling in.
+- Entries you can read now sort above the classified ones. Sorting the whole
+  list alphabetically ordered redacted rows by a name you cannot see, which put
+  blanks in between the terms you came for.
+- Searching only reaches terms you have declassified. A definition you have not
+  earned is not findable by typing a word out of it.
+
+### Added
+
+- **Field notes** close every module, between the recap and completion: the
+  terms that module declassified, the further reading it cites, and the exact
+  source files its claims were verified against. The term chips open the
+  glossary. This block was in the original design and had never been built.
+- Opening a module that declassifies new terms flashes `+N DECLASSIFIED` on the
+  glossary button, so the unlock is visible rather than something you find later.
+- `HTTP` and `status code` now belong to module 01. Both are defined in its
+  opening page but were attached to no module, so neither would ever have
+  declassified.
+
+### Fixed
+
+- A Service Record shard saved before this release keeps the terms it earned:
+  modules you had completed or started count as opened.
+- The NEXT MODULE button has lost its chevron. Orbitron draws that character
+  small and sitting below the line the letters sit on, so it read as a
+  misplaced speck; no other action in the player carried one anyway.
+
 ## 0.12.1 - 2026-08-02
 
 ### Fixed

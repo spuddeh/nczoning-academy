@@ -213,6 +213,31 @@ for (const entry of index.courses ?? []) {
     (m.quiz ?? []).forEach((q) => emptySources(rel, q, `${m.id}/${q.id}`));
     if (m.scenario) emptySources(rel, m.scenario, `${m.id}/${m.scenario.id}`);
   }
+
+  // Glossary declassification wiring (issue #65). A term reaches the reader
+  // only through a module's fieldNotes.glossaryTerms, so an entry no module
+  // claims is unreachable in the shipped app, not merely untidy. This is an
+  // ERROR: it was a silent bug for `HTTP` and `status code`, and the symptom
+  // (a term that never appears) is invisible unless you go looking.
+  const claimed = new Map();
+  for (const m of course.modules) {
+    for (const t of m.fieldNotes?.glossaryTerms ?? []) {
+      if (!claimed.has(t)) claimed.set(t, []);
+      claimed.get(t).push(m.id);
+    }
+  }
+  for (const g of course.glossary ?? []) {
+    if (!claimed.has(g.term)) {
+      errors.push(
+        `${rel}: glossary term "${g.term}" is in no module's fieldNotes.glossaryTerms, so it never declassifies`,
+      );
+    }
+  }
+  for (const [term, mods] of claimed) {
+    if (!(course.glossary ?? []).some((g) => g.term === term)) {
+      errors.push(`${rel}: ${mods.join(", ")} list glossary term "${term}", which has no glossary entry`);
+    }
+  }
 }
 
 // --- report -----------------------------------------------------------------

@@ -29,6 +29,7 @@ import {
   RECORD_SCHEMA, cfg, cleanNameInput, clearanceAndRank, createProgress,
   loadCourse, migrateRecord, sanitizeName, sortedModules, stations,
 } from './lib/academy';
+import { newTermsFor, unlockedTerms } from './lib/glossary';
 import { Sfx, attachPointerTick } from './lib/sfx';
 import { clearSession, hasSession, readSession, writeSession } from './lib/session';
 import { fetchMessages, markSeen, readSeenIds } from './lib/messages';
@@ -51,11 +52,13 @@ interface OperatorState {
   quiz: Record<string, QuizAnswerState>;
   eddies: number;
   revealedBy: Record<string, number>;
+  /** modules opened; gates glossary declassification (issue #65) */
+  modulesSeen: Record<string, number>;
   txns: unknown[];
 }
 
 const freshOperator = (eddies: number): OperatorState => ({
-  operatorName: '', moduleDone: {}, quiz: {}, eddies, revealedBy: {}, txns: [],
+  operatorName: '', moduleDone: {}, quiz: {}, eddies, revealedBy: {}, modulesSeen: {}, txns: [],
 });
 
 const RADIO_DEFAULTS: RadioUiState = {
@@ -128,6 +131,11 @@ export function App() {
   const [glossaryOpen, setGlossaryOpen] = useState(false);
   const [glossaryQuery, setGlossaryQuery] = useState('');
   const [glossaryTier, setGlossaryTier] = useState<GlossaryTier>('all');
+  // Transient "+N TERMS DECLASSIFIED" badge on the glossary opener, set when a
+  // freshly opened module unlocks terms. In-memory on purpose: it is a
+  // notification, not a fact about the record.
+  const [declassified, setDeclassified] = useState<number | null>(null);
+  const declassT = useRef(0);
   const [txnOpen, setTxnOpen] = useState(false);
   // Shard I/O: the eject/slot animation overlay, the slot-overwrite confirm,
   // and the purge confirm (Service Record view).
@@ -189,7 +197,7 @@ export function App() {
       course: c?.id || 'sample',
       exportedAt: new Date().toISOString(),
       moduleDone: o.moduleDone, quiz: o.quiz, eddies: o.eddies,
-      revealedBy: o.revealedBy, txns: o.txns,
+      revealedBy: o.revealedBy, modulesSeen: o.modulesSeen, txns: o.txns,
       operatorName: sanitizeName(o.operatorName),
       audio: {
         muted: m, musicOn: !r.musicMuted, musicVol: r.musicVol, sfxVol: sv,
@@ -493,7 +501,7 @@ export function App() {
   const adoptRecord = useCallback((rec: ProgressRecord, name: string) => {
     setOp({
       operatorName: name, moduleDone: rec.moduleDone, quiz: rec.quiz as Record<string, QuizAnswerState>,
-      eddies: rec.eddies, revealedBy: rec.revealedBy, txns: rec.txns,
+      eddies: rec.eddies, revealedBy: rec.revealedBy, modulesSeen: rec.modulesSeen, txns: rec.txns,
     });
     setEddiesShown(rec.eddies);
     applyAudio(rec.audio);
@@ -772,6 +780,28 @@ export function App() {
     setOp((o) => ({ ...o, revealedBy: { ...o.revealedBy, [moduleId]: Math.max(o.revealedBy[moduleId] ?? 0, revealed) } }));
   }, []);
 
+  // Module opened: declassify its glossary terms and flash the count of ones
+  // no earlier module had already given. Idempotent by module id, so
+  // StrictMode's double mount-run cannot double-flash: the second call sees
+  // the id already present and returns the same state object.
+  const seeModule = useCallback((moduleId: string) => {
+    const { op: o, course: c } = live.current;
+    if (moduleId in o.modulesSeen) return;
+    const fresh = newTermsFor(c, o.modulesSeen, moduleId);
+    setOp((s) => (moduleId in s.modulesSeen ? s : { ...s, modulesSeen: { ...s.modulesSeen, [moduleId]: Date.now() } }));
+    if (!fresh) return;
+    window.clearTimeout(declassT.current);
+    setDeclassified(fresh);
+    declassT.current = window.setTimeout(() => setDeclassified(null), 4200);
+  }, []);
+
+  // Opening the glossary answers the declassification badge, so it clears.
+  const openGlossary = useCallback(() => {
+    window.clearTimeout(declassT.current);
+    setDeclassified(null);
+    setGlossaryOpen(true);
+  }, []);
+
   // Ledger modal: explicit tick on open (on top of the global pointer tick,
   // as the monolith does). Jump = close, navigate, stash the target for the
   // player to consume (reveal + scroll + flash happen there).
@@ -861,6 +891,13 @@ export function App() {
     [course, op.moduleDone],
   );
 
+  // Declassified terms (issue #65), recomputed only when the course or the
+  // set of opened modules changes.
+  const unlocked = useMemo(
+    () => unlockedTerms(course, op.modulesSeen),
+    [course, op.modulesSeen],
+  );
+
   // Bell state (issue #10): unread count + a live-alert indicator that does
   // not care about read state; an unresolved incident stays flagged.
   const unread = messages.filter((m) => !seenIds.includes(m.id)).length;
@@ -910,7 +947,8 @@ export function App() {
         eddies={eddiesShown}
         balPulse={balPulse}
         glossaryOpen={glossaryOpen}
-        onOpenGlossary={() => setGlossaryOpen(true)}
+        onOpenGlossary={openGlossary}
+        declassified={declassified}
         onOpenTxns={openTxns}
         onLogout={logout}
         unread={unread}
@@ -939,7 +977,7 @@ export function App() {
           reads its resume place from op state), so hold them briefly. */}
       {course && !restoring ? content : <main className="restore-wait">REBUILDING SESSION…</main>}
       <SysReadout />
-      <GlossaryFab open={glossaryOpen} onOpen={() => setGlossaryOpen(true)} />
+      <GlossaryFab open={glossaryOpen} onOpen={openGlossary} declassified={declassified} />
       <FlyerLayer flyers={flyers} />
       <TransferOverlay t={transfer} symbol={econ.symbol} />
       {glossaryOpen && (
@@ -947,6 +985,7 @@ export function App() {
           course={course}
           query={glossaryQuery}
           tier={glossaryTier}
+          unlocked={unlocked}
           onQuery={setGlossaryQuery}
           onTier={setGlossaryTier}
           onClose={() => setGlossaryOpen(false)}
@@ -1068,6 +1107,8 @@ export function App() {
           onComplete={completeModule}
           onSaveProgress={saveProgress}
           onViewCert={openCert}
+          onOpenGlossary={openGlossary}
+          onSeeModule={seeModule}
           jump={jump}
         />,
       )} />

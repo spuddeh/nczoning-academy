@@ -144,7 +144,18 @@ contract, and taught no rule.)
 - `tier: "project"`: terms specific to this system (envelope, dataset_version,
   slim list). `tier: "general"`: standard web terms (ETag, CORS, JSON).
 - Define terms **in-body on first use as well**; do not rely on the glossary
-  alone to carry a definition.
+  alone to carry a definition. This constrains the PROSE, which must stand on
+  its own. It does **not** mean a term the prose defines is barred from the
+  glossary: the glossary is a lookup index consulted out of order, and the
+  terms a reader forgets and re-checks are the load-bearing ones the course
+  teaches hardest. Both, not either.
+- **Every term needs a home module.** A glossary entry must appear in exactly
+  one module's `fieldNotes.glossaryTerms` first: that is what declassifies it
+  (see `docs/app-shell-overview.md`). A term listed by no module never becomes
+  readable. List it in the module that first defines it in prose.
+- Definition length is governed separately; see issue #66. Short version: one
+  sentence, and a second only for a constraint a reader could get wrong.
+  Rationale, history and edge cases belong in module prose.
 
 ## 11. Before you commit a module
 

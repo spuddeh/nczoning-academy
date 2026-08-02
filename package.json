@@ -1,9 +1,9 @@
 {
   "name": "nczoning-academy",
-  "version": "0.2.0",
+  "version": "0.13.0",
   "private": true,
   "type": "module",
-  "description": "NC Zoning Academy \u2014 personal micro-module LMS for the Cyberpunk 2077 location mods map project. POC course: The Data API.",
+  "description": "NC Zoning Academy — personal micro-module LMS for the Cyberpunk 2077 location mods map project. POC course: The Data API.",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
@@ -20,7 +20,8 @@
     "freshness": "node scripts/check-freshness.mjs",
     "validate:messages": "node scripts/validate-messages.mjs",
     "seed:messages": "node scripts/seed-messages.mjs",
-    "build:validator": "node scripts/build-validator.mjs"
+    "build:validator": "node scripts/build-validator.mjs",
+    "probe:glossary": "node scripts/parity/probe-glossary.mjs"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^5.20260710.1",
