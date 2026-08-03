@@ -237,6 +237,37 @@
   font-size: var(--fs-micro);
   letter-spacing: var(--tracking-label);
   padding: var(--space-2xs) var(--space-sm);
+
+  /* The version chip is also the door to the revision log (#74). It reads as a
+     chip until you approach it, then as a control: the card itself is
+     clickable, so a chip that looked like a button at rest would compete with
+     the CTA below it. */
+  &.link {
+    background: transparent;
+    cursor: pointer;
+    &:hover { border-color: var(--primary); color: var(--primary); }
+  }
+}
+
+/* Certified modules the course has been rewritten under (#74). Amber, not red:
+   nothing is broken and nothing was revoked, but the operator is holding
+   material that has moved. */
+.course-revised {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: rgb(from var(--secondary) r g b / 0.08);
+  border: 1px solid rgb(from var(--secondary) r g b / 0.45);
+  color: var(--secondary);
+  font-family: var(--font-mono);
+  font-size: var(--fs-micro);
+  letter-spacing: var(--tracking-label);
+  line-height: var(--lh-tight);
+  padding: var(--space-sm) var(--space-md);
+  margin-bottom: var(--space-lg);
+  cursor: pointer;
+
+  &:hover { background: rgb(from var(--secondary) r g b / 0.16); }
 }
 
 .course-progress-row {

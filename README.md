@@ -89,6 +89,13 @@ against, a two-tier glossary, external resources, and an ordered list of
 single-concept chunks, a live lab, a knowledge check, a war-story scenario,
 recap, and field notes. See the schema for the full shape.
 
+A course also carries a `changelog`, newest first, and each entry names the
+modules whose taught content it changed. The shell renders that as a COURSE
+REVISION LOG, and compares it against the version each module was certified at
+to flag modules that have been rewritten under an operator who already cleared
+them. Authoring rules for the list are in
+[`docs/authoring-guide.md`](docs/authoring-guide.md) §12a.
+
 ## Announcements
 
 The lock screen's SYSTEM BROADCAST panel fetches `/messages.json`. That path is

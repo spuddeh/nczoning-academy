@@ -162,6 +162,9 @@ export interface CourseChangelogEntry {
   version?: string;
   date?: string;
   changes?: string[];
+  /** Modules whose taught content this release changed (issue #74). Empty is a
+   *  real answer: a re-pin that only moves citation URLs changes no claim. */
+  modules?: string[];
 }
 
 export interface Course {
@@ -240,6 +243,11 @@ export interface CourseProgress {
    *  Legacy shards predate it; migrateRecord backfills from moduleDone +
    *  revealedBy so a returning operator does not lose earned terms. */
   modulesSeen: Record<string, number>;
+  /** The course `version` a module was certified at, `id -> "2.3.0"` (issue
+   *  #74). Additive: a shard written before it existed simply has none, and an
+   *  unknown certification version is treated as "cannot say", never as
+   *  "revised". certifiedVersions() recovers what it can from the ledger. */
+  certifiedAt: Record<string, string>;
   txns: unknown[];
 }
 
