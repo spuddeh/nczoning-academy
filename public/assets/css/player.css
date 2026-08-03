@@ -59,6 +59,31 @@
   margin-top: var(--space-sm);
   padding-left: var(--space-lg);
 }
+/* Revision log opener (#74), in the rail because the operator who most needs
+   it is the one already reading the material that moved. */
+.rail-changelog {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+  margin: var(--space-sm) 0 0 var(--space-lg);
+  background: transparent;
+  border: 1px solid rgb(from var(--muted) r g b / 0.4);
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: var(--fs-micro);
+  letter-spacing: var(--tracking-label);
+  padding: 3px var(--space-sm);
+  cursor: pointer;
+
+  &:hover { border-color: var(--primary); color: var(--primary); }
+}
+.rail-changelog-badge {
+  background: var(--secondary);
+  color: var(--bg);
+  font-weight: 700;
+  padding: 0 var(--space-2xs);
+}
+
 .rail-list { padding: var(--space-xs) var(--space-lg) var(--space-4xl); }
 .rail-row {
   display: flex;
@@ -75,6 +100,9 @@
   color: inherit;
 
   &.active { border-color: rgb(from var(--primary) r g b / 0.4); background: rgb(from var(--primary) r g b / 0.07); }
+  /* after &.active on purpose: a revised row keeps its amber left edge even
+     while it is the active row, and neither rule needs !important to say so */
+  &.revised { border-left-color: rgb(from var(--secondary) r g b / 0.6); }
 }
 .rail-dot {
   width: 11px;
@@ -110,6 +138,17 @@
   letter-spacing: var(--tracking-label);
   color: var(--muted);
   margin-top: 2px;
+}
+/* Certified, then rewritten under the operator (#74). The row keeps its green
+   done dot: the certification is not withdrawn, this is the offer to re-run. */
+.rail-revised {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: var(--fs-micro);
+  line-height: normal;
+  letter-spacing: var(--tracking-label);
+  color: var(--secondary);
+  margin-top: 3px;
 }
 .rail-session {
   margin-top: auto;
@@ -229,6 +268,38 @@
   height: 100%;
   background: linear-gradient(90deg, var(--primary), var(--success));
   transition: width 0.3s;
+}
+
+/* "You certified this, and it has changed since" (#74), at the top of the
+   module because this is where the changed material is about to be read. */
+.player-revised {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-lg);
+  width: 100%;
+  text-align: left;
+  background: rgb(from var(--secondary) r g b / 0.08);
+  border: 1px solid rgb(from var(--secondary) r g b / 0.45);
+  border-left-width: 3px;
+  padding: var(--space-lg) var(--space-2xl);
+  margin-bottom: 26px;
+  cursor: pointer;
+
+  &:hover { background: rgb(from var(--secondary) r g b / 0.15); }
+}
+.player-revised-tag {
+  flex: none;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: var(--fs-label);
+  letter-spacing: var(--tracking-mid);
+  color: var(--secondary);
+}
+.player-revised-txt {
+  font-family: var(--font-body);
+  font-size: var(--fs-secondary);
+  line-height: var(--lh-tight);
+  color: var(--text-body);
 }
 
 .player-continue {
@@ -850,6 +921,22 @@
   letter-spacing: var(--tracking-mid);
   padding: var(--space-lg) var(--space-3xl);
   cursor: pointer;
+}
+/* Acknowledge a revision (#74). Outlined, not filled: the filled buttons in
+   this row are the forward action, and re-certifying is a side action that
+   should not compete with "next module". */
+.complete-recert {
+  background: transparent;
+  border: 1px solid var(--secondary);
+  color: var(--secondary);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: var(--fs-label);
+  letter-spacing: var(--tracking-mid);
+  padding: var(--space-lg) var(--space-3xl);
+  cursor: pointer;
+
+  &:hover { background: var(--secondary); color: var(--bg); }
 }
 /* capstone payoff: gold, echoing the certificate */
 .complete-cert {

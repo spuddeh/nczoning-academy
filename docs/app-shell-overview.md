@@ -66,8 +66,19 @@ from the original Claude Design monolith at verified parity.
   `kind: project` citations, which is the module's provenance against the
   pinned audit commit. Names only, never definitions: those live in the
   glossary alone.
+- **Course revision log**: a modal (not a route, so it never costs the operator
+  their place mid-module) listing every release of the loaded course, newest
+  first, with its date, the modules it changed, and its notes. Opens from the
+  version chip on the dashboard course card, from the module map in the player,
+  and from the Service Record. Above the history it answers the question the
+  history cannot: which modules **you already certified** have changed since,
+  with a re-run offered per module. Nothing is reset; a revised module keeps its
+  certification, its stamp and its eddies. The re-run ends in a
+  `RE-CERTIFY AT V<current>` button that clears the marker and pays nothing.
 - **Progress / Service Record**: the single source of truth for all storage,
-  with username editing, volume/mute prefs, and import/export.
+  with username editing, volume/mute prefs, and import/export. Certified module
+  rows carry the course version they were certified at, and a `REVISED` line
+  when the course has moved under them.
 - **Certificate**: name-gated (uses the login/operator name, with an inline
   prompt as fallback and an edit option), thematically stamped, exported with
   the record.
@@ -96,6 +107,13 @@ animation. All progress lives in one Progress module:
 - CERTIFIED status and stamps are **derived** from module completion at render
   time, not stored as independent flags, so a slotted shard restores them with
   no extra snapshot fields.
+- `certifiedAt` records the course **version** each module was certified at,
+  which is the one fact that cannot be derived later: the course file only ever
+  carries its current version. It is additive, so an older shard simply has
+  none, and the missing values are recovered from the ledger where the
+  `MODULE CLEARED` transaction's date identifies the release in force. Where
+  neither exists, the revision log reports the gap rather than guessing, because
+  treating "unknown" as "old" would flag every legacy record at once.
 - Auto-saves to `localStorage` on every change when `persist` is on, and resumes
   on boot; the shard stays the portable backup/transfer copy.
 - Resuming a module returns you to your saved progress point, not the start.

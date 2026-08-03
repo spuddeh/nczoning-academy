@@ -38,10 +38,15 @@ interface DashboardProps {
    *  can show real counts without loading each course file. */
   otherCourses: Record<string, CourseProgress>;
   onSwitchCourse: (id: string) => void;
+  /** open the course revision log (issue #74) */
+  onOpenChangelog: () => void;
+  /** certified modules this course has changed under since */
+  revisedCount: number;
 }
 
 export function Dashboard({
   course, moduleDone, revealedBy, onOpenCourse, catalogue, otherCourses, onSwitchCourse,
+  onOpenChangelog, revisedCount,
 }: DashboardProps) {
   const c = course ?? {};
   const mods = sortedModules(c);
@@ -110,8 +115,30 @@ export function Dashboard({
               <div className="course-chips">
                 <span className="course-chip">&#8961; {c.estMinutes ?? 0} MIN</span>
                 <span className="course-chip">{mods.length} MODULES</span>
-                {typeof c.version === 'string' && <span className="course-chip">V{c.version}</span>}
+                {/* The version chip is the way into the revision log: it is the
+                    thing on this card that the log is ABOUT, and a second
+                    button competing with the CTA would bury the CTA. */}
+                {typeof c.version === 'string' && (
+                  <button
+                    type="button"
+                    className="course-chip link"
+                    title="Course revision log"
+                    onClick={(e) => { e.stopPropagation(); onOpenChangelog(); }}
+                  >
+                    V{c.version} // CHANGELOG
+                  </button>
+                )}
               </div>
+              {revisedCount > 0 && (
+                <button
+                  type="button"
+                  className="course-revised"
+                  onClick={(e) => { e.stopPropagation(); onOpenChangelog(); }}
+                >
+                  ⚠ {revisedCount} CERTIFIED MODULE{revisedCount === 1 ? '' : 'S'} REVISED SINCE YOU CLEARED{' '}
+                  {revisedCount === 1 ? 'IT' : 'THEM'}
+                </button>
+              )}
               <div className="course-progress-row">
                 <span>PROGRESS</span>
                 <span className="course-progress-count">{doneCount} / {mods.length}</span>

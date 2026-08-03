@@ -226,6 +226,14 @@ await withBrowser(async (browser) => {
   await record(page, 'ledger');
   await dismiss(page, '.modal-scrim', 'ledger modal');
 
+  // ---- course revision log (#74) ----
+  // Opened from the dashboard's version chip; the RE-RUN button beside a module
+  // title is the widest thing in it, which is why it stacks below 640px.
+  await page.click('.course-chip.link');
+  await expectSelector(page, '.clog-body', { what: 'course revision log modal' });
+  await record(page, 'changelog');
+  await dismiss(page, '.modal-scrim', 'course revision log modal');
+
   // ---- broadcast popover ----
   await page.click('.hdr-bell');
   await expectSelector(page, '.broadcast-pop', { what: 'broadcast popover' });

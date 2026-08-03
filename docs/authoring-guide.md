@@ -207,7 +207,51 @@ When it reports STALE:
 3. Update the affected content and re-capture any changed lab responses.
 4. Re-pin: set the relevant `contentAudit.repos[].commit` (and `projectCommit`)
    to the new HEAD, and bump `auditedAt`.
-5. `npm run validate` green, then commit.
+5. Add the changelog entry, including its `modules` (see below).
+6. `npm run validate` green, then commit.
+
+### 12a. The changelog entry, and its `modules`
+
+Every version bump adds a `changelog` entry: `version`, `date`, `changes[]`, and
+`modules[]`. The shell renders all of it, and it uses `modules` to tell an
+operator that something they already certified has been rewritten under them.
+That marker is only as honest as this list.
+
+**What goes in `modules`:** the ids whose TAUGHT CONTENT changed. A claim, an
+objective, a recap line, a canned lab response, a quiz answer, a version string
+the reader is shown.
+
+**What does not:** a re-pin that moved citation URLs and line ranges but changed
+no claim. This is not a technicality; it is most of the diff. When v2.3.0
+re-pinned to `20fc456`, the raw JSON of all nine modules changed and exactly one
+module's teaching did. Listing nine would have been eight false alarms against
+one real change, and:
+
+> a spurious alarm is worse than no alarm, because it trains the reader to
+> dismiss it, and the one time it is real it looks identical
+
+which is the map's own rule, quoted from its code in PERMANENT RECORD m06. The
+Academy does not get to teach it and then break it.
+
+`"modules": []` is a legitimate, complete answer. `d1-database` v1.0.1 is
+exactly that: every citation re-pinned, no claim touched.
+
+**How to decide, rather than guess.** Diff the two versions of the course file
+with the citation SHAs normalised away, and read what is left:
+
+```sh
+git show <before>:public/courses/<id>.json > /tmp/before.json
+# then diff module-by-module, ignoring /sources/*/url and /sources/*/label
+```
+
+Every leaf that is not a citation is a candidate; judge each one against "would
+a reader who certified this module now hold a wrong answer, or miss something
+they were taught?" That is the bar, not "did any byte change".
+
+`npm run validate` checks that every id exists, that the current `version` has
+an entry, and that entries are unique and newest-first. It deliberately does NOT
+check that the list is complete: completeness is the judgement above, and a
+validator that guessed it would be back to flagging all nine.
 
 If a repo only moved but no cited file changed, re-pin at your convenience.
 

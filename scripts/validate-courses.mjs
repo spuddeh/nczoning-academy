@@ -214,6 +214,67 @@ const lintAuditSha = (rel, course) => {
   if (audit.auditNote) proseSha(audit.auditNote, "/contentAudit/auditNote");
 };
 
+// --- the changelog must be able to answer "did MY module change?" -----------
+// Each entry names the modules whose taught content it changed, and the shell
+// compares that against the course version a module was certified at. Three
+// ways that comparison silently stops working, so all three are errors:
+//
+//   1. A `modules` id that is not a module in this course. The list is authored
+//      by hand, so it can lie; nothing else reads these ids.
+//   2. The current `version` has no changelog entry. The comparison walks the
+//      changelog, so a release with no entry is a content change the shell
+//      cannot see, and every module certified before it reads as current.
+//   3. Versions that repeat or run out of order. Newest-first ordering and
+//      uniqueness are what "entries newer than the one you certified at" means.
+//
+// Deliberately NOT checked: whether the list is COMPLETE. That is a judgement
+// about which changes are worth re-reading, and the file's own rule is that a
+// spurious alarm is worse than none. An empty list is legitimate: d1-database
+// 1.0.1 re-pinned every citation and changed no claim.
+const semverParts = (v) => String(v).split(".").map((n) => parseInt(n, 10) || 0);
+const semverCmp = (a, b) => {
+  const [A, B] = [semverParts(a), semverParts(b)];
+  for (let i = 0; i < 3; i++) if (A[i] !== B[i]) return A[i] < B[i] ? -1 : 1;
+  return 0;
+};
+
+const lintChangelog = (rel, course) => {
+  const log = course.changelog ?? [];
+  if (!log.length) return;
+
+  const ids = new Set((course.modules ?? []).map((m) => m.id));
+  for (const entry of log) {
+    for (const id of entry.modules ?? []) {
+      if (!ids.has(id)) {
+        errors.push(
+          `${rel}: changelog ${entry.version} lists module "${id}", which is not a module in this course`,
+        );
+      }
+    }
+  }
+
+  const seen = new Set();
+  for (const [i, entry] of log.entries()) {
+    if (seen.has(entry.version)) {
+      errors.push(`${rel}: changelog has two entries for version ${entry.version}`);
+    }
+    seen.add(entry.version);
+    const next = log[i + 1];
+    if (next && semverCmp(entry.version, next.version) <= 0) {
+      errors.push(
+        `${rel}: changelog is not newest-first: ${entry.version} is listed above ${next.version}`,
+      );
+    }
+  }
+
+  if (course.version && !seen.has(course.version)) {
+    errors.push(
+      `${rel}: version ${course.version} has no changelog entry, so the shell cannot tell ` +
+        `an operator which modules it changed`,
+    );
+  }
+};
+
 // --- validate each registered course ----------------------------------------
 const emptySources = (label, obj, path) => {
   if (Array.isArray(obj?.sources) && obj.sources.length === 0) {
@@ -242,6 +303,8 @@ for (const entry of index.courses ?? []) {
     }
     continue; // don't lint content shape we couldn't validate
   }
+
+  lintChangelog(rel, course);
 
   // sources[] content lint (warnings only)
   for (const m of course.modules) {

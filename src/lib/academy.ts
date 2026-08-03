@@ -4,8 +4,8 @@
 // React code never touches window directly.
 
 import type {
-  AcademyConfig, Course, CourseModule, ProgressAdapter, ProgressHost,
-  CourseIndexEntry, CourseProgress, ProgressRecord, RadioEngine, RadioStation, RecordAudio,
+  AcademyConfig, Course, CourseChangelogEntry, CourseModule, ProgressAdapter, ProgressHost,
+  CourseIndexEntry, CourseProgress, ProgressRecord, RadioEngine, RadioStation, RecordAudio, Txn,
 } from './types';
 
 declare global {
@@ -128,6 +128,15 @@ export function migrateRecord(rec: unknown, course: Course): ProgressRecord {
       eddies: typeof s.eddies === 'number' ? s.eddies : startBal,
       revealedBy,
       modulesSeen: backfillSeen(obj<number>(s.modulesSeen), moduleDone, revealedBy),
+      // Migration branch for certifiedAt (issue #74): a shard written before
+      // the field existed has none, and every value must be a version string.
+      // Nothing is invented here; the ledger fallback lives in
+      // certifiedVersions, which needs the course this slice belongs to.
+      certifiedAt: Object.fromEntries(
+        Object.entries(obj(s.certifiedAt))
+          .filter(([, v]) => typeof v === 'string' && v)
+          .map(([k, v]) => [k, v as string]),
+      ),
       txns: Array.isArray(s.txns) ? s.txns : [],
     };
   };
@@ -174,7 +183,7 @@ export function courseProgress(rec: ProgressRecord | null, courseId: string, cou
   if (got) return got;
   return {
     moduleDone: {}, quiz: {}, eddies: course.economy?.startingBalance ?? 500,
-    revealedBy: {}, modulesSeen: {}, txns: [],
+    revealedBy: {}, modulesSeen: {}, certifiedAt: {}, txns: [],
   };
 }
 
@@ -260,6 +269,107 @@ export function progressStats(course: Course, moduleDone: Record<string, unknown
   const capstone = mods.find((m) => m.capstone === true);
   const certified = capstone ? !!moduleDone[capstone.id] : (mods.length > 0 && done.length === mods.length);
   return { mods, done, capstone, certified };
+}
+
+// ---- course revisions (issue #74) ----
+// "Has the COURSE moved under this operator", the mirror of what contentAudit
+// and the freshness guard answer one level up ("has the SOURCE moved under this
+// course").
+
+/** SemVer-ish compare of two `x.y.z` strings. -1 / 0 / 1. */
+export function compareVersions(a: string, b: string): number {
+  const parts = (v: string) => String(v).split('.').map((n) => parseInt(n, 10) || 0);
+  const [A, B] = [parts(a), parts(b)];
+  for (let i = 0; i < 3; i++) if (A[i] !== B[i]) return A[i] < B[i] ? -1 : 1;
+  return 0;
+}
+
+/** Newest-first changelog, sorted defensively rather than trusted. */
+function sortedChangelog(course: Course): CourseChangelogEntry[] {
+  return (course.changelog ?? [])
+    .filter((e) => typeof e?.version === 'string')
+    .slice()
+    .sort((a, b) => compareVersions(String(b.version), String(a.version)));
+}
+
+/** Local `YYYY-MM-DD` for a timestamp, to compare against changelog dates
+ *  (which are authored as plain dates, in no timezone). */
+function dayOf(ts: number): string {
+  const d = new Date(ts);
+  const p = (n: number) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
+}
+
+/** The course version a module was certified at, for every certified module we
+ *  can answer for. Two sources, in order:
+ *
+ *   1. `certifiedAt`, written at completion. Exact.
+ *   2. The ledger. A shard written before certifiedAt existed still carries the
+ *      `kind: 'module'` transaction that certified it, and a date maps to the
+ *      version that was current on that date. Same-day ties resolve to the
+ *      release, not to the version before it, so the operator is not warned
+ *      about a change they may well have read.
+ *
+ *  A module with neither is simply absent: unknown is NOT treated as old, or
+ *  every legacy record would light up with alarms nobody can verify. */
+export function certifiedVersions(
+  course: Course,
+  p: Pick<CourseProgress, 'moduleDone' | 'certifiedAt' | 'txns'>,
+): Record<string, string> {
+  const log = sortedChangelog(course);
+  const out: Record<string, string> = {};
+  // newest certifying transaction per module (the ledger is append-only)
+  const certTs: Record<string, number> = {};
+  for (const t of (p.txns ?? []) as Txn[]) {
+    if (t?.kind !== 'module' || !t.moduleId || typeof t.ts !== 'number') continue;
+    certTs[t.moduleId] = Math.max(certTs[t.moduleId] ?? 0, t.ts);
+  }
+  for (const id of Object.keys(p.moduleDone ?? {})) {
+    const stored = (p.certifiedAt ?? {})[id];
+    if (stored) { out[id] = stored; continue; }
+    const ts = certTs[id];
+    if (!ts) continue;
+    const day = dayOf(ts);
+    const inForce = log.find((e) => String(e.date ?? '') <= day);
+    if (inForce?.version) out[id] = inForce.version;
+  }
+  return out;
+}
+
+/** The same entries, oldest first. Revisions are enumerated to the reader as a
+ *  sequence they missed, and a descending pair reads as a typo, not a run. */
+export function oldestFirst(entries: CourseChangelogEntry[]): CourseChangelogEntry[] {
+  return entries.slice().sort((a, b) => compareVersions(String(a.version), String(b.version)));
+}
+
+/** "V2.1.0, V2.2.0" for an inline sentence. */
+export function versionList(entries: CourseChangelogEntry[]): string {
+  return oldestFirst(entries).map((e) => `V${e.version}`).join(', ');
+}
+
+/** Certified modules the course has changed under, `id -> the entries that did
+ *  it` (newest first). A module is listed only when an entry NEWER than the
+ *  version it was certified at names it: a course-level bump says the course
+ *  moved, not that this module did, and nine false alarms against one real
+ *  change teach the reader to dismiss the tenth. */
+export function revisedModules(
+  course: Course,
+  certVersions: Record<string, string>,
+): Record<string, CourseChangelogEntry[]> {
+  const log = sortedChangelog(course);
+  const out: Record<string, CourseChangelogEntry[]> = {};
+  // Only modules the course still has. A module retired between releases stays
+  // named in the old entries and in the operator's record, and flagging it
+  // would put a count on the dashboard that no view can show a row for.
+  const live = new Set(sortedModules(course).map((m) => m.id));
+  for (const [id, at] of Object.entries(certVersions)) {
+    if (!live.has(id)) continue;
+    const since = log.filter(
+      (e) => (e.modules ?? []).includes(id) && compareVersions(String(e.version), at) > 0,
+    );
+    if (since.length) out[id] = since;
+  }
+  return out;
 }
 
 // Clearance = highest clearance among completed modules (1 when fresh);

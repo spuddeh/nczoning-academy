@@ -159,6 +159,11 @@
     border-color: rgb(from var(--success) r g b / 0.3);
     background: rgb(from var(--success) r g b / 0.05);
   }
+
+  /* after &.done, and it has to be: a revised row is ALWAYS a done row, and
+     &.done sets border-color on all four sides, so the amber edge only
+     survives if it is declared later (both are one class, same specificity) */
+  &.revised { border-left: 3px solid rgb(from var(--secondary) r g b / 0.6); }
 }
 
 .record-mod-dot {
@@ -202,6 +207,42 @@
   color: var(--muted);
 
   .record-mod-row.done & { color: var(--success); }
+}
+
+/* Certified, then changed under the operator (#74). The row stays green and
+   still reads CERTIFIED; the amber left edge and this line are the offer to
+   re-run, not a downgrade of the record. */
+.record-mod-revised {
+  display: block;
+  background: transparent;
+  border: none;
+  padding: 0;
+  margin-top: var(--space-2xs);
+  font-family: var(--font-mono);
+  font-size: var(--fs-micro);
+  letter-spacing: var(--tracking-label);
+  color: var(--secondary);
+  cursor: pointer;
+  text-align: left;
+
+  &:hover { text-decoration: underline; }
+}
+
+.record-revisions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2xl);
+  flex-wrap: wrap;
+  margin-bottom: var(--section-gap);
+}
+.record-revisions-copy {
+  flex: 1 1 320px;
+  font-family: var(--font-body);
+  font-size: var(--fs-secondary);
+  line-height: var(--lh-tight);
+  color: var(--text-body);
+
+  b { color: var(--secondary); }
 }
 
 .record-no-mods {

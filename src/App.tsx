@@ -25,9 +25,11 @@ import type { Flyer, TransferState } from './components/Overlays';
 import { GlossaryModal } from './components/modals/GlossaryModal';
 import type { GlossaryTier } from './components/modals/GlossaryModal';
 import { TxnHistoryModal } from './components/modals/TxnHistoryModal';
+import { CourseChangelogModal } from './components/modals/CourseChangelogModal';
 import {
-  RECORD_SCHEMA, cfg, cleanNameInput, clearanceAndRank, createProgress,
-  courseProgress, loadCourse, loadCourseIndex, migrateRecord, recordTotals, sanitizeName, sortedModules, stations,
+  RECORD_SCHEMA, certifiedVersions, cfg, cleanNameInput, clearanceAndRank, createProgress,
+  courseProgress, loadCourse, loadCourseIndex, migrateRecord, recordTotals, revisedModules,
+  sanitizeName, sortedModules, stations,
 } from './lib/academy';
 import { newTermsFor, unlockedTerms } from './lib/glossary';
 import { Sfx, attachPointerTick } from './lib/sfx';
@@ -55,11 +57,13 @@ interface OperatorState {
   revealedBy: Record<string, number>;
   /** modules opened; gates glossary declassification (issue #65) */
   modulesSeen: Record<string, number>;
+  /** course version each module was certified at; drives REVISED (issue #74) */
+  certifiedAt: Record<string, string>;
   txns: unknown[];
 }
 
 const freshOperator = (eddies: number): OperatorState => ({
-  operatorName: '', moduleDone: {}, quiz: {}, eddies, revealedBy: {}, modulesSeen: {}, txns: [],
+  operatorName: '', moduleDone: {}, quiz: {}, eddies, revealedBy: {}, modulesSeen: {}, certifiedAt: {}, txns: [],
 });
 
 const RADIO_DEFAULTS: RadioUiState = {
@@ -138,6 +142,9 @@ export function App() {
   const [declassified, setDeclassified] = useState<number | null>(null);
   const declassT = useRef(0);
   const [txnOpen, setTxnOpen] = useState(false);
+  // Course revision log (issue #74): a modal rather than a route, because it is
+  // reachable from mid-module and must not cost the operator their place.
+  const [changelogOpen, setChangelogOpen] = useState(false);
   // Shard I/O: the eject/slot animation overlay, the slot-overwrite confirm,
   // and the purge confirm (Service Record view).
   const [shardIO, setShardIO] = useState<ShardIOState | null>(null);
@@ -183,8 +190,8 @@ export function App() {
   live.current = { op, course, radioSt, sfxMuted, sfxVol, preAuth, signedIn, radioClosed, otherCourses };
 
   // Modal flags mirrored into a ref so the mount-time key handler sees them.
-  const modals = useRef({ glossaryOpen, txnOpen });
-  modals.current = { glossaryOpen, txnOpen };
+  const modals = useRef({ glossaryOpen, txnOpen, changelogOpen });
+  modals.current = { glossaryOpen, txnOpen, changelogOpen };
 
   // Ledger deep-link target. Plain state (not a consume-once ref) so the
   // player's mount effect stays idempotent under StrictMode's double run:
@@ -210,7 +217,8 @@ export function App() {
         ...live.current.otherCourses,
         [id]: {
           moduleDone: o.moduleDone, quiz: o.quiz, eddies: o.eddies,
-          revealedBy: o.revealedBy, modulesSeen: o.modulesSeen, txns: o.txns,
+          revealedBy: o.revealedBy, modulesSeen: o.modulesSeen,
+          certifiedAt: o.certifiedAt, txns: o.txns,
         },
       },
       operatorName: sanitizeName(o.operatorName),
@@ -271,6 +279,7 @@ export function App() {
       // Escape closes modals BEFORE the input guard; works from the search box.
       if (e.key === 'Escape' && modals.current.glossaryOpen) { setGlossaryOpen(false); return; }
       if (e.key === 'Escape' && modals.current.txnOpen) { setTxnOpen(false); return; }
+      if (e.key === 'Escape' && modals.current.changelogOpen) { setChangelogOpen(false); return; }
       const tg = e.target as HTMLElement | null;
       const tag = tg?.tagName ?? '';
       if (tag === 'INPUT' || tag === 'TEXTAREA' || tg?.isContentEditable) return;
@@ -482,7 +491,18 @@ export function App() {
         const val = Math.round(from + amt * k);
         setTransfer((tr) => (tr ? { ...tr, display: val } : tr));
         if (k < 1) { requestAnimationFrame(count); return; }
-        setOp((o) => ({ ...o, eddies: from + amt, moduleDone: { ...o.moduleDone, [m.id]: true } }));
+        // Stamp the course version alongside the completion (issue #74): it is
+        // the only moment the pairing is known for certain, and everything the
+        // REVISED marker says later is a comparison against this string. A
+        // course with no `version` stamps nothing rather than a placeholder,
+        // because "unknown" and "1.0.0" are not the same claim.
+        const at = live.current.course?.version;
+        setOp((o) => ({
+          ...o,
+          eddies: from + amt,
+          moduleDone: { ...o.moduleDone, [m.id]: true },
+          certifiedAt: at ? { ...o.certifiedAt, [m.id]: at } : o.certifiedAt,
+        }));
         setEddiesShown(from + amt);
         window.setTimeout(() => setTransfer(null), 1500);
       };
@@ -532,7 +552,8 @@ export function App() {
     setOtherCourses(rest);
     setOp({
       operatorName: name, moduleDone: slice.moduleDone, quiz: slice.quiz as Record<string, QuizAnswerState>,
-      eddies: slice.eddies, revealedBy: slice.revealedBy, modulesSeen: slice.modulesSeen, txns: slice.txns,
+      eddies: slice.eddies, revealedBy: slice.revealedBy, modulesSeen: slice.modulesSeen,
+      certifiedAt: slice.certifiedAt, txns: slice.txns,
     });
     setEddiesShown(slice.eddies);
     applyAudio(rec.audio);
@@ -860,7 +881,8 @@ export function App() {
       const o = live.current.op;
       parked[cur] = {
         moduleDone: o.moduleDone, quiz: o.quiz, eddies: o.eddies,
-        revealedBy: o.revealedBy, modulesSeen: o.modulesSeen, txns: o.txns,
+        revealedBy: o.revealedBy, modulesSeen: o.modulesSeen,
+        certifiedAt: o.certifiedAt, txns: o.txns,
       };
     }
     setCourseLoading(true);
@@ -873,7 +895,7 @@ export function App() {
         ...o,
         moduleDone: next.moduleDone, quiz: next.quiz as Record<string, QuizAnswerState>,
         eddies: next.eddies, revealedBy: next.revealedBy,
-        modulesSeen: next.modulesSeen, txns: next.txns,
+        modulesSeen: next.modulesSeen, certifiedAt: next.certifiedAt, txns: next.txns,
       }));
       setEddiesShown(next.eddies);
       setCourseLoading(false);
@@ -950,6 +972,41 @@ export function App() {
     () => clearanceAndRank(course ?? {}, op.moduleDone),
     [course, op.moduleDone],
   );
+
+  // Course revisions (issue #74). certVersions answers "which version was this
+  // certified at", falling back to the ledger for shards written before the
+  // field existed; revised is the subset the course has moved under since.
+  const certVersions = useMemo(
+    () => certifiedVersions(course ?? {}, { moduleDone: op.moduleDone, certifiedAt: op.certifiedAt, txns: op.txns }),
+    [course, op.moduleDone, op.certifiedAt, op.txns],
+  );
+  const revised = useMemo(
+    () => revisedModules(course ?? {}, certVersions),
+    [course, certVersions],
+  );
+  const revisedCount = Object.keys(revised).length;
+
+  const openChangelog = useCallback(() => {
+    sfx.current.play('tick');
+    setChangelogOpen(true);
+  }, []);
+
+  // Re-run from the revision log: the module opens as normal, still certified.
+  const rerunModule = useCallback((id: string) => {
+    setChangelogOpen(false);
+    navigate(`/module/${id}`);
+  }, [navigate]);
+
+  // Acknowledge a revision: re-stamp the certification at the current course
+  // version so the REVISED marker clears. Deliberately NOT a re-completion: no
+  // eddies, no ledger entry, no transfer ceremony. The reward was paid the
+  // first time, and paying it again would turn every re-audit into a payday.
+  const recertify = useCallback((m: CourseModule) => {
+    const at = live.current.course?.version;
+    if (!at || !live.current.op.moduleDone[m.id]) return;
+    sfx.current.play('chime');
+    setOp((o) => ({ ...o, certifiedAt: { ...o.certifiedAt, [m.id]: at } }));
+  }, []);
 
   // Declassified terms (issue #65), recomputed only when the course or the
   // set of opened modules changes.
@@ -1061,6 +1118,16 @@ export function App() {
           onClose={() => setTxnOpen(false)}
         />
       )}
+      {changelogOpen && (
+        <CourseChangelogModal
+          course={course}
+          certVersions={certVersions}
+          revised={revised}
+          moduleDone={op.moduleDone}
+          onOpenModule={rerunModule}
+          onClose={() => setChangelogOpen(false)}
+        />
+      )}
       {pendingShard && (
         <ConfirmDialog
           title="OVERWRITE WARNING"
@@ -1138,6 +1205,7 @@ export function App() {
           course={course} moduleDone={op.moduleDone} revealedBy={op.revealedBy}
           onOpenCourse={openCourse} catalogue={catalogue} otherCourses={otherCourses}
           onSwitchCourse={switchCourse}
+          onOpenChangelog={openChangelog} revisedCount={revisedCount}
         />,
       )} />
       <Route path="/record" element={shell(
@@ -1154,6 +1222,9 @@ export function App() {
           onPurge={() => setPurgePrompt(true)}
           radioClosed={radioClosed}
           onReopenRadio={reopenRadio}
+          revised={revised}
+          certVersions={certVersions}
+          onOpenChangelog={openChangelog}
         />,
       )} />
       <Route path="/module/:moduleId" element={shell(
@@ -1174,6 +1245,9 @@ export function App() {
           onOpenGlossary={openGlossary}
           onSeeModule={seeModule}
           jump={jump}
+          revised={revised}
+          onOpenChangelog={openChangelog}
+          onRecertify={recertify}
         />,
       )} />
       {/* Standalone: outside shell() and outside the `entered` guard. Cloudflare

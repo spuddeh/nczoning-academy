@@ -2,9 +2,9 @@
 // column, gated CONTINUE, and the completion stage. Stage model in
 // lib/player.ts; measured spec: docs/monolith-parity-spec.md, "Module player".
 import { useCallback, useEffect, useRef, useState } from 'react';
-import type { Course, CourseModule, QuizAnswerState } from '../lib/types';
+import type { Course, CourseChangelogEntry, CourseModule, QuizAnswerState } from '../lib/types';
 import { buildStages, partialFrac, resumeRevealed, stageDataId, stageGated } from '../lib/player';
-import { sortedModules } from '../lib/academy';
+import { sortedModules, versionList } from '../lib/academy';
 import { ChunkView } from '../components/player/ChunkView';
 import { QuizView } from '../components/player/QuizView';
 import type { QuizApi } from '../components/player/QuizView';
@@ -35,16 +35,23 @@ interface PlayerProps {
   onSeeModule: (moduleId: string) => void;
   /** Ledger deep-link target; tick marks each fresh jump (same-module too). */
   jump: { moduleId: string; qid: string; tick: number } | null;
+  /** certified modules the course has changed under since (issue #74) */
+  revised: Record<string, CourseChangelogEntry[]>;
+  onOpenChangelog: () => void;
+  /** acknowledge a revision: re-stamp the certification at the current course
+   *  version, clearing the REVISED marker. No reward; it is not a re-completion. */
+  onRecertify: (m: CourseModule) => void;
 }
 
 export function Player({
   course, moduleId, quiz, moduleDone, revealedBy, quizApi,
   moduleReward, economySymbol,
   onAdvance, onSelectModule, onBackToDashboard, onComplete, onSaveProgress,
-  onViewCert, onOpenGlossary, onSeeModule, jump,
+  onViewCert, onOpenGlossary, onSeeModule, jump, revised, onOpenChangelog, onRecertify,
 }: PlayerProps) {
   const mods = sortedModules(course ?? {});
   const m = mods.find((x) => x.id === moduleId) ?? mods[0];
+  const revisedCount = Object.keys(revised).length;
   const [revealed, setRevealed] = useState(() => (m ? resumeRevealed(m, moduleDone, revealedBy) : 1));
   const [drawerOpen, setDrawerOpen] = useState(false);
   const mainRef = useRef<HTMLElement>(null);
@@ -149,6 +156,12 @@ export function Player({
         <div className="rail-map-hdr">
           <div className="rail-map-title">MODULE MAP</div>
           <div className="rail-course">{course?.title ?? ''}</div>
+          {/* The revision log, one click from inside a module: the operator who
+              needs it most is the one already reading the stale material. */}
+          <button type="button" className="rail-changelog" onClick={onOpenChangelog}>
+            V{course?.version ?? '0.0.0'} // REVISION LOG
+            {revisedCount > 0 && <span className="rail-changelog-badge">{revisedCount}</span>}
+          </button>
         </div>
         <div className="rail-list">
           {mods.map((mod) => {
@@ -156,11 +169,15 @@ export function Player({
             const active = mod.id === m.id;
             const inprog = !isDone && (active || partialFrac(mod, moduleDone, revealedBy) > 0);
             const dotCls = isDone ? ' done' : inprog ? ' inprog' : '';
+            // Certified, then rewritten under the operator (issue #74). The
+            // status stays COMPLETE: the certification is not withdrawn, the
+            // marker is the offer to re-run.
+            const isRevised = isDone && !!revised[mod.id];
             return (
               <button
                 key={mod.id}
                 type="button"
-                className={`rail-row${active ? ' active' : ''}`}
+                className={`rail-row${active ? ' active' : ''}${isRevised ? ' revised' : ''}`}
                 onClick={() => onSelectModule(mod.id)}
               >
                 <span className={`rail-dot${dotCls}${inprog ? ' ledblink' : ''}`} />
@@ -169,6 +186,7 @@ export function Player({
                   <span className="rail-row-meta" style={{ display: 'block' }}>
                     CLR {mod.clearance ?? 1} // {isDone ? 'COMPLETE' : inprog ? 'IN PROGRESS' : 'LOCKED-READY'}
                   </span>
+                  {isRevised && <span className="rail-revised">⚠ REVISED SINCE CERTIFIED</span>}
                 </span>
               </button>
             );
@@ -205,6 +223,19 @@ export function Player({
               <div className="player-bar-fill" style={{ width: `${Math.round(revealed / stages.length * 100)}%` }} />
             </div>
           </div>
+
+          {/* The material below is newer than the operator's certification of
+              it. Said here, at the top of the module, because this is the one
+              place they are actually about to read the changed content. */}
+          {revised[m.id] && (
+            <button type="button" className="player-revised" onClick={onOpenChangelog}>
+              <span className="player-revised-tag">⚠ REVISED</span>
+              <span className="player-revised-txt">
+                This module changed in {versionList(revised[m.id] ?? [])}, after you certified it.
+                Your certification stands. Read the revision log.
+              </span>
+            </button>
+          )}
 
           {shown.map((stage, i) => {
             const dataId = stageDataId(stage);
@@ -264,6 +295,20 @@ export function Player({
                       </div>
                       {done ? (
                         <div className="complete-row">
+                          {/* Acknowledging a revision (issue #74). Without this
+                              the REVISED marker never clears, and a permanent
+                              alarm is the thing the marker exists to avoid. It
+                              pays nothing: the reward was already transferred,
+                              and paying again would make re-runs farmable. */}
+                          {revised[m.id] && course?.version && (
+                            <button
+                              type="button"
+                              className="complete-recert"
+                              onClick={() => onRecertify(m)}
+                            >
+                              [ RE-CERTIFY AT V{course.version} ]
+                            </button>
+                          )}
                           {/* one forward action: the next module, or the course
                               payoff on the capstone. Saving lives in the rail
                               (SAVE PROGRESS) and on the Service Record. */}

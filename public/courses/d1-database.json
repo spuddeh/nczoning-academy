@@ -8,6 +8,7 @@
     {
       "version": "1.0.1",
       "date": "2026-08-02",
+      "modules": [],
       "changes": [
         "Re-pinned to nc-zoning-board 20fc456, matching TRANSMISSION PROTOCOLS v2.3.0. The cited ranges in refresh.js and nexus.js moved and were re-verified; no claim changed."
       ]
@@ -15,6 +16,7 @@
     {
       "version": "1.0.0",
       "date": "2026-08-02",
+      "modules": ["d01", "d02", "d03", "d04", "d05", "d06", "d07"],
       "changes": [
         "Initial seven-module course on the location registry that TRANSMISSION PROTOCOLS reads from: why the registry left git for Cloudflare D1, the schema, the join that replaced a JSON column, the public write path and its validation, the collaborator gate, the materializer, and a capstone.",
         "Assumes TRANSMISSION PROTOCOLS. HTTP, JSON, endpoints, the envelope and the KV serving copy are taught there and are not re-taught here; SQL and databases are assumed to be new and are taught from a plain baseline.",

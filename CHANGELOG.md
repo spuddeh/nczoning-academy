@@ -11,6 +11,48 @@ file records what a visitor receives.
 
 ## [Unreleased]
 
+## 0.18.0 - 2026-08-03
+
+### Added
+
+- **The course revision log.** Every course has carried a `changelog` since
+  v2.0.0 of the Data API course and the shell rendered none of it. There is now
+  a COURSE REVISION LOG modal listing every release, newest first, with its
+  date, the modules it changed, and its notes. It opens from the version chip
+  on the dashboard course card, from the module map inside the player, and from
+  the Service Record.
+- **Modules you already certified are flagged when they change under you.** The
+  record now stores the course version a module was certified at, and a module
+  whose course has since shipped a release that touched it renders `REVISED` in
+  the module map, on the Service Record row, and as a banner at the top of the
+  module itself. This is the half that matters: course v2.2.0 corrected two
+  claims that had become **false**, not merely stale, and an operator who
+  certified m01 or m06 before it had no way to find out.
+- Nothing is reset. A revised module stays certified, keeps its stamp and its
+  eddies, and is offered a re-run. Withdrawing a certification for a content
+  change the operator did not cause would be a punishment for the course's own
+  drift.
+- Re-running a revised module ends in `[ RE-CERTIFY AT V2.3.0 ]`, which clears
+  the marker. It pays nothing: the reward was already transferred, and paying it
+  again would turn every re-audit into a payday. Without an acknowledgement the
+  warning would be permanent, which is the failure it exists to prevent.
+- A shard written before this existed is not left blank. The certification
+  version is recovered from the ledger: the `MODULE CLEARED` transaction carries
+  a date, and a date maps to the release that was current on it. Where even
+  that is missing, the log says so and claims nothing.
+
+### Changed
+
+- Changelog entries now name the modules they changed, and `npm run validate`
+  checks those ids exist, that the current course version has an entry, and that
+  entries are unique and newest-first. A course-level version bump says the
+  COURSE moved, not that YOUR module did: v2.3.0 touched one module of nine, so
+  flagging on the version alone would have been eight false alarms against one
+  real change, and a spurious drift alarm is worse than none because it teaches
+  the reader to dismiss the one that is real.
+- The Service Record has a COURSE REVISIONS section, and each certified module
+  row now says which course version it was certified at.
+
 ## 0.17.1 - 2026-08-02
 
 ### Fixed

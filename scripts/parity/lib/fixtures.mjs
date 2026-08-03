@@ -36,6 +36,11 @@ export const RECORD_CERTIFIED = {
   quiz: {},
   eddies: 11000, // 500 start + 8×1000 + 2500 capstone
   revealedBy: Object.fromEntries(MODS.map((id) => [id, 20])),
+  // Certified back at data-api v2.1.0 (issue #74), so every state that renders
+  // this record also renders the REVISED markers and the revision log's amber
+  // block. That is the widest layout the log has: a module title and a
+  // [ RE-RUN MODULE ] button on one row, eight times over.
+  certifiedAt: Object.fromEntries(MODS.map((id) => [id, '2.1.0'])),
   txns: MODS.map((id, i) => ({
     id: `t${i + 1}`, ts: T0 + i * 600_000, kind: 'module', moduleId: id,
     moduleTitle: id.toUpperCase(), qid: null, qPrompt: '', correct: true,

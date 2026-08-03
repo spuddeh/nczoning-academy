@@ -4,8 +4,8 @@
 // The balance card shows the SETTLED eddies (op state), not the header's
 // count-up value. <main> so the global keyboard scrolling targets it.
 import { useRef } from 'react';
-import type { Course } from '../lib/types';
-import { clearanceAndRank, progressStats } from '../lib/academy';
+import type { Course, CourseChangelogEntry } from '../lib/types';
+import { clearanceAndRank, progressStats, versionList } from '../lib/academy';
 import { SectionLabel } from '../components/player/primitives';
 
 interface ServiceRecordProps {
@@ -22,17 +22,23 @@ interface ServiceRecordProps {
   /** radio power state (issue #34): the reopen control lives here for now */
   radioClosed: boolean;
   onReopenRadio: () => void;
+  /** Course revisions (issue #74). This page answers "what is my standing", so
+   *  "what has moved since I earned it" belongs next to it. */
+  revised: Record<string, CourseChangelogEntry[]>;
+  certVersions: Record<string, string>;
+  onOpenChangelog: () => void;
 }
 
 export function ServiceRecord({
   course, moduleDone, eddies, operatorName, importMsg,
   onNameChange, onEject, onSlotFile, onViewCert, onPurge,
-  radioClosed, onReopenRadio,
+  radioClosed, onReopenRadio, revised, certVersions, onOpenChangelog,
 }: ServiceRecordProps) {
   const fileRef = useRef<HTMLInputElement>(null);
   const { mods, done, certified } = progressStats(course ?? {}, moduleDone);
   const { clearance, rankTitle } = clearanceAndRank(course ?? {}, moduleDone);
   const symbol = course?.economy?.symbol ?? '€$';
+  const revisedCount = Object.keys(revised).length;
 
   return (
     <main className="record-main">
@@ -87,19 +93,56 @@ export function ServiceRecord({
         <div className="record-mods">
           {mods.length ? mods.map((m) => {
             const md = !!moduleDone[m.id];
+            // Certified, then changed under the operator (issue #74). The row
+            // keeps its CERTIFIED status: nothing is revoked, and the marker is
+            // an offer to re-run, not a downgrade.
+            const rev = md ? revised[m.id] : undefined;
             return (
-              <div key={m.id} className={`record-mod-row${md ? ' done' : ''}`}>
+              <div key={m.id} className={`record-mod-row${md ? ' done' : ''}${rev ? ' revised' : ''}`}>
                 <span className="record-mod-dot" />
                 <div className="record-mod-body">
                   <div className="record-mod-title">{m.title}</div>
                   <div className="record-mod-meta">
                     CLR {m.clearance ?? 1} // {m.capstone ? 'CAPSTONE // ' : ''}{md ? 'COMPLETE' : 'NOT STARTED'}
+                    {md && certVersions[m.id] ? ` // CERTIFIED AT V${certVersions[m.id]}` : ''}
                   </div>
+                  {rev && (
+                    <button type="button" className="record-mod-revised" onClick={onOpenChangelog}>
+                      ⚠ REVISED IN {versionList(rev)} // READ THE LOG
+                    </button>
+                  )}
                 </div>
                 <span className="record-mod-status">{md ? '✓ CERTIFIED' : '○ PENDING'}</span>
               </div>
             );
           }) : <div className="record-no-mods">&gt; no modules in this course.</div>}
+        </div>
+
+        <SectionLabel text="COURSE REVISIONS" tone={revisedCount ? 'amber' : 'cyan'} />
+        <div className="record-revisions">
+          <div className="record-revisions-copy">
+            {revisedCount ? (
+              <>
+                <b>{revisedCount} certified module{revisedCount === 1 ? '' : 's'}</b> changed after you
+                cleared {revisedCount === 1 ? 'it' : 'them'}. Course content is re-audited against a
+                moving codebase, and a re-audit can correct a claim that has become wrong, not merely
+                stale. Nothing has been reset.
+              </>
+            ) : done.length ? (
+              <>
+                This course is at <b>v{course?.version ?? '0.0.0'}</b>. Nothing you have certified has
+                changed since you certified it.
+              </>
+            ) : (
+              <>
+                This course is at <b>v{course?.version ?? '0.0.0'}</b>. Certify a module and this
+                section tracks whether the course moves under it.
+              </>
+            )}
+          </div>
+          <button type="button" className="record-io-btn cyan" onClick={onOpenChangelog}>
+            [ REVISION LOG ]
+          </button>
         </div>
 
         <SectionLabel text="EARNED CERTIFICATIONS" tone="green" />
