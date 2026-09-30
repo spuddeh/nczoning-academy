@@ -11,6 +11,26 @@ file records what a visitor receives.
 
 ## [Unreleased]
 
+## 0.19.0 - 2026-10-01
+
+### Changed
+
+- **TRANSMISSION PROTOCOLS v2.4.0** is re-audited against Data API 0.6.0 and
+  Core 1.2.0. The `recently_updated` flag is gone and consumers compute recency
+  against their own clock. Discord now gets only the alerts a person must act
+  on. Install detection matches `.archive` names only. Every module is flagged
+  `REVISED`.
+- **PERMANENT RECORD v1.1.0** is re-audited against the same Worker. It covers
+  twelve migrations and the real `locations` columns, and module 02's lab is a
+  live capture.
+
+### Fixed
+
+- PERMANENT RECORD module 04 taught that `POST /submissions` refuses bad input
+  with a 422. It has always returned **400** `invalid_submission`. The module,
+  its lab, quiz and glossary term now say 400. The 422 belongs to the admin
+  editor.
+
 ## 0.18.0 - 2026-08-03
 
 ### Added
